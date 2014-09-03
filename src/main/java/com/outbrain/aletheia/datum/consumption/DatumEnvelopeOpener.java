@@ -61,11 +61,11 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     updateLagMetrics(datumEnvelope);
 
-    final TDomainClass datum = datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(),
-                                                                               new VersionedDatumTypeId(
-                                                                                       datumEnvelope.getDatumTypeId()
-                                                                                                    .toString(),
-                                                                                       datumEnvelope.getDatumSchemaVersion())));
+    final TDomainClass datum =
+            datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(),
+                                                            new VersionedDatumTypeId(
+                                                                    datumEnvelope.getDatumTypeId().toString(),
+                                                                    datumEnvelope.getDatumSchemaVersion())));
     datumAuditor.report(datum);
 
     return datum;

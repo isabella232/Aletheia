@@ -1,82 +1,146 @@
 package com.outbrain.aletheia.breadcrumbs;
 
-import com.github.staslev.concurrent.NonBlockingOperations;
-import com.google.common.collect.Lists;
-import com.outbrain.aletheia.datum.auditing.BreadcrumbHandler;
+import com.google.common.base.Preconditions;
+import com.outbrain.aletheia.datum.type.DatumType;
+import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A hit counter that uses buckets in order to aggregate incoming hits.
  * Each bucket represents a logical timeslot to which incoming hits are assigned according to their (logical) timestamp.
  */
-public class BucketBasedBreadcrumbDispatcher<TElement, TBucketKey> implements BreadcrumbDispatcher<TElement> {
+public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<T> {
 
-  private static final Logger log = LoggerFactory.getLogger(BucketBasedBreadcrumbDispatcher.class);
+  private static class HitsPerInterval {
 
-  private final ConcurrentMap<TBucketKey, Long> bucketId2CountMap = new ConcurrentHashMap<>();
-  private final BreadcrumbBaker<TBucketKey> breadcrumbBaker;
-  private final BucketKeySelector<TElement, TBucketKey> bucketKeySelector;
-  private final BreadcrumbHandler BreadcrumbHandler;
-  private final HitLogger hitLogger;
+    private static final HitsPerInterval EMPTY = new HitsPerInterval(new DateTime(0).toInstant(), 0);
 
-  public BucketBasedBreadcrumbDispatcher(final BucketKeySelector<TElement, TBucketKey> bucketKeySelector,
-                                         final BreadcrumbBaker<TBucketKey> breadcrumbBaker,
-                                         final BreadcrumbHandler breadcrumbHandler,
-                                         final HitLogger hitLogger) {
+    private final AtomicLong hitCount;
+    private final Instant bucketStart;
 
-    this.bucketKeySelector = bucketKeySelector;
-    this.breadcrumbBaker = breadcrumbBaker;
-    this.BreadcrumbHandler = breadcrumbHandler;
-    this.hitLogger = hitLogger;
+    private HitsPerInterval(final Instant bucketStart, final long hitCount) {
+      this.bucketStart = bucketStart;
+      this.hitCount = new AtomicLong(hitCount);
+    }
+
+    public boolean isEmpty() {
+      return this == HitsPerInterval.EMPTY;
+    }
+
+    public boolean nonEmpty() {
+      return !isEmpty();
+    }
   }
 
-  private void threadSafelyIncreaseHitCount(final TBucketKey bucketId) {
-    NonBlockingOperations.forMap.withLongValues().increase(bucketId2CountMap, bucketId);
+  private static final Logger logger = LoggerFactory.getLogger(BucketBasedBreadcrumbDispatcher.class);
+
+  private final ConcurrentMap<Long, HitsPerInterval> bucketId2hitsPerInterval;
+  private final Duration bucketDuration;
+  private final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker;
+  private final BreadcrumbHandler breadcrumbHandler;
+  private final DatumType.TimestampExtractor<T> timestampExtractor;
+  private final Duration preAllocatedInterval;
+
+  public BucketBasedBreadcrumbDispatcher(final Duration bucketDuration,
+                                         final DatumType.TimestampExtractor<T> timestampExtractor,
+                                         final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
+                                         final BreadcrumbHandler breadcrumbHandler,
+                                         final Duration preAllocatedInterval) {
+    this.bucketDuration = bucketDuration;
+    this.breadcrumbBaker = breadcrumbBaker;
+    this.breadcrumbHandler = breadcrumbHandler;
+    this.timestampExtractor = timestampExtractor;
+    this.preAllocatedInterval = preAllocatedInterval;
+
+    bucketId2hitsPerInterval = initBucketId2hitCountsMap(preAllocatedInterval);
+  }
+
+  private ConcurrentMap<Long, HitsPerInterval> initBucketId2hitCountsMap(final Duration preAllocatedInterval) {
+
+    final long millisInOneHour = preAllocatedInterval.getMillis();
+    final long bucketCount = millisInOneHour / bucketDuration.getMillis();
+
+    Preconditions.checkState(bucketCount * bucketDuration.getMillis() == millisInOneHour,
+                             "bucket duration must divide an hour without a reminder");
+
+    final NonBlockingHashMapLong<HitsPerInterval> bucketIds2hitCounts = new NonBlockingHashMapLong<>((int) bucketCount);
+
+    for (long bucketId = 0; bucketId < bucketCount; bucketId++) {
+      bucketIds2hitCounts.put(bucketId, HitsPerInterval.EMPTY);
+    }
+
+    return bucketIds2hitCounts;
+  }
+
+  private Instant bucketStart(final T item) {
+    return new Instant(
+            (timestampExtractor.extractDatumDateTime(item).getMillis() /
+                    bucketDuration.getMillis()) * bucketDuration.getMillis());
+  }
+
+  private long bucketId(final T item) {
+    final long millis = timestampExtractor.extractDatumDateTime(item).getMillis() % preAllocatedInterval.getMillis();
+    return millis / bucketDuration.getMillis();
   }
 
   @Override
-  public void report(final TElement item) {
+  public void report(final T item) {
 
-    final TBucketKey bucketId = bucketKeySelector.selectKey(item);
+    HitsPerInterval currentValue;
+    HitsPerInterval nextValue = null;
 
-    hitLogger.logHit(bucketId);
+    final long bucketId = bucketId(item);
+    final Instant bucketStart = bucketStart(item);
+    long currentHitCount = 0;
 
-    threadSafelyIncreaseHitCount(bucketId);
+    do {
+      currentValue = bucketId2hitsPerInterval.get(bucketId);
+      if (currentValue.isEmpty()) {
+        nextValue = new HitsPerInterval(bucketStart, 1);
+      } else {
+        if (!bucketStart.equals(currentValue.bucketStart)) {
+          logger.error("Possible bucket collision, ignoring current item.");
+          return;
+        }
+        currentHitCount = currentValue.hitCount.get();
+      }
+    } while ((currentValue.isEmpty() &&
+            !bucketId2hitsPerInterval.replace(bucketId, HitsPerInterval.EMPTY, nextValue))
+            ||
+            (currentValue.nonEmpty() &&
+                    !bucketId2hitsPerInterval.get(bucketId).hitCount.compareAndSet(currentHitCount,
+                                                                                   currentHitCount + 1)));
   }
 
   @Override
   public void dispatchBreadcrumbs() {
 
-    final Instant processingTimestamp = Instant.now();
-    final List<TBucketKey> bucketIds = Lists.newLinkedList(bucketId2CountMap.keySet());
+    for (final long bucketId : bucketId2hitsPerInterval.keySet()) {
 
-    for (final TBucketKey bucketId : bucketIds) {
+      final HitsPerInterval hitsPerInterval = bucketId2hitsPerInterval.replace(bucketId, HitsPerInterval.EMPTY);
 
-      final Long bucketHitCount = bucketId2CountMap.remove(bucketId);
+      if (hitsPerInterval.isEmpty()) continue;
 
-      if (bucketHitCount == null) {
-        // current bucketId has already been removed from the map by someone else.
-        // oh, well, the show must go on.
-        continue;
-      }
-
+      final Breadcrumb breadcrumb = breadcrumbBaker.bakeBreadcrumb(new BucketStartWithDuration(bucketDuration,
+                                                                                               hitsPerInterval.bucketStart),
+                                                                   Instant.now(),
+                                                                   hitsPerInterval.hitCount.get());
       try {
-        final Breadcrumb breadcrumb = breadcrumbBaker.bakeBreadcrumb(bucketId, processingTimestamp, bucketHitCount);
-        BreadcrumbHandler.handle(breadcrumb);
+        breadcrumbHandler.handle(breadcrumb);
       } catch (final Exception e) {
-
-        log.error(String.format(
-                          "Failed to flush hits for processingTimestamp: [%d], bucketId: [%s], aggregated hit count: [%d]",
-                          processingTimestamp.getMillis(),
-                          bucketId,
-                          bucketHitCount),
-                  e);
+        logger.error(String.format(
+                             "Failed to dispatch a breadcrumb for processingTimestamp: [%d], bucketId: [%s], aggregated hit count: [%d]",
+                             Instant.now().getMillis(),
+                             bucketId,
+                             hitsPerInterval.hitCount.get()),
+                     e);
       }
     }
   }

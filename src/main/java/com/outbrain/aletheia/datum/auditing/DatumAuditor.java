@@ -1,8 +1,10 @@
 package com.outbrain.aletheia.datum.auditing;
 
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbBaker;
+import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
 import com.outbrain.aletheia.breadcrumbs.BucketBasedBreadcrumbDispatcher;
-import com.outbrain.aletheia.breadcrumbs.HitLogger;
+import com.outbrain.aletheia.breadcrumbs.BucketStartWithDuration;
+import com.outbrain.aletheia.datum.type.DatumType;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<TDomainClass, DatumBucketKey> {
+public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(DatumAuditor.class);
 
@@ -18,31 +20,34 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
   private final Duration durationBetweenFlushes;
   private final Runnable flushCommand;
 
-  public DatumAuditor(final DatumBucketKeySelector<TDomainClass> datumEnvelopeBucketKeySelector,
-                      final BreadcrumbBaker<DatumBucketKey> breadcrumbBaker,
+  public DatumAuditor(final Duration bucketDuration,
+                      final DatumType.TimestampExtractor<TDomainClass> timestampExtractor,
+                      final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                       final BreadcrumbHandler breadcrumbHandler,
                       final ScheduledExecutorService scheduledExecutorService,
                       final Duration durationBetweenFlushes) {
-    this(datumEnvelopeBucketKeySelector,
+    this(bucketDuration,
+         timestampExtractor,
          breadcrumbBaker,
          breadcrumbHandler,
          scheduledExecutorService,
          durationBetweenFlushes,
-         HitLogger.NULL);
-
+         Duration.standardDays(1));
   }
 
-  public DatumAuditor(final DatumBucketKeySelector<TDomainClass> datumEnvelopeBucketKeySelector,
-                      final BreadcrumbBaker<DatumBucketKey> breadcrumbBaker,
+  public DatumAuditor(final Duration bucketDuration,
+                      final DatumType.TimestampExtractor<TDomainClass> timestampExtractor,
+                      final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                       final BreadcrumbHandler breadcrumbHandler,
                       final ScheduledExecutorService scheduledExecutorService,
                       final Duration durationBetweenFlushes,
-                      final HitLogger hitLogger) {
+                      final Duration preAllocatedInterval) {
 
-    super(datumEnvelopeBucketKeySelector, breadcrumbBaker, breadcrumbHandler, hitLogger);
+    super(bucketDuration, timestampExtractor, breadcrumbBaker, breadcrumbHandler, preAllocatedInterval);
 
     this.scheduledExecutorService = scheduledExecutorService;
     this.durationBetweenFlushes = durationBetweenFlushes;
+
     flushCommand = new Runnable() {
       @Override
       public void run() {

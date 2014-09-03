@@ -1,4 +1,4 @@
-package com.outbrain.aletheia.datum.auditing;
+package com.outbrain.aletheia.breadcrumbs;
 
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 

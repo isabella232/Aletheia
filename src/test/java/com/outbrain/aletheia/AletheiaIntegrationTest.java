@@ -12,10 +12,7 @@ import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.consumption.DatumConsumer;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
 import com.outbrain.aletheia.datum.consumption.ManualFeedConsumptionEndPoint;
-import com.outbrain.aletheia.datum.production.DatumProducer;
-import com.outbrain.aletheia.datum.production.DatumProducerBuilder;
-import com.outbrain.aletheia.datum.production.DatumProducerConfig;
-import com.outbrain.aletheia.datum.production.InMemoryProductionEndPoint;
+import com.outbrain.aletheia.datum.production.*;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 import com.outbrain.aletheia.metrics.RecordingMetricFactory;
@@ -36,19 +33,24 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
 
-  private static final BreadcrumbsConfig PRODUCER_BREADCRUMBS_CONFIG = new BreadcrumbsConfig(Duration.millis(10),
-                                                                                             Duration.millis(100),
-                                                                                             "app_tx",
-                                                                                             "src_tx",
-                                                                                             "tier_tx",
-                                                                                             "dc_tx");
+  private static final Duration BREADCRUMB_BUCKET_DURATION = Duration.standardSeconds(30);
+  private static final Duration BREADCRUMB_BUCKET_FLUSH_INTERVAL = Duration.millis(10);
 
-  private static final BreadcrumbsConfig CONSUMER_BREADCRUMBS_CONFIG = new BreadcrumbsConfig(Duration.millis(10),
-                                                                                             Duration.millis(100),
-                                                                                             "app_rx",
-                                                                                             "src_rx",
-                                                                                             "tier_rx",
-                                                                                             "dc_rx");
+  private static final BreadcrumbsConfig PRODUCER_BREADCRUMBS_CONFIG =
+          new BreadcrumbsConfig(BREADCRUMB_BUCKET_DURATION,
+                                BREADCRUMB_BUCKET_FLUSH_INTERVAL,
+                                "app_tx",
+                                "src_tx",
+                                "tier_tx",
+                                "dc_tx");
+
+  private static final BreadcrumbsConfig CONSUMER_BREADCRUMBS_CONFIG =
+          new BreadcrumbsConfig(BREADCRUMB_BUCKET_DURATION,
+                                BREADCRUMB_BUCKET_FLUSH_INTERVAL,
+                                "app_rx",
+                                "src_rx",
+                                "tier_rx",
+                                "dc_rx");
 
   private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
 
@@ -64,7 +66,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private List<byte[]> deliverAll(final List<TDomainClass> originalDatums,
                                   final InMemoryProductionEndPoint dataProductionEndPoint,
-                                  final InMemoryProductionEndPoint breadcrumbProductionEndPoint,
+                                  final ProductionEndPoint breadcrumbProductionEndPoint,
                                   final DatumSerDe<TDomainClass> datumSerDe,
                                   final Predicate<TDomainClass> filter) {
 
@@ -80,13 +82,13 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     return dataProductionEndPoint.getReceivedData();
   }
 
-  private DatumProducer<TDomainClass> datumProducer(final InMemoryProductionEndPoint dataProductionEndPoint,
-                                                    final InMemoryProductionEndPoint breadcrumbProductionEndPoint,
+  private DatumProducer<TDomainClass> datumProducer(final ProductionEndPoint dataProductionEndPoint,
+                                                    final ProductionEndPoint breadcrumbProductionEndPoint,
                                                     final DatumSerDe<TDomainClass> datumSerDe,
                                                     final Predicate<TDomainClass> datumFilter) {
 
     return DatumProducerBuilder
-            .forDomainClass(this.domainClass)
+            .forDomainClass(domainClass)
             .reportMetricsTo(metricsFactory)
             .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG)
             .deliverDataTo(dataProductionEndPoint, datumSerDe, datumFilter)
@@ -95,7 +97,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private ImmutableList<TDomainClass> receiveAll(final List<byte[]> sentOnWire,
                                                  final DatumSerDe<TDomainClass> datumSerDe,
-                                                 final InMemoryProductionEndPoint breadcrumbProductionEndPoint) throws InterruptedException {
+                                                 final ProductionEndPoint breadcrumbProductionEndPoint) throws InterruptedException {
 
     final ManualFeedConsumptionEndPoint consumptionEndPoint = new ManualFeedConsumptionEndPoint();
 
@@ -110,6 +112,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     final DatumConsumer<TDomainClass> datumConsumer = consumptionEndPoint2datumConsumer.get(consumptionEndPoint);
 
     final ExecutorService executorService = Executors.newFixedThreadPool(1);
+
     final Future<ImmutableList<TDomainClass>> submit =
             executorService.submit(new Callable<ImmutableList<TDomainClass>>() {
               @Override
@@ -190,7 +193,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     };
 
     // wait for the breadcrumbs to arrive.
-    Thread.sleep(500);
+    Thread.sleep(1000);
 
     assertThat(receivedDatums.size(), is(1));
     assertThat(receivedDatums, not(hasItem(filteredDatum)));

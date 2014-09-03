@@ -1,15 +1,15 @@
 package com.outbrain.aletheia.datum.production;
 
 import com.google.common.collect.Maps;
+import com.outbrain.aletheia.EndPoint;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDatumSerDe;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
-import com.outbrain.aletheia.datum.auditing.BreadcrumbHandler;
+import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
 import com.outbrain.aletheia.datum.auditing.DatumAuditor;
-import com.outbrain.aletheia.datum.auditing.DatumBreadcrumbBaker;
-import com.outbrain.aletheia.datum.auditing.DatumBucketKeySelector;
-import com.outbrain.aletheia.EndPoint;
+import com.outbrain.aletheia.datum.auditing.StartTimeWithDurationBreadcrumbBaker;
+import com.outbrain.aletheia.datum.utils.DatumUtils;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -127,18 +127,19 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
   protected BreadcrumbDispatcher<TDomainClass> getDatumAuditor(final DatumProducerConfig datumProducerConfig,
                                                                final EndPoint endPoint,
                                                                final MetricFactoryProvider metricFactoryProvider) {
-
     return new DatumAuditor<>(
-            new DatumBucketKeySelector<TDomainClass>(this.breadcrumbsConfig.getBreadcrumbBucketDuration()),
-            new DatumBreadcrumbBaker(breadcrumbsConfig.getSource(),
-                                     endPoint.getName(),
-                                     breadcrumbsConfig.getTier(),
-                                     breadcrumbsConfig.getDatacenter(),
-                                     breadcrumbsConfig.getApplication()),
+            breadcrumbsConfig.getBreadcrumbBucketDuration(),
+            DatumUtils.getDatumTimestampExtractor(domainClass),
+            new StartTimeWithDurationBreadcrumbBaker(breadcrumbsConfig.getSource(),
+                                                     endPoint.getName(),
+                                                     breadcrumbsConfig.getTier(),
+                                                     breadcrumbsConfig.getDatacenter(),
+                                                     breadcrumbsConfig.getApplication(),
+                                                     DatumUtils.getDatumTypeId(domainClass)),
             new BreadcrumbTransportingHandler(datumProducerConfig,
                                               metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
             Executors.newSingleThreadScheduledExecutor(),
-            this.breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
+            breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
   }
 
   protected abstract TBuilder This();
