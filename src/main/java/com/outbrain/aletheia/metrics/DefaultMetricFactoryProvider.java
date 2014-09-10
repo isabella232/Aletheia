@@ -4,7 +4,8 @@ import com.outbrain.aletheia.EndPoint;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
- * Created by slevin on 8/12/14.
+ * The default implementation for Aletheia specific metrics with pre-defined component names and hierarchical
+ * metric tree structure.
  */
 public class DefaultMetricFactoryProvider extends AletheiaMetricFactoryProvider {
 

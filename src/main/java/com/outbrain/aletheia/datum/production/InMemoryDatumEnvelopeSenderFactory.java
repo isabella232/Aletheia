@@ -4,7 +4,7 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
- * Created by slevin on 7/22/14.
+ * Builds <code>DatumEnvelopeSender</code>s capable of sending data to an <code>InMemoryProductionEndPoint</code>.
  */
 public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<InMemoryProductionEndPoint> {
   @Override

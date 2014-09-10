@@ -7,7 +7,7 @@ import com.outbrain.aletheia.metrics.common.PrefixedMetricFactory;
 import java.util.Arrays;
 
 /**
- * Created by slevin on 8/12/14.
+ * A utility class for prefixing a metric factory with a given prefix(es).
  */
 public class MetricFactoryPrefixer {
 

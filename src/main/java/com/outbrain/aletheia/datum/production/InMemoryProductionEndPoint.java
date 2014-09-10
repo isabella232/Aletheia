@@ -4,7 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This <code>ProductionEndPoint</code> type works in collaboration with the <code>InMemoryAccumulatingSender</code>,
+ * jointly, they allow one to store incoming items in-memory, and query them later on.
+ * This type of endpoint is useful for experiments and tests.
+ */
 public class InMemoryProductionEndPoint extends ProductionEndPoint  {
+
+  private static final String IN_MEMORY = "InMemory";
 
   public enum EndPointType {RawDatumEnvelope, String}
 
@@ -29,6 +36,6 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint  {
 
   @Override
   public String getName() {
-    return "InMemory";
+    return IN_MEMORY;
   }
 }

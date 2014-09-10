@@ -7,6 +7,13 @@ import com.outbrain.aletheia.datum.type.DatumType;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 import org.joda.time.Instant;
 
+/**
+ *
+ * Builds an enclosing <code>DatumEnvelope</code>s for a datum, serializing it using
+ * the specified <code>DatumSerDe</code>.
+ *
+ * @param <TDomainClass> The type of datum to build a <code>DatumEnvelope</code> for.
+ */
 public class DatumEnvelopeBuilder<TDomainClass> {
 
   private final String hostname;

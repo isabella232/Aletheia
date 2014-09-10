@@ -3,6 +3,9 @@ package com.outbrain.aletheia.datum.utils;
 import com.outbrain.aletheia.datum.type.DatumType;
 import com.outbrain.aletheia.datum.type.UnknownDatumTypeException;
 
+/**
+ * A utility class for extracting various information provided via by the <code>DatumType</code> annotation.
+ */
 public final class DatumUtils {
 
   private DatumUtils() {

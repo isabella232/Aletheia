@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.datum.production;
 
 /**
- * Created by slevin on 7/15/14.
+ * A <code>Sender</code> that has an alias.
  */
 public interface NamedSender<T> extends Sender<T> {
   String getName();

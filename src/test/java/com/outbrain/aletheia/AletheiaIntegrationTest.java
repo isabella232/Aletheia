@@ -4,19 +4,18 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
-import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
-import com.outbrain.aletheia.datum.consumption.DatumConsumer;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
-import com.outbrain.aletheia.datum.consumption.ManualFeedConsumptionEndPoint;
+import com.outbrain.aletheia.datum.consumption.*;
 import com.outbrain.aletheia.datum.production.*;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 import com.outbrain.aletheia.metrics.RecordingMetricFactory;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+import junit.framework.Assert;
 import org.joda.time.Duration;
 
 import java.util.List;
@@ -53,6 +52,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                 "dc_rx");
 
   private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
+  private static final DatumConsumerConfig DATUM_CONSUMER_CONFIG = new DatumConsumerConfig(0, "originalHostname");
 
   private static final boolean SHOULD_BE_SENT = true;
   private static final boolean SHOULD_NOT_BE_SENT = false;
@@ -101,15 +101,16 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
     final ManualFeedConsumptionEndPoint consumptionEndPoint = new ManualFeedConsumptionEndPoint();
 
-    final Map<ConsumptionEndPoint, DatumConsumer<TDomainClass>> consumptionEndPoint2datumConsumer =
+    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
             DatumConsumerBuilder
                     .forDomainType(domainClass)
                     .reportMetricsTo(metricsFactory)
                     .addConsumptionEndPoint(consumptionEndPoint, datumSerDe)
                     .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG)
-                    .build(DATUM_PRODUCER_CONFIG);
+                    .build(DATUM_CONSUMER_CONFIG);
 
-    final DatumConsumer<TDomainClass> datumConsumer = consumptionEndPoint2datumConsumer.get(consumptionEndPoint);
+    final DatumConsumer<TDomainClass> datumConsumer =
+            Iterables.getFirst(consumptionEndPoint2datumConsumer.get(consumptionEndPoint), null);
 
     final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
@@ -130,7 +131,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     }
 
     try {
-      return submit.get(500, TimeUnit.MILLISECONDS);
+      return submit.get(1000, TimeUnit.MILLISECONDS);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -139,7 +140,20 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   private void assertBreadcrumb(final InMemoryProductionEndPoint breadcrumbProductionEndPoint,
                                 final BreadcrumbsConfig breadcrumbsConfig) {
 
-    final String breadcrumbJsonString = ((List<String>) breadcrumbProductionEndPoint.getReceivedData()).get(0);
+    String breadcrumbJsonString = null;
+
+    // wait for the breadcrumbs to arrive.
+    for (int attempts = 1; attempts < 10; attempts++) {
+      try {
+        if (breadcrumbProductionEndPoint.getReceivedData().size() != 0) {
+          breadcrumbJsonString = ((List<String>) breadcrumbProductionEndPoint.getReceivedData()).get(0);
+        } else {
+          Thread.sleep(100);
+        }
+      } catch (final InterruptedException e) {
+        Assert.fail();
+      }
+    }
 
     final Breadcrumb breadcrumb = new Gson().fromJson(breadcrumbJsonString, Breadcrumb.class);
 
@@ -191,9 +205,6 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
         return !datum.equals(filteredDatum);
       }
     };
-
-    // wait for the breadcrumbs to arrive.
-    Thread.sleep(1000);
 
     assertThat(receivedDatums.size(), is(1));
     assertThat(receivedDatums, not(hasItem(filteredDatum)));

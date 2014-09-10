@@ -1,12 +1,10 @@
-package com.outbrain.aletheia.datum.auditing;
+package com.outbrain.aletheia.breadcrumbs;
 
-import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbBaker;
-import com.outbrain.aletheia.breadcrumbs.BucketStartWithDuration;
 import org.joda.time.Instant;
 
 /**
- * Created by slevin on 7/14/14.
+ * An implementation of <code>BreadcrumbBaker</code>, where the bucket key consists of a bucket's start time, and
+ * bucket duration.
  */
 public class StartTimeWithDurationBreadcrumbBaker implements BreadcrumbBaker<BucketStartWithDuration> {
 

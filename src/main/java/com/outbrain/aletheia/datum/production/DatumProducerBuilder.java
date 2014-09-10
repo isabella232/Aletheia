@@ -21,7 +21,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by slevin on 7/10/14.
+ * Provides a fluent API for building a <code>DatumProducer</code>.
+ *
+ * @param <TDomainClass> The type of datum for which a <code>DatumProducer</code> is to be built.
  */
 public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumProducerBuilder<TDomainClass>> {
 

@@ -1,17 +1,15 @@
 package com.outbrain.aletheia.datum.production;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 
 /**
-* Created by slevin on 7/27/14.
-*/
+ * A special case of a <code>NamedSender&lt;DatumEnvelope&gt;</code>, that extracts the datum part of the
+ * incoming <code>DatumEnvelope</code>, and decodes it using <code>UTF-8</code> encoding. It is assumed that
+ * the incoming <code>DatumEnvelopes</code> do indeed have a serialized, <code>UTF-8</code> encoded, string datum.
+ */
 public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelope> {
-
-  private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopePeelingStringSender.class);
 
   public static final String UTF_8 = "UTF-8";
 

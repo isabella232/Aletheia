@@ -16,33 +16,25 @@ public class StaticDatumAvroSchemaRepository implements DatumSchemaRepository {
     this.avroClassPackage = avroClassPackage;
   }
 
-  @Override
-  public VersionedDatumTypeId retrieveSchemaVersion(final Schema schema) {
-    return new VersionedDatumTypeId(schema.getName(), -31415927);
+  private Schema detectAvroSchema(final Class<? extends SpecificRecord> avroClass) {
+    try {
+      return (Schema) avroClass.getDeclaredMethod("getClassSchema").invoke(null);
+    } catch (final Exception e) {
+      return null;
+    }
+
   }
 
-  @Override
-  public Schema retrieveSchema(final VersionedDatumTypeId versionedDatumTypeId) {
-    // RLRL - Currently return own schema as the only available schema, until we create the schema repository
-    return retrieveLatestSchema(versionedDatumTypeId.getDatumTypeId());
-  }
-
-  @Override
-  public Schema retrieveLatestSchema(final String datumTypeId) {
-    final Class<? extends SpecificRecord> avroClass = getAvroClassForDatumType(datumTypeId);
-    final Schema datumTypeOwnSchema = detectAvroSchema(avroClass);
-    return datumTypeOwnSchema;
-  }
-
-  public String getFullyQualifiedAvroClassFromDatumTypeId(final String datumTypeId) {
+  private String getFullyQualifiedAvroClassFromDatumTypeId(final String datumTypeId) {
     return String.format("%s.%s", avroClassPackage, datumTypeId);
   }
 
-  public Class<? extends SpecificRecord> getAvroClassForDatumType(final String datumTypeId) {
+  private Class<? extends SpecificRecord> getAvroClassForDatumType(final String datumTypeId) {
     try {
       final Class<?> avroClass = Class.forName(getFullyQualifiedAvroClassFromDatumTypeId(datumTypeId));
       if (!SpecificRecord.class.isAssignableFrom(avroClass)) {
-        throw new RuntimeException("Expected avro class is not an avro SpecificRecord, which means it has not been generated properly");
+        throw new RuntimeException(
+                "Expected avro class is not an avro SpecificRecord, which means it has not been generated properly");
       }
       final Class<? extends SpecificRecord> datumTypeAvroClass = (Class<? extends SpecificRecord>) avroClass;
       return datumTypeAvroClass;
@@ -51,15 +43,20 @@ public class StaticDatumAvroSchemaRepository implements DatumSchemaRepository {
     }
   }
 
-  public Schema detectAvroSchema(final Class<? extends SpecificRecord> avroClass) {
-    Schema datumBodySchema = null;
-    try {
-      datumBodySchema = (Schema) avroClass.getDeclaredMethod("getClassSchema").invoke(null);
-      return datumBodySchema;
-    } catch (final Exception e) {
-      return null;
-    }
+  @Override
+  public VersionedDatumTypeId retrieveSchemaVersion(final Schema schema) {
+    return new VersionedDatumTypeId(schema.getName(), -31415927);
+  }
 
+  @Override
+  public Schema retrieveSchema(final VersionedDatumTypeId versionedDatumTypeId) {
+    return retrieveLatestSchema(versionedDatumTypeId.getDatumTypeId());
+  }
+
+  @Override
+  public Schema retrieveLatestSchema(final String datumTypeId) {
+    final Class<? extends SpecificRecord> avroClass = getAvroClassForDatumType(datumTypeId);
+    return detectAvroSchema(avroClass);
   }
 
 }

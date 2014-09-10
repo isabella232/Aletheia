@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class InMemoryAccumulatingSender<T> implements NamedSender<T>, Serializable {
+/**
+ * An <code>Sender</code> that stores incoming items in-memory, allowing one to query them later.
+ */
+public class InMemoryAccumulatingSender implements NamedSender, Serializable {
 
   private final List sentData = Collections.synchronizedList(new ArrayList());
   private final int maxSize;
@@ -22,7 +25,7 @@ public class InMemoryAccumulatingSender<T> implements NamedSender<T>, Serializab
   }
 
   @Override
-  public void send(final T item) {
+  public void send(final Object item) {
 
     if (sentData.size() > maxSize) {
       sentData.clear();

@@ -1,5 +1,8 @@
 package com.outbrain.aletheia.datum.serialization;
 
+/**
+ * A container class for datum type id and version information.
+ */
 public class VersionedDatumTypeId {
 
   private final String datumTypeId;

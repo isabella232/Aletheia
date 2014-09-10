@@ -1,7 +1,10 @@
-package com.outbrain.aletheia.breadcrumbs;
+package com.outbrain.aletheia.datum;
 
-import com.outbrain.aletheia.datum.auditing.DatumAuditor;
-import com.outbrain.aletheia.datum.auditing.StartTimeWithDurationBreadcrumbBaker;
+import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
+import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
+import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
+import com.outbrain.aletheia.breadcrumbs.StartTimeWithDurationBreadcrumbBaker;
+import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.type.SampleDomainClass;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 import org.joda.time.Duration;
@@ -24,7 +27,7 @@ import static org.junit.Assert.assertThat;
  * Created by slevin on 8/28/14.
  */
 @Ignore
-public class BreadcrumbDispatcherStressTest {
+public class DatumAuditorStressTest {
 
   @Rule
   public TestName testName = new TestName();

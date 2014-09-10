@@ -11,13 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 
+/**
+ * A breadcrumb generating <code>DatumConsumer</code> implementation.
+ */
 public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomainClass> {
 
   private class DatumIterator implements Iterator<TDomainClass> {
 
     private final Iterable<DatumEnvelope> datumEnvelopes;
 
-    private DatumIterator() {
+    private DatumIterator(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
       datumEnvelopes = datumEnvelopeFetcher.datumEnvelopes();
     }
 
@@ -69,7 +72,6 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumConsumer.class);
 
-  private final DatumEnvelopeFetcher datumEnvelopeFetcher;
   private final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener;
   private final Predicate<TDomainClass> datumFilter;
   private final Counter consumedDatumCount;
@@ -82,14 +84,13 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
                                final Predicate<TDomainClass> datumFilter,
                                final MetricsFactory metricsFactory) {
 
-    this.datumEnvelopeFetcher = datumEnvelopeFetcher;
-    this.datumEnvelopeOpener = datumEnvelopeOpener;
-    this.datumFilter = datumFilter;
-
     consumedDatumCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Success");
     consumeFailureCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Failures");
     filteredCounter = metricsFactory.createCounter("Consume.Requests", "Filtered");
-    datumIterator = new DatumIterator();
+
+    this.datumEnvelopeOpener = datumEnvelopeOpener;
+    this.datumFilter = datumFilter;
+    datumIterator = new DatumIterator(datumEnvelopeFetcher);
   }
 
   @Override

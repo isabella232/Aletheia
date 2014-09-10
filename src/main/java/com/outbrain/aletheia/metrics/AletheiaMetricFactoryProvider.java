@@ -4,7 +4,7 @@ import com.outbrain.aletheia.datum.utils.DatumUtils;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
- * Created by slevin on 8/12/14.
+ * An abstract class for Aletheia specific metrics with pre-defined component names.
  */
 public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProvider {
 

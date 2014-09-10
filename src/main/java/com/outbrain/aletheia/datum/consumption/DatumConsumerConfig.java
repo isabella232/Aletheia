@@ -1,11 +1,11 @@
-package com.outbrain.aletheia.datum.production;
+package com.outbrain.aletheia.datum.consumption;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Configuration details for <code>DatumProducer</code>s.
+ * Configuration details for <code>DatumConsumer</code>s.
  */
-public class DatumProducerConfig {
+public class DatumConsumerConfig {
 
   private final int incarnation;
   private final String hostname;
@@ -15,7 +15,7 @@ public class DatumProducerConfig {
    *                    below a certain incarnation.
    * @param hostname the hostname this <code>DatumProducer</code> instance is operating from.
    */
-  public DatumProducerConfig(final int incarnation, final String hostname) {
+  public DatumConsumerConfig(final int incarnation, final String hostname) {
 
     this.incarnation = incarnation;
     this.hostname = hostname;

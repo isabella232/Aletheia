@@ -1,9 +1,11 @@
 package com.outbrain.aletheia.datum.consumption;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.production.AletheiaBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
@@ -17,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by slevin on 7/10/14.
+ * Provides a fluent API for building a <code>DatumConsumer</code>.
+ *
+ * @param <TDomainClass> The type of datum for which a <code>DatumConsumer</code> is to be built.
  */
 public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumConsumerBuilder<TDomainClass>> {
 
@@ -67,8 +71,8 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new ManualFeedDatumEnvelopeFetcherFactory());
   }
 
-  private AuditingDatumConsumer<TDomainClass> datumConsumer(final DatumProducerConfig datumProducerConfig,
-                                                            final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
+  private List<AuditingDatumConsumer<TDomainClass>> datumConsumer(final DatumProducerConfig datumProducerConfig,
+                                                                  final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
 
     logger.info("Creating a datum consumer for end point: {} with config: {}",
                 consumptionEndPointInfo.getConsumptionEndPoint(),
@@ -77,11 +81,16 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
     final MetricFactoryProvider metricFactoryProvider;
 
-    if (isBreadcrumbProductionDefined()) {
+    if (!domainClass.equals(Breadcrumb.class)) {
       metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass, DATUM_CONSUMER, metricFactory);
-      datumAuditor = getDatumAuditor(datumProducerConfig,
-                                     consumptionEndPointInfo.getConsumptionEndPoint(),
-                                     metricFactoryProvider);
+
+      if (isBreadcrumbProductionDefined()) {
+        datumAuditor = getDatumAuditor(datumProducerConfig,
+                                       consumptionEndPointInfo.getConsumptionEndPoint(),
+                                       metricFactoryProvider);
+      } else {
+        datumAuditor = BreadcrumbDispatcher.NULL;
+      }
     } else {
       metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(domainClass,
                                                                                   DATUM_CONSUMER,
@@ -100,19 +109,26 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     final DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory =
             endpoint2datumEnvelopeFetcherFactory.get(consumptionEndPointInfo.getConsumptionEndPoint().getClass());
 
-    final DatumEnvelopeFetcher datumEnvelopeFetcher =
+    final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
             datumEnvelopeFetcherFactory
                     .buildDatumEnvelopeFetcher(consumptionEndPointInfo.getConsumptionEndPoint(),
                                                metricFactoryProvider
                                                        .forDatumEnvelopeFetcher(
                                                                consumptionEndPointInfo.getConsumptionEndPoint()));
 
-    return new AuditingDatumConsumer<>(datumEnvelopeFetcher,
-                                       datumEnvelopeOpener,
-                                       consumptionEndPointInfo.getFilter(),
-                                       metricFactoryProvider
-                                               .forAuditingDatumConsumer(
-                                                       consumptionEndPointInfo.getConsumptionEndPoint()));
+    return Lists.transform(datumEnvelopeFetchers,
+                           new Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>>() {
+                             @Override
+                             public AuditingDatumConsumer apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
+                               return new AuditingDatumConsumer<>(datumEnvelopeFetcher,
+                                                                  datumEnvelopeOpener,
+                                                                  consumptionEndPointInfo.getFilter(),
+                                                                  metricFactoryProvider
+                                                                          .forAuditingDatumConsumer(
+                                                                                  consumptionEndPointInfo.getConsumptionEndPoint()));
+                             }
+                           });
+
   }
 
   @Override
@@ -130,27 +146,30 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   public DatumConsumerBuilder<TDomainClass> addConsumptionEndPoint(final ConsumptionEndPoint consumptionEndPoint,
-                                                                    final DatumSerDe<TDomainClass> datumSerDe) {
+                                                                   final DatumSerDe<TDomainClass> datumSerDe) {
     return addConsumptionEndPoint(consumptionEndPoint, datumSerDe, Predicates.<TDomainClass>alwaysTrue());
   }
 
   public DatumConsumerBuilder<TDomainClass> addConsumptionEndPoint(final ConsumptionEndPoint consumptionEndPoint,
-                                                                    final DatumSerDe<TDomainClass> datumSerDe,
-                                                                    final Predicate<TDomainClass> filter) {
+                                                                   final DatumSerDe<TDomainClass> datumSerDe,
+                                                                   final Predicate<TDomainClass> filter) {
 
     consumptionEndPointInfos.add(new ConsumptionEndPointInfo<>(consumptionEndPoint, datumSerDe, filter));
     return this;
   }
 
-  public Map<ConsumptionEndPoint, DatumConsumer<TDomainClass>> build(final DatumProducerConfig breadcrumbProducerConfig) {
+  public Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> build(final DatumConsumerConfig datumConsumerConfig) {
 
-    final Map<ConsumptionEndPoint, DatumConsumer<TDomainClass>> consumptionEndPoint2datumConsumer = Maps.newHashMap();
+    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
+            Maps.newHashMap();
 
     for (final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo : consumptionEndPointInfos) {
       final ConsumptionEndPoint consumptionEndPoint = consumptionEndPointInfo.getConsumptionEndPoint();
-      final AuditingDatumConsumer<TDomainClass> datumConsumer = datumConsumer(breadcrumbProducerConfig,
-                                                                              consumptionEndPointInfo);
-      consumptionEndPoint2datumConsumer.put(consumptionEndPoint, datumConsumer);
+      final List<AuditingDatumConsumer<TDomainClass>> datumConsumers =
+              datumConsumer(new DatumProducerConfig(datumConsumerConfig.getIncarnation(),
+                                                    datumConsumerConfig.getHostname()),
+                            consumptionEndPointInfo);
+      consumptionEndPoint2datumConsumer.put(consumptionEndPoint, datumConsumers);
     }
 
     return consumptionEndPoint2datumConsumer;

@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * A schema caching decorator for a <code>DatumSchemaRepository</code>, that caches schemas for encountered datum types.
+ */
 public class CachedSchemaRepository implements DatumSchemaRepository {
 
   private final DatumSchemaRepository innerRepository;

@@ -3,9 +3,6 @@ package com.outbrain.aletheia.breadcrumbs;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 
-/**
-* Created by slevin on 8/31/14.
-*/
 public class BucketStartWithDuration {
 
   private final Duration bucketDuration;

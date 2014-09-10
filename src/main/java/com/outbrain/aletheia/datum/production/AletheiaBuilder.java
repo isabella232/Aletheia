@@ -2,13 +2,9 @@ package com.outbrain.aletheia.datum.production;
 
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.EndPoint;
-import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbDatumSerDe;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
-import com.outbrain.aletheia.datum.auditing.DatumAuditor;
-import com.outbrain.aletheia.datum.auditing.StartTimeWithDurationBreadcrumbBaker;
+import com.outbrain.aletheia.breadcrumbs.*;
+import com.outbrain.aletheia.datum.DatumAuditor;
+import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
@@ -17,15 +13,18 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 /**
- * Created by slevin on 8/9/14.
+ * @param <TDomainClass> The datum type this builder will be building a
+ *                       <code>DatumProducer</code> or <code>DatumConsumer</code> for.
+ * @param <TBuilder>     The concrete type of builder, used for type safety, to be filled in by deriving classes.
  */
 public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TDomainClass, ?>> {
 
   /**
-   * Created by slevin on 8/12/14.
+   * A special case <code>AletheiaMetricFactoryProvider</code> used only when reporting metrics from a
+   * breadcrumb dedicated <code>DatumProducer</code>, that is, a <code>DatumProducer</code> whose only purpose in life
+   * is to produce breadcrumbs (breadcrumb is itself, a special kind of datum).
    */
   protected static class InternalBreadcrumbProducerMetricFactoryProvider extends AletheiaMetricFactoryProvider {
 
@@ -72,12 +71,12 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
     }
   }
 
-  protected class BreadcrumbTransportingHandler implements BreadcrumbHandler {
+  protected class BreadcrumbProducingHandler implements BreadcrumbHandler {
 
     private final DatumProducer<Breadcrumb> breadcrumbDatumProducer;
 
-    public BreadcrumbTransportingHandler(final DatumProducerConfig datumProducerConfig,
-                                         final MetricsFactory metricsFactory) {
+    public BreadcrumbProducingHandler(final DatumProducerConfig datumProducerConfig,
+                                      final MetricsFactory metricsFactory) {
 
       final DatumProducerBuilder<Breadcrumb> breadcrumbProducerBuilder =
               configurableBreadcrumbProducerBuilder(metricsFactory);
@@ -89,7 +88,7 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
       return DatumProducerBuilder
               .forDomainClass(Breadcrumb.class)
               .reportMetricsTo(metricsFactory)
-              .deliverDataTo(breadcrumbsProductionEndPoint, new BreadcrumbDatumSerDe());
+              .deliverDataTo(breadcrumbsProductionEndPoint, new JsonDatumSerDe<>(Breadcrumb.class));
     }
 
     private DatumProducerBuilder<Breadcrumb> registerEndPointTypes(final DatumProducerBuilder<Breadcrumb> breadcrumbDatumProducerBuilder) {
@@ -136,9 +135,8 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
                                                      breadcrumbsConfig.getDatacenter(),
                                                      breadcrumbsConfig.getApplication(),
                                                      DatumUtils.getDatumTypeId(domainClass)),
-            new BreadcrumbTransportingHandler(datumProducerConfig,
-                                              metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
-            Executors.newSingleThreadScheduledExecutor(),
+            new BreadcrumbProducingHandler(datumProducerConfig,
+                                           metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
             breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
   }
 
@@ -152,6 +150,15 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
     this.registerProductionEndPointType(InMemoryProductionEndPoint.class, new InMemoryDatumEnvelopeSenderFactory());
   }
 
+  /**
+   *
+   * Configures <code>Breadcrumb</code> sending to a given destination, and configuration.
+   *
+   * @param breadcrumbProductionEndPoint A <code>ProductionEndPoint</code> instance where
+   *                                     <code>Breadcrumbs</code> will be sent.
+   * @param breadcrumbsConfig A configuration for the breadcrumb dispatching mechanism.
+   * @return A <code>TBuilder</code> instance whose breadcrumbs have been configured.
+   */
   public TBuilder deliverBreadcrumbsTo(final ProductionEndPoint breadcrumbProductionEndPoint,
                                        final BreadcrumbsConfig breadcrumbsConfig) {
 
@@ -161,6 +168,15 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
     return This();
   }
 
+  /**
+   *
+   * @param endPointType The type of the custom endpoint to register.
+   * @param datumEnvelopeSenderFactory A <code>DatumEnvelopeSenderFactory</code> capable of building
+   *                                   <code>DatumEnvelopeFetcher</code>s from the specified (custom) endpoint type.
+   * @param <TProductionEndPoint>
+   * @param <UProductionEndPoint>
+   * @return A <code>TBuilder</code> instance with the custom production endpoint registered.
+   */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> TBuilder registerProductionEndPointType(
           final Class<TProductionEndPoint> endPointType,
           final DatumEnvelopeSenderFactory<UProductionEndPoint> datumEnvelopeSenderFactory) {
@@ -170,6 +186,13 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
     return This();
   }
 
+  /**
+   *
+   * Configures metrics reporting.
+   *
+   * @param metricFactory A MetricsFactory instance to report metrics to.
+   * @return A <code>TBuilder</code> instance with metrics reporting configured.
+   */
   public TBuilder reportMetricsTo(final MetricsFactory metricFactory) {
     this.metricFactory = metricFactory;
 

@@ -3,6 +3,12 @@ package com.outbrain.aletheia.breadcrumbs;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.joda.time.Duration;
 
+/**
+ * Holds the configuration details for breadcrumbs emitted by the <code>DatumProducer</code>.
+ * THe configuration consists of details concerning the length of the bucket each breadcrumb describes,
+ * the flush period, which determines how often breadcrumbs will be emitted, plus the metadata that will accompany
+ * each outgoing breadcrumb.
+ */
 public class BreadcrumbsConfig {
 
   private final Duration breadcrumbBucketDuration;
@@ -12,6 +18,17 @@ public class BreadcrumbsConfig {
   private final String tier;
   private final String datacenter;
 
+  /**
+   *
+   * @param breadcrumbBucketDuration The time frame to be used as a bucket, aggregating all incoming hits whose
+   *                                 timestamp falls within the bucket start and end time.
+   * @param breadcrumbBucketFlushInterval The time interval to wait between two consecutive flush operations, where
+   *                                      a flush operation is defined as dispatching all buckets currently in memory.
+   * @param application The application string to be set to the dispatched breadcrumbs.
+   * @param source The source string to be set to the dispatched breadcrumbs.
+   * @param tier The tier string to be set to the dispatched breadcrumbs.
+   * @param datacenter The datacenter string to be set to the dispatched breadcrumbs.
+   */
   public BreadcrumbsConfig(final Duration breadcrumbBucketDuration,
                            final Duration breadcrumbBucketFlushInterval,
                            final String application,

@@ -11,6 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * A <code>Breadcrumb</code> generating, <code>DatumEnvelope</code> transportation based
+ * <code>DatumProducer</code> implementation.
+ */
 public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);

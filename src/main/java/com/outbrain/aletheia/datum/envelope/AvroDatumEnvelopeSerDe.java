@@ -13,20 +13,17 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 
+/**
+ * Serializes a <code>DatumEnvelope</code> instance to an Avro encoded ByteBuffer.
+ */
 public class AvroDatumEnvelopeSerDe {
 
   public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
 
     try {
-      final SpecificDatumWriter<DatumEnvelope> envelopeWriter =
-              new SpecificDatumWriter<DatumEnvelope>(envelope.getSchema());
-
+      final SpecificDatumWriter<DatumEnvelope> envelopeWriter = new SpecificDatumWriter<>(envelope.getSchema());
       final ByteArrayOutputStream envelopeByteStream = new ByteArrayOutputStream();
-      // RLRL Reuse encoder
-      // RLRL use buffered encoder
       BinaryEncoder binaryEncoder = EncoderFactory.get().directBinaryEncoder(envelopeByteStream, null);
-
-      // Try to reuse the previous encoder
       binaryEncoder = EncoderFactory.get().directBinaryEncoder(envelopeByteStream, binaryEncoder);
 
       envelopeWriter.write(envelope, binaryEncoder);
@@ -34,10 +31,10 @@ public class AvroDatumEnvelopeSerDe {
       envelopeByteStream.flush();
 
       return ByteBuffer.wrap(envelopeByteStream.toByteArray());
-
     } catch (final Exception e) {
       throw new RuntimeException("Could not serialize datum envelope", e);
     }
+
   }
 
   public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
@@ -50,8 +47,6 @@ public class AvroDatumEnvelopeSerDe {
                                                                                         DatumEnvelope.getClassSchema());
 
     final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer));
-
-    // RLRL See if we can reuse the decoder
     final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
 
     try {

@@ -1,14 +1,8 @@
 package com.outbrain.aletheia;
 
 /**
- * Created by slevin on 8/13/14.
+ * A base interface for both <code>ProductionEndPoint</code>s and <code>ConsumptionEndPoint</code>s.
  */
 public interface EndPoint {
-
-  interface EndPointType {
-
-  }
-
   String getName();
-
 }

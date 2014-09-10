@@ -1,4 +1,4 @@
-package com.outbrain.aletheia.datum.auditing;
+package com.outbrain.aletheia.datum;
 
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbBaker;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
@@ -9,9 +9,13 @@ import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Keeps aggregated counts of the incoming reports and periodically produces corresponding breadcrumbs.
+ */
 public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(DatumAuditor.class);
@@ -24,13 +28,12 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
                       final DatumType.TimestampExtractor<TDomainClass> timestampExtractor,
                       final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                       final BreadcrumbHandler breadcrumbHandler,
-                      final ScheduledExecutorService scheduledExecutorService,
                       final Duration durationBetweenFlushes) {
     this(bucketDuration,
          timestampExtractor,
          breadcrumbBaker,
          breadcrumbHandler,
-         scheduledExecutorService,
+         Executors.newSingleThreadScheduledExecutor(),
          durationBetweenFlushes,
          Duration.standardDays(1));
   }

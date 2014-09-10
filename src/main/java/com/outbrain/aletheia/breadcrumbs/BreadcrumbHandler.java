@@ -1,9 +1,7 @@
 package com.outbrain.aletheia.breadcrumbs;
 
-import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
-
 /**
- * Created by slevin on 8/11/14.
+ * The base interface for handling breadcrumbs emitted by the <code>BucketBasedBreadcrumbDispatcher</code>.
  */
 public interface BreadcrumbHandler {
   void handle(final Breadcrumb breadcrumb);

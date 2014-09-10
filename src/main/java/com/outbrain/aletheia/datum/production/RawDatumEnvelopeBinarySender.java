@@ -5,6 +5,10 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 
 import java.nio.ByteBuffer;
 
+/**
+ * A <code>Sender</code> implementation that sends <code>DatumEnvelope</code> without manipulating them
+ * in any way.
+ */
 public class RawDatumEnvelopeBinarySender implements NamedSender<DatumEnvelope> {
 
   private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();;
