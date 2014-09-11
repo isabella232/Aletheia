@@ -11,11 +11,14 @@ Aletheia was designed with the following features in mind:
 For example:
 
 ```java
-DatumProducerBuilder
-    .forDomainClass(Click.class)
-    .registerProductionEndPointType(KafkaTopicProductionEndPoint.class,
-                                    new KafkaDatumEnvelopeSenderFactory())
-    .deliverBreadcrumbsTo(new KafkaTopicProductionEndPoint(...))
-    .reportMetricsTo(myMetricFactory)
-    .build(new DatumProducerConfig(...));
+DatumProducer<Click> datumProducer = 
+    DatumProducerBuilder
+      .forDomainClass(Click.class)
+      .registerProductionEndPointType(KafkaTopicProductionEndPoint.class,
+                                      new KafkaDatumEnvelopeSenderFactory())
+      .deliverBreadcrumbsTo(new KafkaTopicProductionEndPoint(...))
+      .reportMetricsTo(myMetricFactory)
+      .build(new DatumProducerConfig(...));
+
+datumProducer.deliver(new Click(...));
 ```    
