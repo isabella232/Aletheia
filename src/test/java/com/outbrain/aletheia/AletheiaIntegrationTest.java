@@ -1,12 +1,13 @@
 package com.outbrain.aletheia;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
 import com.outbrain.aletheia.datum.consumption.*;
@@ -18,6 +19,7 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import junit.framework.Assert;
 import org.joda.time.Duration;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -103,9 +105,9 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
     final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
             DatumConsumerBuilder
-                    .forDomainType(domainClass)
+                    .forDomainClass(domainClass)
                     .reportMetricsTo(metricsFactory)
-                    .addConsumptionEndPoint(consumptionEndPoint, datumSerDe)
+                    .consumeDataFrom(consumptionEndPoint, datumSerDe)
                     .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG)
                     .build(DATUM_CONSUMER_CONFIG);
 
@@ -131,7 +133,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     }
 
     try {
-      return submit.get(1000, TimeUnit.MILLISECONDS);
+      return submit.get(2000, TimeUnit.MILLISECONDS);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -155,7 +157,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
       }
     }
 
-    final Breadcrumb breadcrumb = new Gson().fromJson(breadcrumbJsonString, Breadcrumb.class);
+    final Breadcrumb breadcrumb = deserializeBreadcrumb(breadcrumbJsonString);
 
     assertThat(breadcrumb.getSource(), is(breadcrumbsConfig.getSource()));
     assertThat(breadcrumb.getType(), is(DatumUtils.getDatumTypeId(domainClass)));
@@ -163,6 +165,18 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
     assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
     assertThat(breadcrumb.getCount(), is(1L));
+  }
+
+  protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {
+    final Breadcrumb breadcrumb;
+    try {
+      final ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.registerModule(new JodaModule());
+      breadcrumb = objectMapper.readValue(breadcrumbJsonString, Breadcrumb.class);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+    return breadcrumb;
   }
 
   protected abstract TDomainClass randomDomainClassDatum(final boolean shouldBeSent);
@@ -208,7 +222,11 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
     assertThat(receivedDatums.size(), is(1));
     assertThat(receivedDatums, not(hasItem(filteredDatum)));
-    assertThat(receivedDatums, is(FluentIterable.from(originalDomainObjects).filter(shouldHaveBeenSent).toList()));
+    assertThat("Received datums were not the same as the ones that were sent.",
+               receivedDatums,
+               is(FluentIterable.from(originalDomainObjects)
+                                .filter(shouldHaveBeenSent)
+                                .toList()));
 
     assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
     assertBreadcrumb(consumerBreadcrumbsProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG);

@@ -4,20 +4,18 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
-import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -161,9 +159,8 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
               }
             };
 
-    final Collection<DatumProducer<TDomainClass>> datumProducers =
-            Collections2.transform(productionEndPointInfos,
-                                   toDatumProducer);
+    final List<DatumProducer<TDomainClass>> datumProducers = Lists.transform(productionEndPointInfos, toDatumProducer);
+
     return new CompositeDatumProducer<>(Lists.newArrayList(datumProducers));
   }
 

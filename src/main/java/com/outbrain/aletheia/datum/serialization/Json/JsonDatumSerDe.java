@@ -1,13 +1,13 @@
 package com.outbrain.aletheia.datum.serialization.Json;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import com.outbrain.aletheia.datum.serialization.VersionedDatumTypeId;
 import com.outbrain.aletheia.datum.utils.DatumUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -18,21 +18,23 @@ import java.nio.ByteBuffer;
 public class JsonDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
   public static final String UTF_8 = "UTF-8";
-  private final Gson gson = new Gson();
+  private final ObjectMapper jsonSerDe;
   private final Class<TDomainClass> datumClass;
 
   public JsonDatumSerDe(final Class<TDomainClass> datumClass) {
     this.datumClass = datumClass;
+    jsonSerDe = new ObjectMapper();
+    jsonSerDe.registerModule(new JodaModule());
   }
 
   @Override
   public SerializedDatum serializeDatum(final TDomainClass datum) {
     final byte[] bytes;
     try {
-      bytes = gson.toJson(datum).getBytes(UTF_8);
+      bytes = jsonSerDe.writeValueAsBytes(datum);
       return new SerializedDatum(ByteBuffer.wrap(bytes),
                                  new VersionedDatumTypeId(DatumUtils.getDatumTypeId(Breadcrumb.class), 1));
-    } catch (final UnsupportedEncodingException e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -43,8 +45,8 @@ public class JsonDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
       final byte[] breadcrumbStringBytes = new byte[serializedDatum.getPayload().remaining()];
       serializedDatum.getPayload().get(breadcrumbStringBytes);
       final String breadcrumbString = new String(breadcrumbStringBytes, UTF_8);
-      return gson.fromJson(breadcrumbString, datumClass);
-    } catch (final UnsupportedEncodingException e) {
+      return jsonSerDe.readValue(breadcrumbString, datumClass);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

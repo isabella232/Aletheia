@@ -23,20 +23,33 @@
   <developers>
     <developer>
       <name>Stas Levin</name>
+      <roles>
+        <role>developer</role>
+        <role>architect</role>
+      </roles>
       <url>https://www.linkedin.com/in/staslevin</url>
       <email>slevin@outbrain.com</email>
-    </developer>
-    <developer>
-      <name>Izik Shmulewitz</name>
-      <url>http://il.linkedin.com/pub/izik-shmulewitz/4/860/5a5</url>
-      <email>ishmulewitz@outbrain.com</email>
+      <organization>Outbrain</organization>
     </developer>
     <developer>
       <name>Harel Ben Attia</name>
+      <roles>
+        <role>architect</role>
+      </roles>
       <url>http://il.linkedin.com/in/harelba</url>
+      <organization>Outbrain</organization>
       <email>Harel@outbrain.com</email>
     </developer>
   </developers>
+
+  <contributors>
+    <contributor>
+      <name>Izik Shmulewitz</name>
+      <url>http://il.linkedin.com/pub/izik-shmulewitz/4/860/5a5</url>
+      <email>ishmulewitz@outbrain.com</email>
+      <organization>Outbrain</organization>
+    </contributor>
+  </contributors>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -156,9 +169,14 @@
       <version>16.0.1</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>1.4</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+		<version>2.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-joda</artifactId>
+		<version>2.2.2</version>
     </dependency>
     <dependency>
       <groupId>com.github.stephenc.high-scale-lib</groupId>

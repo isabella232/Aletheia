@@ -79,23 +79,15 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
                 datumProducerConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    final MetricFactoryProvider metricFactoryProvider;
-
-    if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass, DATUM_CONSUMER, metricFactory);
-
-      if (isBreadcrumbProductionDefined()) {
-        datumAuditor = getDatumAuditor(datumProducerConfig,
-                                       consumptionEndPointInfo.getConsumptionEndPoint(),
-                                       metricFactoryProvider);
-      } else {
-        datumAuditor = BreadcrumbDispatcher.NULL;
-      }
-    } else {
-      metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(domainClass,
-                                                                                  DATUM_CONSUMER,
-                                                                                  metricFactory);
+    final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass,
+                                                                                         DATUM_CONSUMER,
+                                                                                         metricFactory);
+    if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
+    } else {
+      datumAuditor = getDatumAuditor(datumProducerConfig,
+                                     consumptionEndPointInfo.getConsumptionEndPoint(),
+                                     metricFactoryProvider);
     }
 
     final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener =
@@ -103,8 +95,6 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
                                       consumptionEndPointInfo.getDatumSerDe(),
                                       metricFactoryProvider.forDatumEnvelopeMeta(
                                               consumptionEndPointInfo.getConsumptionEndPoint()));
-
-    //TODO should be build according to productionEndPointWithSerDe.getProductionEndPoint()
 
     final DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory =
             endpoint2datumEnvelopeFetcherFactory.get(consumptionEndPointInfo.getConsumptionEndPoint().getClass());
@@ -116,19 +106,20 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
                                                        .forDatumEnvelopeFetcher(
                                                                consumptionEndPointInfo.getConsumptionEndPoint()));
 
-    return Lists.transform(datumEnvelopeFetchers,
-                           new Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>>() {
-                             @Override
-                             public AuditingDatumConsumer apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
-                               return new AuditingDatumConsumer<>(datumEnvelopeFetcher,
-                                                                  datumEnvelopeOpener,
-                                                                  consumptionEndPointInfo.getFilter(),
-                                                                  metricFactoryProvider
-                                                                          .forAuditingDatumConsumer(
-                                                                                  consumptionEndPointInfo.getConsumptionEndPoint()));
-                             }
-                           });
+    final Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>> toDatumConsumers =
+            new Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>>() {
+              @Override
+              public AuditingDatumConsumer<TDomainClass> apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
+                return new AuditingDatumConsumer<>(datumEnvelopeFetcher,
+                                                   datumEnvelopeOpener,
+                                                   consumptionEndPointInfo.getFilter(),
+                                                   metricFactoryProvider
+                                                           .forAuditingDatumConsumer(
+                                                                   consumptionEndPointInfo.getConsumptionEndPoint()));
+              }
+            };
 
+    return Lists.transform(datumEnvelopeFetchers, toDatumConsumers);
   }
 
   @Override
@@ -145,14 +136,14 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     return This();
   }
 
-  public DatumConsumerBuilder<TDomainClass> addConsumptionEndPoint(final ConsumptionEndPoint consumptionEndPoint,
-                                                                   final DatumSerDe<TDomainClass> datumSerDe) {
-    return addConsumptionEndPoint(consumptionEndPoint, datumSerDe, Predicates.<TDomainClass>alwaysTrue());
+  public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
+                                                            final DatumSerDe<TDomainClass> datumSerDe) {
+    return consumeDataFrom(consumptionEndPoint, datumSerDe, Predicates.<TDomainClass>alwaysTrue());
   }
 
-  public DatumConsumerBuilder<TDomainClass> addConsumptionEndPoint(final ConsumptionEndPoint consumptionEndPoint,
-                                                                   final DatumSerDe<TDomainClass> datumSerDe,
-                                                                   final Predicate<TDomainClass> filter) {
+  public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
+                                                            final DatumSerDe<TDomainClass> datumSerDe,
+                                                            final Predicate<TDomainClass> filter) {
 
     consumptionEndPointInfos.add(new ConsumptionEndPointInfo<>(consumptionEndPoint, datumSerDe, filter));
     return this;
@@ -175,7 +166,7 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     return consumptionEndPoint2datumConsumer;
   }
 
-  public static <TDomainClass> DatumConsumerBuilder<TDomainClass> forDomainType(final Class<TDomainClass> domainClass) {
+  public static <TDomainClass> DatumConsumerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
     return new DatumConsumerBuilder<>(domainClass);
   }
 

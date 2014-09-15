@@ -13,28 +13,33 @@ import java.util.Iterator;
  */
 public class ManualFeedDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
-  private class DatumEnvelopeIterator implements Iterator<DatumEnvelope> {
-
-    @Override
-    public boolean hasNext() {
-      return true;
-    }
-    @Override
-    public DatumEnvelope next() {
-      return fetchDatumEnvelope();
-    }
-
-    @Override
-    public void remove() {
-    }
-
-  }
-
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
+
+  private final Iterable<DatumEnvelope> datumEnvelopeIterable =
+          new Iterable<DatumEnvelope>() {
+            @Override
+            public Iterator<DatumEnvelope> iterator() {
+              return new Iterator<DatumEnvelope>() {
+                @Override
+                public boolean hasNext() {
+                  return true;
+                }
+
+                @Override
+                public DatumEnvelope next() {
+                  return fetchDatumEnvelope();
+                }
+
+                @Override
+                public void remove() {
+                }
+              };
+            }
+          };
+
   private final ManualFeedConsumptionEndPoint consumptionEndPoint;
   private final Counter receivedDatumEnvelopeCount;
   private final Counter failureCount;
-  private final DatumEnvelopeIterator datumEnvelopeIterator = new DatumEnvelopeIterator();
 
   public ManualFeedDatumEnvelopeFetcher(final ManualFeedConsumptionEndPoint consumptionEndPoint,
                                         final MetricsFactory metricFactory) {
@@ -61,11 +66,6 @@ public class ManualFeedDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
   @Override
   public Iterable<DatumEnvelope> datumEnvelopes() {
-    return new Iterable<DatumEnvelope>() {
-      @Override
-      public Iterator<DatumEnvelope> iterator() {
-        return datumEnvelopeIterator;
-      }
-    };
+    return datumEnvelopeIterable;
   }
 }
