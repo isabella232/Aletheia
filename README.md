@@ -17,7 +17,6 @@ DatumProducer<Click> datumProducer =
       .registerProductionEndPointType(KafkaTopicProductionEndPoint.class,
                                       new KafkaDatumEnvelopeSenderFactory())
       .deliverDataTo(new KafkaTopicProductionEndPoint(...))
-      .reportMetricsTo(myMetricFactory)
       .build(new DatumProducerConfig(...));
 
 datumProducer.deliver(new Click(...));
