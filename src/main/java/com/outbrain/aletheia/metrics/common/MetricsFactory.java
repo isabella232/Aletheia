@@ -101,12 +101,6 @@ public interface MetricsFactory {
       };
     }
 
-    @Override
-    public void createStatefulGauge(final String component,
-                                    final String methodName,
-                                    final GaugeStateHolder monitoredObject) {
-
-    }
   };
 
   Timer createTimer(final String component, final String methodName);
@@ -119,5 +113,4 @@ public interface MetricsFactory {
 
   Histogram createHistogram(String component, String methodName, boolean biased);
 
-  void createStatefulGauge(final String component, final String methodName, final GaugeStateHolder monitoredObject);
 }

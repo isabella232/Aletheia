@@ -61,10 +61,4 @@ public class PrefixedMetricFactory implements MetricsFactory {
     return decoratedMetricFactory.createHistogram(getComponentWithPrefix(component), methodName, biased);
   }
 
-  @Override
-  public void createStatefulGauge(final String component,
-                                  final String methodName,
-                                  final GaugeStateHolder monitoredObject) {
-    decoratedMetricFactory.createStatefulGauge(getComponentWithPrefix(component), methodName, monitoredObject);
-  }
 }

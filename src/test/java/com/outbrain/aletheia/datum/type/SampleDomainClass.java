@@ -96,7 +96,7 @@ public class SampleDomainClass extends TabSeparatedLine {
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    long temp;
+    final long temp;
     result = 31 * result + id;
     temp = Double.doubleToLongBits(myNumber);
     result = 31 * result + (int) (temp ^ (temp >>> 32));

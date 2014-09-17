@@ -35,13 +35,11 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     logicalDelayAverager = new TimeWindowAverager(60.0, 15, -1.0);
 
-    // TODO move these metrics to the actual receiver, they don't belong here
-
     futureLogicalMessagesCount = metricFactory.createCounter("Timestamp.Logical", "FromTheFuture");
     logicalTimestampDelayHistogram = metricFactory.createHistogram("Timestamp.Logical",
                                                                    "DelayHistogramInSeconds",
                                                                    true);
-    metricFactory.createStatefulGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
+    metricFactory.createGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
   }
 
   private void updateLagMetrics(final DatumEnvelope envelope) {

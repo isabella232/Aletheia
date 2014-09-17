@@ -113,12 +113,4 @@ public class RecordingMetricFactory implements MetricsFactory {
     return decoratedMetricFactory.createHistogram(component, methodName, biased);
   }
 
-  @Override
-  public void createStatefulGauge(final String component,
-                                  final String methodName,
-                                  final GaugeStateHolder monitoredObject) {
-    createdMetrics.add(component + "." + methodName);
-    decoratedMetricFactory.createStatefulGauge(component, methodName, monitoredObject);
-  }
-
 }

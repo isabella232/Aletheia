@@ -5,7 +5,7 @@ import org.joda.time.DateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TimeWindowRatio implements Gauge<Double>, GaugeStateHolder {
+public class TimeWindowRatio implements Gauge<Double> {
 
   private final RatioHolder averager;
   private double lastValueBeforeReset;
@@ -17,7 +17,7 @@ public class TimeWindowRatio implements Gauge<Double>, GaugeStateHolder {
   public TimeWindowRatio(final double windowSizeInSeconds, final double noCallsValue, final RatioHolder ratioContainer) {
     this.noCallsValue = noCallsValue;
     windowSizeInMilliseconds = (int) (windowSizeInSeconds * 1000);
-    lastResetTime = new AtomicReference<DateTime>(new DateTime());
+    lastResetTime = new AtomicReference<>(new DateTime());
     averager = ratioContainer;
   }
 

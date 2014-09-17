@@ -40,7 +40,7 @@ public class SampleClassStringSerDe implements DatumSerDe<SampleDomainClass> {
                                    split[2],
                                    Instant.parse(split[3]),
                                    Boolean.parseBoolean(split[4]));
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
 

@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.metrics.common;
 
 
-public class TimeWindowAverager implements Gauge<Double>, GaugeStateHolder {
+public class TimeWindowAverager implements Gauge<Double> {
 
   private final TimeWindowRatio ratio;
 
