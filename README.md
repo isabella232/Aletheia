@@ -8,7 +8,7 @@ Aletheia was designed with the following features in mind:
  2. **Data flow monitoring** - Each datum produced, and each datum sent are counted and reported in real time so as to allow quick detection of problems in one's data flow. Monitoring information is a built-in datum type (called a *breadcrumb*), and can be dispatched and consumed just as any of your propriety datum types.
  3. **Datum schema evolution** - your data may change over time, some fields get added, other removed, or even renamed. Aletheia uses Avro to support schema evolution, making it a good fit for cases you need to decouple the producing and consuming ends so that your pipeline could keep crunching in light of live changes.
 
-For example:
+For example, build a `DatumProducer` that will produce data to a Kafka topic:
 
 ```java
 DatumProducer<Click> datumProducer = 
@@ -18,6 +18,10 @@ DatumProducer<Click> datumProducer =
                                       new KafkaDatumEnvelopeSenderFactory())
       .deliverDataTo(new KafkaTopicProductionEndPoint(...))
       .build(new DatumProducerConfig(...));
+```
 
+Then, produce away:
+
+```java
 datumProducer.deliver(new Click(...));
 ```    
