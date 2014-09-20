@@ -8,7 +8,7 @@ Aletheia is a library that makes it easier to deliver large scale streaming data
  2. **Data flow monitoring** - each datum produced and each datum consumed is counted and reported in real time so as to allow quick detection of problems in one's data flow. Monitoring information is a built-in datum type (called a *breadcrumb*), and can be dispatched and consumed just as any of your propriety datum types.
  3. **Datum schema evolution** - your data may change over time, some fields get added, other removed, or even renamed. Aletheia uses Avro to support schema evolution, making it a good fit for cases where you need to further decouple the producing and consuming ends so that your pipeline could keep crunching even in light of live changes.
 
-For example, build a `DatumProducer` that will produce data to a Kafka topic:
+# An example
 
 ```java
 DatumProducer<Click> datumProducer = 
