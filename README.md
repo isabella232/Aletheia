@@ -1,6 +1,6 @@
 ![](/logo/Aletheia.png)
 
-Aletheia is a library making it easy to mobilize large scale streaming data in a monitored, versioned manner. Alethehia presents a uniform API for leveraging existing frameworks such as Kafka, and can be extended to support custom frameworks.
+Aletheia is a library making it easy to deliver large scale streaming data in a monitored, versioned manner. Alethehia presents a uniform API for leveraging existing frameworks such as Kafka, and can be extended to support custom frameworks.
 
 Aletheia was designed with the following features in mind:
 
