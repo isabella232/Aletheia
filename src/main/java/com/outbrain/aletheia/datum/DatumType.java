@@ -1,4 +1,4 @@
-package com.outbrain.aletheia.datum.type;
+package com.outbrain.aletheia.datum;
 
 import org.joda.time.DateTime;
 

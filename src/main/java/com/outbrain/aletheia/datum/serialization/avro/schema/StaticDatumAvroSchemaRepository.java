@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.datum.serialization.avro.schema;
 
-import com.outbrain.aletheia.datum.serialization.VersionedDatumTypeId;
+import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificRecord;
 
@@ -29,7 +29,7 @@ public class StaticDatumAvroSchemaRepository implements DatumSchemaRepository {
     return String.format("%s.%s", avroClassPackage, datumTypeId);
   }
 
-  private Class<? extends SpecificRecord> getAvroClassForDatumType(final String datumTypeId) {
+  private Class<? extends SpecificRecord> getAvroClassForDatumTypeId(final String datumTypeId) {
     try {
       final Class<?> avroClass = Class.forName(getFullyQualifiedAvroClassFromDatumTypeId(datumTypeId));
       if (!SpecificRecord.class.isAssignableFrom(avroClass)) {
@@ -44,18 +44,18 @@ public class StaticDatumAvroSchemaRepository implements DatumSchemaRepository {
   }
 
   @Override
-  public VersionedDatumTypeId retrieveSchemaVersion(final Schema schema) {
-    return new VersionedDatumTypeId(schema.getName(), -31415927);
+  public DatumTypeVersion getDatumTypeVersion(final Schema schema) {
+    return new DatumTypeVersion(schema.getName(), -31415927);
   }
 
   @Override
-  public Schema retrieveSchema(final VersionedDatumTypeId versionedDatumTypeId) {
-    return retrieveLatestSchema(versionedDatumTypeId.getDatumTypeId());
+  public Schema getSchema(final DatumTypeVersion datumTypeVersion) {
+    return getLatestSchema(datumTypeVersion.getDatumTypeId());
   }
 
   @Override
-  public Schema retrieveLatestSchema(final String datumTypeId) {
-    final Class<? extends SpecificRecord> avroClass = getAvroClassForDatumType(datumTypeId);
+  public Schema getLatestSchema(final String datumTypeId) {
+    final Class<? extends SpecificRecord> avroClass = getAvroClassForDatumTypeId(datumTypeId);
     return detectAvroSchema(avroClass);
   }
 

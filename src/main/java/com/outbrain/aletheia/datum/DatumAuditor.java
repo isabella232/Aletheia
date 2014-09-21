@@ -4,7 +4,6 @@ import com.outbrain.aletheia.breadcrumbs.BreadcrumbBaker;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
 import com.outbrain.aletheia.breadcrumbs.BucketBasedBreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BucketStartWithDuration;
-import com.outbrain.aletheia.datum.type.DatumType;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

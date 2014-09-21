@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
-import com.outbrain.aletheia.datum.serialization.VersionedDatumTypeId;
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumUtils;
 
 import java.nio.ByteBuffer;
 
@@ -33,7 +33,7 @@ public class JsonDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
     try {
       bytes = jsonSerDe.writeValueAsBytes(datum);
       return new SerializedDatum(ByteBuffer.wrap(bytes),
-                                 new VersionedDatumTypeId(DatumUtils.getDatumTypeId(Breadcrumb.class), 1));
+                                 new DatumTypeVersion(DatumUtils.getDatumTypeId(Breadcrumb.class), 1));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

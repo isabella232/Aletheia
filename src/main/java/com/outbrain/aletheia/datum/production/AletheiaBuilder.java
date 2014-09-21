@@ -5,7 +5,7 @@ import com.outbrain.aletheia.EndPoint;
 import com.outbrain.aletheia.breadcrumbs.*;
 import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;

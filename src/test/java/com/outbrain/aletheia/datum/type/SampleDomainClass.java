@@ -1,12 +1,12 @@
 package com.outbrain.aletheia.datum.type;
 
-import com.outbrain.aletheia.datum.type.tsv.TabSeparatedLine;
+import com.outbrain.aletheia.datum.DatumType;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
 @DatumType(datumTypeId = "test_domain_class",
            timestampExtractor = SampleDomainClass.SampleDomainClassTimestampExtractor.class)
-public class SampleDomainClass extends TabSeparatedLine {
+public class SampleDomainClass {
 
   public static class SampleDomainClassTimestampExtractor implements DatumType.TimestampExtractor<SampleDomainClass> {
     @Override
@@ -19,21 +19,22 @@ public class SampleDomainClass extends TabSeparatedLine {
   private double myNumber;
   private String myString;
   private Instant eventTimestamp;
-  private boolean shouldBeSent;
+  private boolean discarded;
+
+
+  private SampleDomainClass() {
+  }
 
   public SampleDomainClass(final int id,
                            final double myNumber,
                            final String myString,
                            final Instant eventTimestamp,
-                           final boolean shouldBeSent) {
-
-    super(id + "\t" + myNumber + "\t" + myString + "\t" + eventTimestamp + "\t" + shouldBeSent);
-
+                           final boolean discarded) {
     this.id = id;
     this.myNumber = myNumber;
     this.myString = myString;
     this.eventTimestamp = eventTimestamp;
-    this.shouldBeSent = shouldBeSent;
+    this.discarded = discarded;
   }
 
   public int getId() {
@@ -68,25 +69,24 @@ public class SampleDomainClass extends TabSeparatedLine {
     this.eventTimestamp = eventTimestamp;
   }
 
-  public boolean shouldBeSent() {
-    return shouldBeSent;
+  public boolean isDiscarded() {
+    return discarded;
   }
 
-  public void setShouldBeSent(final boolean shouldBeSent) {
-    this.shouldBeSent = shouldBeSent;
+  public void setDiscarded(final boolean discarded) {
+    this.discarded = discarded;
   }
 
   @Override
   public boolean equals(final Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
 
     final SampleDomainClass that = (SampleDomainClass) o;
 
     if (id != that.id) return false;
     if (Double.compare(that.myNumber, myNumber) != 0) return false;
-    if (shouldBeSent != that.shouldBeSent) return false;
+    if (discarded != that.discarded) return false;
     if (!eventTimestamp.equals(that.eventTimestamp)) return false;
     if (!myString.equals(that.myString)) return false;
 
@@ -95,19 +95,14 @@ public class SampleDomainClass extends TabSeparatedLine {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    final long temp;
-    result = 31 * result + id;
+    int result;
+    long temp;
+    result = id;
     temp = Double.doubleToLongBits(myNumber);
     result = 31 * result + (int) (temp ^ (temp >>> 32));
     result = 31 * result + myString.hashCode();
     result = 31 * result + eventTimestamp.hashCode();
-    result = 31 * result + (shouldBeSent ? 1 : 0);
+    result = 31 * result + (discarded ? 1 : 0);
     return result;
-  }
-
-  @Override
-  public String toString() {
-    return getDomainObjectAsString();
   }
 }

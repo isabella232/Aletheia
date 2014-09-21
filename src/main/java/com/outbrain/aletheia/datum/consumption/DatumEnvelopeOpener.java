@@ -3,8 +3,8 @@ package com.outbrain.aletheia.datum.consumption;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
-import com.outbrain.aletheia.datum.serialization.VersionedDatumTypeId;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -61,7 +61,7 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     final TDomainClass datum =
             datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(),
-                                                            new VersionedDatumTypeId(
+                                                            new DatumTypeVersion(
                                                                     datumEnvelope.getDatumTypeId().toString(),
                                                                     datumEnvelope.getDatumSchemaVersion())));
     datumAuditor.report(datum);

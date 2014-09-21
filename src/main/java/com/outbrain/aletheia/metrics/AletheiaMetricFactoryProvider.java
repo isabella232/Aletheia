@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.metrics;
 
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**

@@ -13,13 +13,12 @@ public class SampleDomainClassAvroRoundTripProjector implements AvroRoundTripPro
 
   @Override
   public SpecificRecord toAvro(final SampleDomainClass domainObject) {
-
     return test_domain_class.newBuilder()
                             .setId(domainObject.getId())
                             .setMyNumber(domainObject.getMyNumber())
                             .setMyString(domainObject.getMyString())
                             .setEventTimestamp(domainObject.getEventTimestamp().getMillis())
-                            .setShouldBeSent(domainObject.shouldBeSent())
+                            .setShouldBeSent(domainObject.isDiscarded())
                             .build();
   }
 

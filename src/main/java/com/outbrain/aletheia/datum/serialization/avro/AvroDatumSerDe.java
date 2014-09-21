@@ -1,10 +1,10 @@
 package com.outbrain.aletheia.datum.serialization.avro;
 
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
-import com.outbrain.aletheia.datum.serialization.VersionedDatumTypeId;
 import com.outbrain.aletheia.datum.serialization.avro.schema.DatumSchemaRepository;
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumReader;
@@ -53,10 +53,10 @@ public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
       bodyByteStream.close();
 
-      final int datumSchemaVersion = datumSchemaRepository.retrieveSchemaVersion(schema).getVersion();
+      final int datumSchemaVersion = datumSchemaRepository.getDatumTypeVersion(schema).getVersion();
 
       return new SerializedDatum(datumBody,
-                                 new VersionedDatumTypeId(DatumUtils.getDatumTypeId(domainObject.getClass()),
+                                 new DatumTypeVersion(DatumUtils.getDatumTypeId(domainObject.getClass()),
                                                           datumSchemaVersion));
 
     } catch (final Exception e) {
@@ -68,11 +68,12 @@ public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
     try {
 
-      final VersionedDatumTypeId versionedDatumTypeId = serializedDatum.getVersionedDatumTypeId();
+      final DatumTypeVersion datumTypeVersion = serializedDatum.getDatumTypeVersion();
 
-      final Schema incomingDatumSchema = datumSchemaRepository.retrieveSchema(versionedDatumTypeId);
+      final Schema incomingDatumSchema = datumSchemaRepository.getSchema(datumTypeVersion);
+
       final Schema repositoryLatestDatumSchema =
-              datumSchemaRepository.retrieveLatestSchema(versionedDatumTypeId.getDatumTypeId());
+              datumSchemaRepository.getLatestSchema(datumTypeVersion.getDatumTypeId());
 
       final DatumReader<? extends SpecificRecord> datumReader =
               new SpecificDatumReader<>(incomingDatumSchema, repositoryLatestDatumSchema);

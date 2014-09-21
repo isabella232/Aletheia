@@ -5,19 +5,19 @@ import java.nio.ByteBuffer;
 public final class SerializedDatum {
 
   private final ByteBuffer payload;
-  private final VersionedDatumTypeId versionedDatumTypeId;
+  private final DatumTypeVersion datumTypeVersion;
 
-  public SerializedDatum(final ByteBuffer payload, final VersionedDatumTypeId versionedDatumTypeId) {
+  public SerializedDatum(final ByteBuffer payload, final DatumTypeVersion datumTypeVersion) {
     this.payload = payload;
-    this.versionedDatumTypeId = versionedDatumTypeId;
+    this.datumTypeVersion = datumTypeVersion;
   }
 
   public ByteBuffer getPayload() {
     return payload;
   }
 
-  public VersionedDatumTypeId getVersionedDatumTypeId() {
-    return versionedDatumTypeId;
+  public DatumTypeVersion getDatumTypeVersion() {
+    return datumTypeVersion;
   }
 
 

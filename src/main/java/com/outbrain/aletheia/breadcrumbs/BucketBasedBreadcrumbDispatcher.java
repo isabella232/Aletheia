@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.breadcrumbs;
 
 import com.google.common.base.Preconditions;
-import com.outbrain.aletheia.datum.type.DatumType;
+import com.outbrain.aletheia.datum.DatumType;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;

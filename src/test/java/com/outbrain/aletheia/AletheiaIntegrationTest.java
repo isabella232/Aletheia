@@ -13,7 +13,7 @@ import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
 import com.outbrain.aletheia.datum.consumption.*;
 import com.outbrain.aletheia.datum.production.*;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.metrics.RecordingMetricFactory;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import junit.framework.Assert;

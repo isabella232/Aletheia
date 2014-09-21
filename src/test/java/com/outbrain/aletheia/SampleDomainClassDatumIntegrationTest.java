@@ -1,10 +1,11 @@
 package com.outbrain.aletheia;
 
 import com.google.common.base.Predicate;
-import com.outbrain.aletheia.datum.serialization.SampleClassStringSerDe;
+import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.datum.serialization.SampleDomainClassAvroRoundTripProjector;
 import com.outbrain.aletheia.datum.serialization.avro.AvroDatumSerDe;
-import com.outbrain.aletheia.datum.serialization.avro.schema.CachedSchemaRepository;
+import com.outbrain.aletheia.datum.serialization.avro.schema.CachedDatumSchemaRepository;
 import com.outbrain.aletheia.datum.serialization.avro.schema.StaticDatumAvroSchemaRepository;
 import com.outbrain.aletheia.datum.type.SampleDomainClass;
 import org.apache.commons.lang.RandomStringUtils;
@@ -19,15 +20,15 @@ public class SampleDomainClassDatumIntegrationTest extends AletheiaIntegrationTe
   private final Predicate<SampleDomainClass> filter = new Predicate<SampleDomainClass>() {
     @Override
     public boolean apply(final SampleDomainClass input) {
-      return input.shouldBeSent();
+      return input.isDiscarded();
     }
   };
 
   private final AvroDatumSerDe<SampleDomainClass> avroDatumSerDe =
           new AvroDatumSerDe<>(new SampleDomainClassAvroRoundTripProjector(),
-                               new CachedSchemaRepository(new StaticDatumAvroSchemaRepository()));
+                               CachedDatumSchemaRepository.from(new StaticDatumAvroSchemaRepository()));
 
-  private final SampleClassStringSerDe stringSerDe = new SampleClassStringSerDe();
+  private final DatumSerDe<SampleDomainClass> jsonDatumSerDe = new JsonDatumSerDe<>(SampleDomainClass.class);
 
   public SampleDomainClassDatumIntegrationTest() {
     super(SampleDomainClass.class);
@@ -48,7 +49,7 @@ public class SampleDomainClassDatumIntegrationTest extends AletheiaIntegrationTe
   }
 
   @Test
-  public void test_whenDeliveringDatumWithStringSerDe_datumAndBreadcrumbArrive() throws InterruptedException {
-    testEnd2End(stringSerDe, filter);
+  public void test_whenDeliveringDatumWithJsonSerDe_datumAndBreadcrumbArrive() throws InterruptedException {
+    testEnd2End(jsonDatumSerDe, filter);
   }
 }

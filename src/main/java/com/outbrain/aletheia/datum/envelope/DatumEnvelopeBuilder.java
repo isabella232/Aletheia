@@ -3,8 +3,8 @@ package com.outbrain.aletheia.datum.envelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import com.outbrain.aletheia.datum.type.DatumType;
-import com.outbrain.aletheia.datum.utils.DatumUtils;
+import com.outbrain.aletheia.datum.DatumType;
+import com.outbrain.aletheia.datum.DatumUtils;
 import org.joda.time.Instant;
 
 /**
@@ -53,7 +53,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
     final SerializedDatum serializedDatum = datumSerDe.serializeDatum(domainObject);
 
     return new DatumEnvelope(datumTypeId,
-                             serializedDatum.getVersionedDatumTypeId().getVersion(),
+                             serializedDatum.getDatumTypeVersion().getVersion(),
                              logicalTimestamp,
                              incarnation,
                              hostname,
