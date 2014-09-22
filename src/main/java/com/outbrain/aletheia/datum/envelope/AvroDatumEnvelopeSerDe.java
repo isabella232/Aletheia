@@ -1,7 +1,6 @@
 package com.outbrain.aletheia.datum.envelope;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import org.apache.avro.Schema;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificData;
 import org.apache.avro.specific.SpecificDatumWriter;
@@ -18,7 +17,7 @@ import java.util.Collections;
  */
 public class AvroDatumEnvelopeSerDe {
 
-  public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
+    public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
 
     try {
       final SpecificDatumWriter<DatumEnvelope> envelopeWriter = new SpecificDatumWriter<>(envelope.getSchema());
@@ -39,12 +38,7 @@ public class AvroDatumEnvelopeSerDe {
 
   public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
 
-    // TODO: remove this once the new schema has been deployed to ALL
-    final Schema oldSchema = new Schema.Parser().parse(
-            "{\"type\":\"record\",\"name\":\"DatumEnvelope\",\"namespace\":\"com.outbrain.aletheia.datum.envelope.avro\",\"fields\":[{\"name\":\"datum_type_id\",\"type\":\"string\"},{\"name\":\"datum_schema_version\",\"type\":\"int\"},{\"name\":\"logical_timestamp\",\"type\":\"long\"},{\"name\":\"incarnation\",\"type\":\"int\"},{\"name\":\"original_source_host\",\"type\":\"string\"},{\"name\":\"original_source_host_timestamp\",\"type\":\"long\"},{\"name\":\"datum_body\",\"type\":\"bytes\"}]}");
-
-    final DatumReader<DatumEnvelope> datumReader = SpecificData.get().createDatumReader(oldSchema,
-                                                                                        DatumEnvelope.getClassSchema());
+    final DatumReader<DatumEnvelope> datumReader = SpecificData.get().createDatumReader(DatumEnvelope.getClassSchema());
 
     final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer));
     final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
