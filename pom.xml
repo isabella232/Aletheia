@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <name>Aletheia</name>
-  <groupId>com.outbrain</groupId>
+  <groupId>com.outbrain.aletheia</groupId>
   <artifactId>Aletheia</artifactId>
   <version>0.11</version>
 
