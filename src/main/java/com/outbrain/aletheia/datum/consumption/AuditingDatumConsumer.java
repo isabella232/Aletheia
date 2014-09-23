@@ -77,7 +77,7 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
   private final Counter consumedDatumCount;
   private final Counter consumeFailureCount;
   private final Counter filteredCounter;
-  private final DatumIterator datumIterator;
+  private Iterable<TDomainClass> datumIterable;
 
   public AuditingDatumConsumer(final DatumEnvelopeFetcher datumEnvelopeFetcher,
                                final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
@@ -90,17 +90,19 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
 
     this.datumEnvelopeOpener = datumEnvelopeOpener;
     this.datumFilter = datumFilter;
-    datumIterator = new DatumIterator(datumEnvelopeFetcher);
-  }
 
-  @Override
-  public Iterable<TDomainClass> datums() {
-    return new Iterable<TDomainClass>() {
+    final DatumIterator datumIterator = new DatumIterator(datumEnvelopeFetcher);
+    datumIterable = new Iterable<TDomainClass>() {
       @Override
       public Iterator<TDomainClass> iterator() {
         return datumIterator;
       }
     };
+  }
+
+  @Override
+  public Iterable<TDomainClass> datums() {
+    return datumIterable;
   }
 }
 

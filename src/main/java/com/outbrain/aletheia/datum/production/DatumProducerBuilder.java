@@ -102,9 +102,9 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
                               .forDatumEnvelopeSender(productionEndPointInfo.getProductionEndPoint()));
 
     final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder =
-            new DatumEnvelopeBuilder<>(productionEndPointInfo.getDatumSerDe(),
-                                       datumProducerConfig.getIncarnation(),
-                                       datumProducerConfig.getHostname());
+            new DatumEnvelopeBuilder<>(domainClass,
+                                       productionEndPointInfo.getDatumSerDe(),
+                                       datumProducerConfig.getIncarnation(), datumProducerConfig.getHostname());
 
 
     return new AuditingDatumProducer<>(datumEnvelopeBuilder,

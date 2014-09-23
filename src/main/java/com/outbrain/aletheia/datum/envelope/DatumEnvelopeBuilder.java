@@ -20,34 +20,23 @@ public class DatumEnvelopeBuilder<TDomainClass> {
   private final int incarnation;
   private final DatumSerDe<TDomainClass> datumSerDe;
 
-  private DatumType.TimestampExtractor<TDomainClass> datumTimestampExtractor;
-  private String datumTypeId;
+  private final DatumType.TimestampExtractor<TDomainClass> datumTimestampExtractor;
+  private final String datumTypeId;
 
-  public DatumEnvelopeBuilder(final DatumSerDe<TDomainClass> datumSerDe,
+  public DatumEnvelopeBuilder(final Class<TDomainClass> domainClass,
+                              final DatumSerDe<TDomainClass> datumSerDe,
                               final int incarnation,
                               final String hostname) {
+
     this.datumSerDe = datumSerDe;
     this.hostname = hostname;
     this.incarnation = incarnation;
-  }
 
-  private void extractMetaDataIfMissing(final TDomainClass domainObject) {
-
-    if (datumTypeId == null) {
-      datumTypeId = DatumUtils.getDatumTypeId(domainObject.getClass());
-    }
-
-    if (datumTimestampExtractor == null) {
-      datumTimestampExtractor =
-              (DatumType.TimestampExtractor<TDomainClass>)
-                      DatumUtils.getDatumTimestampExtractor(domainObject.getClass());
-    }
-
+    datumTimestampExtractor = DatumUtils.getDatumTimestampExtractor(domainClass);
+    datumTypeId = DatumUtils.getDatumTypeId(domainClass);
   }
 
   public DatumEnvelope buildEnvelope(final TDomainClass domainObject) {
-
-    extractMetaDataIfMissing(domainObject);
 
     final long logicalTimestamp = datumTimestampExtractor.extractDatumDateTime(domainObject).getMillis();
     final SerializedDatum serializedDatum = datumSerDe.serializeDatum(domainObject);
