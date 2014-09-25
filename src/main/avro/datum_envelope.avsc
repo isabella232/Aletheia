@@ -1,66 +1,37 @@
 {
-    "namespace":"com.outbrain.aletheia.datum.envelope.avro",
     "type":"record",
     "name":"DatumEnvelope",
+    "namespace":"com.outbrain.aletheia.datum.envelope.avro",
     "fields":[
         {
             "name":"datum_type_id",
-            "type":[
-                "null",
-                "string"
-            ],
-            "default":null
+            "type":"string"
         },
         {
             "name":"datum_schema_version",
-            "type":[
-                "null",
-                "int"
-            ],
-            "default":null
+            "type":"int"
         },
         {
             "name":"logical_timestamp",
-            "type":[
-                "null",
-                "long"
-            ],
-            "default":null
+            "type":"long"
         },
         {
             "name":"incarnation",
-            "type":[
-                "null",
-                "int"
-            ],
-            "default":null
+            "type":"int",
+            "default": 0
         },
         {
             "name":"source_host",
-            "type":[
-                "null",
-                "string"
-            ],
-            "aliases":[
-                "original_source_host"
-            ],
-            "default":null
+            "type":"string",
+            "default":""
         },
         {
             "name":"creation_time",
-            "type":[
-                "null",
-                "long"
-            ],
-            "default":null
+            "type":"long"
         },
         {
             "name":"datumBytes",
-            "type":[
-                "null",
-                "bytes"
-            ],
-            "default":null
+            "type":"bytes"
         },
         {
             "name":"serDeType",
