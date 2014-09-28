@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This <code>ProductionEndPoint</code> type works in collaboration with the <code>InMemoryAccumulatingSender</code>,
+ * This {@code ProductionEndPoint} type works in collaboration with the {@code InMemoryAccumulatingSender},
  * jointly, they allow one to store incoming items in-memory, and query them later on.
  * This type of endpoint is useful for experiments and tests.
  */

@@ -6,8 +6,8 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import java.util.List;
 
 /**
- * A <code>DatumEnvelopeFetcherFactory</code> for building <code>DatumEnvelopeFetcher</code>s capable of
- * consuming data from endpoints of type <code>ManualFeedConsumptionEndPoint</code>.
+ * A {@code DatumEnvelopeFetcherFactory} for building {@code DatumEnvelopeFetcher}s capable of
+ * consuming data from endpoints of type {@code ManualFeedConsumptionEndPoint}.
  */
 public class ManualFeedDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFactory<ManualFeedConsumptionEndPoint> {
 

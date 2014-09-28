@@ -1,7 +1,7 @@
 package com.outbrain.aletheia;
 
 /**
- * A base interface for both <code>ProductionEndPoint</code>s and <code>ConsumptionEndPoint</code>s.
+ * A base interface for both {@code ProductionEndPoint}s and {@code ConsumptionEndPoint}s.
  */
 public interface EndPoint {
   String getName();

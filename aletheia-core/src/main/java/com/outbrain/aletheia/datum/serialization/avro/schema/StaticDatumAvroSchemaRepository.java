@@ -36,8 +36,7 @@ public class StaticDatumAvroSchemaRepository implements DatumSchemaRepository {
         throw new RuntimeException(
                 "Expected avro class is not an avro SpecificRecord, which means it has not been generated properly");
       }
-      final Class<? extends SpecificRecord> datumTypeAvroClass = (Class<? extends SpecificRecord>) avroClass;
-      return datumTypeAvroClass;
+      return (Class<? extends SpecificRecord>) avroClass;
     } catch (final ClassNotFoundException e) {
       throw new RuntimeException("Could not find avro class for datum type " + datumTypeId);
     }

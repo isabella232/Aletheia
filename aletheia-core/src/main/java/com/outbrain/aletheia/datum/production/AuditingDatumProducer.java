@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A <code>Breadcrumb</code> generating, <code>DatumEnvelope</code> transportation based
- * <code>DatumProducer</code> implementation.
+ * A {@code Breadcrumb} generating, {@code DatumEnvelope} transportation based
+ * {@code DatumProducer} implementation.
  */
 public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomainClass> {
 

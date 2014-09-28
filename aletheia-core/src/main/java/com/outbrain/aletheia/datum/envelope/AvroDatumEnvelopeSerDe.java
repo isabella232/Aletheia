@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 /**
- * Serializes a <code>DatumEnvelope</code> instance to an Avro encoded ByteBuffer.
+ * Serializes a {@code DatumEnvelope} instance to an Avro encoded ByteBuffer.
  */
 public class AvroDatumEnvelopeSerDe {
 

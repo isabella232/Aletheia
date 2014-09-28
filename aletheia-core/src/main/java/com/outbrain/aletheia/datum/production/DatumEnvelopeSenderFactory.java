@@ -4,8 +4,8 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
- * A base interface for classes to extend in order to build a custom <code>Sender</code>,
- * for a custom <code>ProductionEndPoint</code>.
+ * A base interface for classes to extend in order to build a custom {@code Sender},
+ * for a custom {@code ProductionEndPoint}.
  *
  * @param <TProductionEndPoint> The type of the production endpoint this factory will be building senders for.
  */

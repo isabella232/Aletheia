@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SafeRatioHolder implements RatioHolder {
   AtomicLong averageContainer = new AtomicLong();
   private final int numberOfBitsForNominator;
-  private final long maxDenom;
-  private final long maxNom;
+  private final long maxDenominator;
+  private final long maxNominator;
 
   public SafeRatioHolder(final int expectedNominator, final int expectedDenominator) {
 
@@ -19,32 +19,32 @@ public class SafeRatioHolder implements RatioHolder {
     final int bitsNeededForRatio =
             Integer.numberOfTrailingZeros(Integer.highestOneBit(expectedNominator / expectedDenominator));
 
-    final int numberOfBitForDenomenator = (int) Math.ceil((63 - bitsNeededForRatio) / 2.0);
-    numberOfBitsForNominator = 63 - numberOfBitForDenomenator;
+    final int numberOfBitForDenominator = (int) Math.ceil((63 - bitsNeededForRatio) / 2.0);
+    numberOfBitsForNominator = 63 - numberOfBitForDenominator;
 
-    maxDenom = Long.parseLong("0" + StringUtils.repeat("1", 63 - numberOfBitsForNominator) + StringUtils.repeat("0",
+    maxDenominator = Long.parseLong("0" + StringUtils.repeat("1", 63 - numberOfBitsForNominator) + StringUtils.repeat("0",
                                                                                                                 numberOfBitsForNominator),
                               2);
-    maxNom = Long.parseLong(StringUtils.repeat("0", 64 - numberOfBitsForNominator) + StringUtils.repeat("1",
+    maxNominator = Long.parseLong(StringUtils.repeat("0", 64 - numberOfBitsForNominator) + StringUtils.repeat("1",
                                                                                                         numberOfBitsForNominator),
                             2);
   }
 
   @Override
-  public void addDeltas(final int nomDelta, final int denomDelta) {
-    final long shiftedDenomDelta = ((long) denomDelta) << numberOfBitsForNominator;
-    final long increase = nomDelta + shiftedDenomDelta;
+  public void addDeltas(final int nomDelta, final int denominatorDelta) {
+    final long shiftedDenominatorDelta = ((long) denominatorDelta) << numberOfBitsForNominator;
+    final long increase = nomDelta + shiftedDenominatorDelta;
     averageContainer.getAndAdd(increase);
   }
 
   @Override
   public Double resetAndReturnLastValue() {
     final long val = averageContainer.get();
-    final long denominator = ((val & maxDenom) >> numberOfBitsForNominator);
+    final long denominator = ((val & maxDenominator) >> numberOfBitsForNominator);
     if (denominator == 0) {
       return null;
     }
-    final long nom = val & maxNom;
+    final long nom = val & maxNominator;
     averageContainer.set(0l);
 
     return (nom / (double) denominator);

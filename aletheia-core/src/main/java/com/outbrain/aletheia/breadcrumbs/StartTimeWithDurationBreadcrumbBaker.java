@@ -3,7 +3,7 @@ package com.outbrain.aletheia.breadcrumbs;
 import org.joda.time.Instant;
 
 /**
- * An implementation of <code>BreadcrumbBaker</code>, where the bucket key consists of a bucket's start time, and
+ * An implementation of {@code BreadcrumbBaker}, where the bucket key consists of a bucket's start time, and
  * bucket duration.
  */
 public class StartTimeWithDurationBreadcrumbBaker implements BreadcrumbBaker<BucketStartWithDuration> {

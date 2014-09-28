@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 
 /**
- * A breadcrumb generating <code>DatumConsumer</code> implementation.
+ * A breadcrumb generating {@code DatumConsumer} implementation.
  */
 public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomainClass> {
 

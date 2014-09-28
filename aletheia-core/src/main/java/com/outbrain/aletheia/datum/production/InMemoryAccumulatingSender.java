@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An <code>Sender</code> that stores incoming items in-memory, allowing one to query them later.
+ * An {@code Sender} that stores incoming items in-memory, allowing one to query them later.
  */
 public class InMemoryAccumulatingSender implements NamedSender, Serializable {
 

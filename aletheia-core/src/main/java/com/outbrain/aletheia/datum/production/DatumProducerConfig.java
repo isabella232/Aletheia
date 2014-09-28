@@ -3,7 +3,7 @@ package com.outbrain.aletheia.datum.production;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Configuration details for <code>DatumProducer</code>s.
+ * Configuration details for {@code DatumProducer}s.
  */
 public class DatumProducerConfig {
 
@@ -13,7 +13,7 @@ public class DatumProducerConfig {
   /**
    * @param incarnation incarnation provides means to further control data filtering, e.g., discarding all data
    *                    below a certain incarnation.
-   * @param hostname    the hostname this <code>DatumProducer</code> instance is operating from.
+   * @param hostname    the hostname this {@code DatumProducer} instance is operating from.
    */
   public DatumProducerConfig(final int incarnation, final String hostname) {
 
