@@ -9,7 +9,7 @@ import java.util.List;
  * jointly, they allow one to store incoming items in-memory, and query them later on.
  * This type of endpoint is useful for experiments and tests.
  */
-public class InMemoryProductionEndPoint extends ProductionEndPoint  {
+public class InMemoryProductionEndPoint extends ProductionEndPoint {
 
   private static final String IN_MEMORY = "InMemory";
 

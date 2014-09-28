@@ -17,7 +17,7 @@ import java.util.Collections;
  */
 public class AvroDatumEnvelopeSerDe {
 
-    public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
+  public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
 
     try {
       final SpecificDatumWriter<DatumEnvelope> envelopeWriter = new SpecificDatumWriter<>(envelope.getSchema());

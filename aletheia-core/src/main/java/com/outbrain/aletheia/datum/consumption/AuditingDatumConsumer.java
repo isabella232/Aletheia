@@ -43,6 +43,7 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
         }
       }
     };
+
     @Override
     public boolean hasNext() {
       return datumEnvelopes.iterator().hasNext();

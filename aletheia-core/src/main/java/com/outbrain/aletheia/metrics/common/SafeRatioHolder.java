@@ -16,7 +16,8 @@ public class SafeRatioHolder implements RatioHolder {
     Preconditions.checkArgument(expectedDenominator <= expectedNominator,
                                 "expected denominator should be smaller or equal the expected nominator");
 
-    final int bitsNeededForRatio = Integer.numberOfTrailingZeros(Integer.highestOneBit(expectedNominator / expectedDenominator));
+    final int bitsNeededForRatio =
+            Integer.numberOfTrailingZeros(Integer.highestOneBit(expectedNominator / expectedDenominator));
 
     final int numberOfBitForDenomenator = (int) Math.ceil((63 - bitsNeededForRatio) / 2.0);
     numberOfBitsForNominator = 63 - numberOfBitForDenomenator;

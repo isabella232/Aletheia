@@ -14,7 +14,9 @@ public class TimeWindowRatio implements Gauge<Double> {
   private final AtomicBoolean isResetting = new AtomicBoolean(false);
   private final double noCallsValue;
 
-  public TimeWindowRatio(final double windowSizeInSeconds, final double noCallsValue, final RatioHolder ratioContainer) {
+  public TimeWindowRatio(final double windowSizeInSeconds,
+                         final double noCallsValue,
+                         final RatioHolder ratioContainer) {
     this.noCallsValue = noCallsValue;
     windowSizeInMilliseconds = (int) (windowSizeInSeconds * 1000);
     lastResetTime = new AtomicReference<>(new DateTime());

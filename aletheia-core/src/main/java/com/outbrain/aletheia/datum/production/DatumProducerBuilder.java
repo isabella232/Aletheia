@@ -59,10 +59,6 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
 
   }
 
-  public static <TDomainClass> DatumProducerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
-    return new DatumProducerBuilder<>(domainClass);
-  }
-
   private final List<ProductionEndPointInfo<TDomainClass>> productionEndPointInfos = Lists.newArrayList();
 
   private DatumProducerBuilder(final Class<TDomainClass> domainClass) {
@@ -134,14 +130,31 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     return this;
   }
 
+  /**
+   * Adds a production endpoint to deliver data to, using the specified <code>DatumSerDe</code> instance.
+   *
+   * @param dataProductionEndPoint the production endpoint to add.
+   * @param datumSerDe             the <code>DatumSerDe</code> instance to use to serialize data.
+   * @return a <code>DatumProducerBuilder</code> instance configured with the specified production endpoint and
+   * serialization method.
+   */
   public DatumProducerBuilder<TDomainClass> deliverDataTo(final ProductionEndPoint dataProductionEndPoint,
                                                           final DatumSerDe<TDomainClass> datumSerDe) {
     return deliverDataTo(dataProductionEndPoint, datumSerDe, Predicates.<TDomainClass>alwaysTrue());
   }
 
-  public <TProductionEndPoint extends ProductionEndPoint> DatumProducerBuilder<TDomainClass> deliverDataTo(final TProductionEndPoint dataProductionEndPoint,
-                                                                                                           final DatumSerDe<TDomainClass> datumSerDe,
-                                                                                                           final Predicate<TDomainClass> datumFilter) {
+  /**
+   * Adds a production endpoint to deliver data to, using the specified <code>DatumSerDe</code> and filter instances.
+   *
+   * @param dataProductionEndPoint the production endpoint to add.
+   * @param datumSerDe             the <code>DatumSerDe</code> instance to use to serialize data.
+   * @param datumFilter            a filter to apply before delivering data.
+   * @return a <code>DatumProducerBuilder</code> instance configured with the specified production endpoint,
+   * serialization method and filter.
+   */
+  public DatumProducerBuilder<TDomainClass> deliverDataTo(final ProductionEndPoint dataProductionEndPoint,
+                                                          final DatumSerDe<TDomainClass> datumSerDe,
+                                                          final Predicate<TDomainClass> datumFilter) {
 
     productionEndPointInfos.add(new ProductionEndPointInfo<>(dataProductionEndPoint,
                                                              datumSerDe,
@@ -149,6 +162,13 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     return this;
   }
 
+  /**
+   * Builds a <code>DatumProducer</code> instance.
+   *
+   * @param datumProducerConfig the configuration information to use for building the <code>DatumProducer</code>
+   *                            instance configured.
+   * @return a fully configured <code>DatumProducer</code> instance.
+   */
   public DatumProducer<TDomainClass> build(final DatumProducerConfig datumProducerConfig) {
 
     final Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>> toDatumProducer =
@@ -164,4 +184,14 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     return new CompositeDatumProducer<>(Lists.newArrayList(datumProducers));
   }
 
+  /**
+   * Builds a <code>AletheiaBuilder</code> instance.
+   *
+   * @param domainClass the type of the datum to be produced.
+   * @param <TDomainClass> the type of the datum to be produced.
+   * @return a fluent <code>AletheiaBuilder</code> to be used for building a <code>DatumProducer</code> instances.
+   */
+  public static <TDomainClass> DatumProducerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
+    return new DatumProducerBuilder<>(domainClass);
+  }
 }

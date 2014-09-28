@@ -34,7 +34,7 @@ public class InMemoryAccumulatingSender implements NamedSender, Serializable {
     // type safety, it was nice knowing you, don't forget to write.
     if (item instanceof ByteBuffer) {
       sentData.add(((ByteBuffer) item).array());
-    } else if(item instanceof DatumEnvelope) {
+    } else if (item instanceof DatumEnvelope) {
       sentData.add(((DatumEnvelope) item).getDatumBytes().array());
     } else {
       sentData.add(item);

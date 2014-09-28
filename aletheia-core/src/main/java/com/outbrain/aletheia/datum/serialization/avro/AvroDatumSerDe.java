@@ -1,10 +1,10 @@
 package com.outbrain.aletheia.datum.serialization.avro;
 
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import com.outbrain.aletheia.datum.serialization.avro.schema.DatumSchemaRepository;
-import com.outbrain.aletheia.datum.DatumUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumReader;
@@ -57,7 +57,7 @@ public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
       return new SerializedDatum(datumBody,
                                  new DatumTypeVersion(DatumUtils.getDatumTypeId(domainObject.getClass()),
-                                                          datumSchemaVersion));
+                                                      datumSchemaVersion));
 
     } catch (final Exception e) {
       throw new RuntimeException("Could not create datum body", e);

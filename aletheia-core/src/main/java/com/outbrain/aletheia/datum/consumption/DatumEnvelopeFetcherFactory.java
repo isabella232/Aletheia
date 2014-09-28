@@ -10,7 +10,7 @@ import java.util.List;
  * an appropriate <code>DatumEnvelopeFetcherFactory</code> must be registered in order to fetch data from it.
  *
  * @param <TConsumptionEndPoint> The type of <code>ConsumptionEndPoint</code> this
- *                              <code>DatumEnvelopeFetcherFactory</code> can build fetchers for.
+ *                               <code>DatumEnvelopeFetcherFactory</code> can build fetchers for.
  */
 public interface DatumEnvelopeFetcherFactory<TConsumptionEndPoint extends ConsumptionEndPoint> {
 
@@ -19,7 +19,7 @@ public interface DatumEnvelopeFetcherFactory<TConsumptionEndPoint extends Consum
    * consumption end point instance.
    *
    * @param consumptionEndPoint Describes the source to fetch <code>DatumEnvelope</code>s from.
-   * @param metricFactory The metric factory to report metrics to.
+   * @param metricFactory       The metric factory to report metrics to.
    * @return A list of <code>DatumEnvelopeFetcher</code> that can be used to fetch <code>DatumEnvelopes</code>
    * from the source described by consumptionEndPoint. If the consumption point defines no parallelism
    * (i.e., parallelism = 1) the list will contain only one <code>DatumEnvelopeFetcher</code>,

@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
-* Created by slevin on 2/6/14.
-*/
-public class ExtrasRollingAppenderFactory  {
+ * Created by slevin on 2/6/14.
+ */
+public class ExtrasRollingAppenderFactory {
 
   private final String suffixPattern;
   private final String layout;

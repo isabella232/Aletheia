@@ -11,7 +11,8 @@ import java.nio.ByteBuffer;
  */
 public class RawDatumEnvelopeBinarySender implements NamedSender<DatumEnvelope> {
 
-  private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();;
+  private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();
+  ;
   private final NamedSender<ByteBuffer> binaryDataTransporter;
 
   public RawDatumEnvelopeBinarySender(final NamedSender<ByteBuffer> binaryDataTransporter) {

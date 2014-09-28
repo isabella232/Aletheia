@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.outbrain.aletheia.EndPoint;
 import com.outbrain.aletheia.breadcrumbs.*;
 import com.outbrain.aletheia.datum.DatumAuditor;
-import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.datum.DatumUtils;
+import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -154,9 +154,9 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
   /**
    * Configures <code>Breadcrumb</code> sending to a given destination, and configuration.
    *
-   * @param breadcrumbProductionEndPoint A <code>ProductionEndPoint</code> instance where
+   * @param breadcrumbProductionEndPoint a <code>ProductionEndPoint</code> instance where
    *                                     <code>Breadcrumbs</code> will be sent.
-   * @param breadcrumbsConfig            A configuration for the breadcrumb dispatching mechanism.
+   * @param breadcrumbsConfig            a configuration for the breadcrumb dispatching mechanism.
    * @return A <code>TBuilder</code> instance whose breadcrumbs have been configured.
    */
   public TBuilder deliverBreadcrumbsTo(final ProductionEndPoint breadcrumbProductionEndPoint,
@@ -169,11 +169,12 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
   }
 
   /**
-   * @param endPointType               The type of the custom endpoint to register.
-   * @param datumEnvelopeSenderFactory A <code>DatumEnvelopeSenderFactory</code> capable of building
-   *                                   <code>DatumEnvelopeFetcher</code>s from the specified (custom) endpoint type.
-   * @param <TProductionEndPoint>
-   * @param <UProductionEndPoint>
+   * Registers a ProductionEndPoint type. After the registration, data can be produced to an instance of this endpoint
+   * type.
+   *
+   * @param endPointType               the type of the custom endpoint to register.
+   * @param datumEnvelopeSenderFactory a <code>DatumEnvelopeSenderFactory</code> capable of building
+   *                                   <code>DatumEnvelopeSender</code>s from the specified endpoint type.
    * @return A <code>TBuilder</code> instance with the custom production endpoint registered.
    */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> TBuilder registerProductionEndPointType(

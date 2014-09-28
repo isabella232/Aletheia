@@ -1,47 +1,47 @@
 {
-    "namespace":"com.outbrain.aletheia.datum.avro",
-    "type":"record",
-    "name":"test_domain_class",
-    "fields":[
+    "namespace": "com.outbrain.aletheia.datum.avro",
+    "type": "record",
+    "name": "test_domain_class",
+    "fields": [
         {
-            "name":"id",
-            "type":[
+            "name": "id",
+            "type": [
                 "null",
                 "int"
             ],
-            "default":null
+            "default": null
         },
         {
-            "name":"myNumber",
-            "type":[
+            "name": "myNumber",
+            "type": [
                 "null",
                 "double"
             ],
-            "default":null
+            "default": null
         },
         {
-            "name":"myString",
-            "type":[
+            "name": "myString",
+            "type": [
                 "null",
                 "string"
             ],
-            "default":null
+            "default": null
         },
         {
-            "name":"eventTimestamp",
-            "type":[
+            "name": "eventTimestamp",
+            "type": [
                 "null",
                 "long"
             ],
-            "default":null
+            "default": null
         },
         {
-            "name":"shouldBeSent",
-            "type":[
+            "name": "shouldBeSent",
+            "type": [
                 "null",
                 "boolean"
             ],
-            "default":null
+            "default": null
         }
     ]
 }

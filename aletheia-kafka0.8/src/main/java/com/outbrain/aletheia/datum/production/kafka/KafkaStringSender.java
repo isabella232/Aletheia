@@ -5,7 +5,7 @@ import kafka.producer.ProducerConfig;
 
 import java.util.Properties;
 
-public class KafkaStringSender extends KafkaSender<String,String> {
+public class KafkaStringSender extends KafkaSender<String, String> {
 
   @Override
   protected ProducerConfig customizeConfig(final ProducerConfig config) {
@@ -33,7 +33,8 @@ public class KafkaStringSender extends KafkaSender<String,String> {
   protected void validateConfiguration(final ProducerConfig config) {
     super.validateConfiguration(config);
     if (config.serializerClass().equals("kafka.serializer.StringEncoder")) {
-      throw new IllegalArgumentException("Can't publish String data with non String serializer. given serializer is '" + config.serializerClass());
+      throw new IllegalArgumentException("Can't publish String data with non String serializer. given serializer is '" + config
+              .serializerClass());
     }
   }
 

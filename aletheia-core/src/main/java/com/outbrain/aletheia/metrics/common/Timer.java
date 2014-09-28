@@ -22,7 +22,7 @@ public interface Timer {
    * Adds a recorded duration.
    *
    * @param duration the length of the duration
-   * @param unit the scale unit of {@code duration}
+   * @param unit     the scale unit of {@code duration}
    */
   public void update(long duration, TimeUnit unit);
 
@@ -30,8 +30,8 @@ public interface Timer {
    * Times and records the duration of event.
    *
    * @param event a {@link java.util.concurrent.Callable} whose {@link java.util.concurrent.Callable#call()} method implements a process
-   * whose duration should be timed
-   * @param <T> the type of the value returned by {@code event}
+   *              whose duration should be timed
+   * @param <T>   the type of the value returned by {@code event}
    * @return the value returned by {@code event}
    * @throws Exception if {@code event} throws an {@link Exception}
    */

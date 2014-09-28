@@ -19,15 +19,14 @@ public class BreadcrumbsConfig {
   private final String datacenter;
 
   /**
-   *
-   * @param breadcrumbBucketDuration The time frame to be used as a bucket, aggregating all incoming hits whose
-   *                                 timestamp falls within the bucket start and end time.
+   * @param breadcrumbBucketDuration      The time frame to be used as a bucket, aggregating all incoming hits whose
+   *                                      timestamp falls within the bucket start and end time.
    * @param breadcrumbBucketFlushInterval The time interval to wait between two consecutive flush operations, where
    *                                      a flush operation is defined as dispatching all buckets currently in memory.
-   * @param application The application string to be set to the dispatched breadcrumbs.
-   * @param source The source string to be set to the dispatched breadcrumbs.
-   * @param tier The tier string to be set to the dispatched breadcrumbs.
-   * @param datacenter The datacenter string to be set to the dispatched breadcrumbs.
+   * @param application                   The application string to be set to the dispatched breadcrumbs.
+   * @param source                        The source string to be set to the dispatched breadcrumbs.
+   * @param tier                          The tier string to be set to the dispatched breadcrumbs.
+   * @param datacenter                    The datacenter string to be set to the dispatched breadcrumbs.
    */
   public BreadcrumbsConfig(final Duration breadcrumbBucketDuration,
                            final Duration breadcrumbBucketFlushInterval,

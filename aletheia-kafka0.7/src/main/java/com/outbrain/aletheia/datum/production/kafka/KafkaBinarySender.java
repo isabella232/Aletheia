@@ -37,7 +37,8 @@ public class KafkaBinarySender extends KafkaSender<ByteBuffer, Message> {
   protected void validateConfiguration(final ProducerConfig config) {
     super.validateConfiguration(config);
     if (config.serializerClass().equals("kafka.serializer.DefaultEncoder")) {
-      throw new IllegalArgumentException("Can't publish binary data with non default serializer. given serializer is '" + config.serializerClass());
+      throw new IllegalArgumentException("Can't publish binary data with non default serializer. given serializer is '" + config
+              .serializerClass());
     }
   }
 

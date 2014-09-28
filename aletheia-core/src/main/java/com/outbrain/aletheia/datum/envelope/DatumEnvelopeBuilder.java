@@ -1,14 +1,13 @@
 package com.outbrain.aletheia.datum.envelope;
 
-import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.datum.serialization.SerializedDatum;
-import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.DatumType;
 import com.outbrain.aletheia.datum.DatumUtils;
+import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import org.joda.time.Instant;
 
 /**
- *
  * Builds an enclosing <code>DatumEnvelope</code>s for a datum, serializing it using
  * the specified <code>DatumSerDe</code>.
  *

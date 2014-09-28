@@ -7,7 +7,7 @@ import org.joda.time.Instant;
  * a bucketHitCount provided by the <code>BucketBasedBreadcrumbDispatcher</code>.
  *
  * @param <TBucketKey> The type of the bucket key used by the <code>BucketBasedBreadcrumbDispatcher</code> that
- *                    requested to bake a breadcrumb.
+ *                     requested to bake a breadcrumb.
  */
 public interface BreadcrumbBaker<TBucketKey> {
   Breadcrumb bakeBreadcrumb(TBucketKey bucketKey, Instant processingTimestamp, long bucketHitCount);

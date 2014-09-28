@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.datum.serialization;
 
-import com.outbrain.aletheia.datum.serialization.avro.AvroRoundTripProjector;
 import com.outbrain.aletheia.datum.avro.test_domain_class;
+import com.outbrain.aletheia.datum.serialization.avro.AvroRoundTripProjector;
 import com.outbrain.aletheia.datum.type.SampleDomainClass;
 import org.apache.avro.specific.SpecificRecord;
 import org.joda.time.Instant;

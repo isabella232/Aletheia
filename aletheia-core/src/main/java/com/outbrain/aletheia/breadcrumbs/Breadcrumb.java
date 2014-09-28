@@ -9,7 +9,7 @@ import org.joda.time.Instant;
  * Metadata containing information (source, destination, time frame, count ) about a particular datum type's
  * transportation from one point to another. Breadcrumbs are aimed to assist at monitor data flow along the pipeline
  * by comparing outgoing and incoming numbers.
-  */
+ */
 @DatumType(datumTypeId = "Breadcrumb", timestampExtractor = Breadcrumb.BreadcrumbTimestampExtractor.class)
 public class Breadcrumb {
 
