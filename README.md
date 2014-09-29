@@ -1,4 +1,5 @@
-![](/logo/Aletheia.png)
+<img src="/logo/Aletheia-logo.png" height="115"></img>
+![](https://github.com/outbrain/Aletheia/blob/master/logo/Aletheia.png)
 
 Aletheia is a library that makes it easier to deliver large scale streaming data using a uniform API, in a monitored, versioned manner. Alethehia can be used to leverage existing mesasging systems such as Kafka, logging frameworks such as Log4j. It is also suitable for use atop custom delivery frameworks.
 
