@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
     <artifactId>aletheia.parent</artifactId>
-    <version>0.14</version>
+    <version>0.15</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -38,6 +38,14 @@
       <plugin>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

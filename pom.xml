@@ -8,7 +8,7 @@
   <name>Aletheia parent</name>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia.parent</artifactId>
-  <version>0.14</version>
+  <version>0.15</version>
 
   <packaging>pom</packaging>
 
