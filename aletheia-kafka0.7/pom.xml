@@ -7,28 +7,11 @@
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
     <artifactId>aletheia.parent</artifactId>
-    <version>0.15</version>
+    <version>0.17</version>
   </parent>
 
   <name>Aletheia Kafka 0.7 extensions</name>
   <artifactId>aletheia-kafka0.7</artifactId>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
   <repositories>
     <repository>
