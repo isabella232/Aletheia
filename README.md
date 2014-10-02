@@ -29,3 +29,4 @@ datumProducer.deliver(new Click(...));
 
 # Documentation
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
+*  [Javadoc](http://outbrain.github.io/Aletheia/)
