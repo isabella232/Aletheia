@@ -13,9 +13,6 @@ import org.joda.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by slevin on 9/15/14.
- */
 public class InMemoryProduceConsume {
 
   public static void main(String[] args) {

@@ -19,9 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Created by slevin on 9/17/14.
- */
 public class LocalKafkaProduceConsume {
 
   private static final String END_POINT_NAME = "myTestEndPoint";

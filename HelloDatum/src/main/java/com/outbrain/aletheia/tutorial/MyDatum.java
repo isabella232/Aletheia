@@ -4,9 +4,6 @@ import com.outbrain.aletheia.datum.DatumType;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
-/**
- * Created by slevin on 9/17/14.
- */
 @DatumType(datumTypeId = "my_datum_id", timestampExtractor = MyDatum.TimeExtractor.class)
 public class MyDatum {
 
