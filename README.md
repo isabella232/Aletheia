@@ -11,12 +11,12 @@ Aletheia’s key features are:
 Aletheia's is aiming to be general-purpose data delivery framework.
 
 # Endpoint Types
-Endpoint types are pluggable. The following endpoint types have already been implemented:
-* Kafka 0.7
-* Kafka 0.8
-* Log files
+The following endpoint types have already been implemented:
+* Kafka 0.7 (production and consumption)
+* Kafka 0.8 (production and consumption)
+* Log files (production only)
 
-Custom endpoint types are easy to write.
+Custom endpoint types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki) for details.
 
 # Datum Production Example
 Build the Datum Producer once:
