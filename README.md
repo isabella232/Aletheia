@@ -7,7 +7,7 @@ Aletheia's goal is to become a general data pipeline framework.
 
 # The Benefits
 
- 1. **Uniform API** - Whether you're dispatching data to Kafka, writing to a log file, or sending data to your own funky end point, the API is identical making it seamless to add delivery end points.
+ 1. **Uniform and Extendable API** - Whether you're dispatching data to Kafka, writing to a log file, or sending data to your own funky end point, the API is identical making it seamless to add delivery end points. This API can also be extended to support custom serialization methods and endpoint types.
  2. **Data flow monitoring** - each datum produced and each datum consumed is counted and reported in real time so as to allow quick detection of problems in one's data flow. Monitoring information is a built-in datum type (called a *breadcrumb*), and can be dispatched and consumed just as any of your propriety datum types.
  3. **Datum schema evolution** - your data may change over time, some fields get added, other removed, or even renamed. Aletheia supports Avro in a native way, making it a good fit for cases where you need to further decouple the producing and consuming ends so that your pipeline could keep crunching even in light of live changes.
 
