@@ -34,4 +34,7 @@ datumProducer.deliver(new Click(...));
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
 # Developers
-Aletheia is developed by the data infrastructure team in Outbrain. Please contact <datainfrastructure@outbrain.com> for any feedback or questions.
+Aletheia is developed by the data infrastructure team in Outbrain. Please contact us for any details:
+* Stas Levin - <slevin@outbrain.com>
+* Harel Ben-Attia - <harel@outbrain.com>
+* Izik Shmulewitz - <ishmulewitz@outbrain.com>
