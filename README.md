@@ -11,7 +11,7 @@ Aletheia’s key features are:
 Aletheia's is aiming to be general-purpose data delivery framework.
 
 # Endpoint Types
-The following endpoint types have already been implemented:
+The following endpoint types are supported out-of-the-box:
 * Kafka 0.7 (production and consumption)
 * Kafka 0.8 (production and consumption)
 * Log files (production only)
