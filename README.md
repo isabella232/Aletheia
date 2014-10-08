@@ -11,9 +11,14 @@ Aletheia’s key features are:
 Aletheia's is aiming to be general-purpose data delivery framework.
 
 # Endpoint Types
-Kafka 0.7, Kafka 0.8 and writing to log files are supported out-of-the-box. Custom endpoint types can be written easily.
+Endpoint types are pluggable. The following endpoint types have already been implemented:
+* Kafka 0.7
+* Kafka 0.8
+* Log files
 
-# Production Example
+Custom endpoint types are easy to write.
+
+# Datum Production Example
 Build the Datum Producer once:
 
 ```java
