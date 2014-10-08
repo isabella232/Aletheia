@@ -38,7 +38,10 @@ Then, produce away:
 
 ```java
 datumProducer.deliver(new Click(...));
-```    
+```
+
+# Usage
+We'll soon add Aletheia to the Maven Central Repository.
 
 # Documentation
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
