@@ -41,14 +41,17 @@ datumProducer.deliver(new Click(...));
 ```
 
 # Usage
-We'll soon add Aletheia to the Maven Central Repository.
+We'll soon add Aletheia to the Maven Central Repository.  
+For further information about building Aletheia, please see the [Hello Datum!](https://github.com/outbrain/Aletheia/wiki/Hello-Datum%21) wiki page.
 
 # Documentation
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
 # Developers
-Aletheia is developed by the data infrastructure team in Outbrain. Please contact us for any details:
+Aletheia has been developed by the data infrastructure team at Outbrain.   
+Please feel free to contact us for any details:
+
 * Stas Levin - <slevin@outbrain.com>
 * Harel Ben-Attia - <harel@outbrain.com>
 * Izik Shmulewitz - <ishmulewitz@outbrain.com>
