@@ -41,8 +41,45 @@ datumProducer.deliver(new Click(...));
 ```
 
 # Usage
-We'll soon add Aletheia to the Maven Central Repository.  
-For further information about building Aletheia, please see the [Hello Datum!](https://github.com/outbrain/Aletheia/wiki/Hello-Datum%21) wiki page.
+
+First, have the aletheia-core jar included in your pom:
+
+```xml
+<dependency>
+  <groupId>com.outbrain.aletheia</groupId>
+  <artifactId>aletheia-core</artifactId>
+  <version>0.17</version>
+</dependency>
+```
+
+Then, include the aletheia extensios you'll be using, which can be one or more of the following:
+
+```xml
+<dependency>
+  <groupId>com.outbrain.aletheia</groupId>
+  <artifactId>aletheia-kafka0.7</artifactId>
+  <version>0.17</version>
+</dependency>
+```
+
+```xml
+<dependency>
+  <groupId>com.outbrain.aletheia</groupId>
+  <artifactId>aletheia-kafka0.8</artifactId>
+  <version>0.17</version>
+</dependency>
+```
+
+```xml
+<dependency>
+  <groupId>com.outbrain.aletheia</groupId>
+  <artifactId>aletheia-log4j</artifactId>
+  <version>0.17</version>
+</dependency>
+```
+
+
+If you prefer building Aletheia yourself, please see the [Hello Datum!](https://github.com/outbrain/Aletheia/wiki/Hello-Datum%21) wiki page.
 
 # Documentation
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
