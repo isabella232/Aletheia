@@ -52,7 +52,7 @@ First, have the aletheia-core jar included in your pom:
 </dependency>
 ```
 
-Then, include the aletheia extensios you'll be using, which can be one or more of the following:
+Then, include the aletheia extensions you'll be using, which can be one or more of the following:
 
 ```xml
 <dependency>
