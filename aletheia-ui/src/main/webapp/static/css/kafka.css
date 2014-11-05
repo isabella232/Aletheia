@@ -1,0 +1,270 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: arial, "lucida console", sans-serif;
+    font-size: 11px;
+    color: #000;
+    background-color: #ddd;
+}
+
+h1 {
+    color: #FFF;
+}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+line {
+    stroke: black;
+}
+
+text {
+    font-size: 11pt;
+}
+
+#container {
+    margin: 1em 5%;
+    background-color: #FFF;
+    min-width: 1400px;
+}
+
+#banner {
+    background-color: #2E4A8E;
+    border-bottom: 1px solid #333;
+    height: 50px;
+}
+
+#banner h1 {
+    margin: 0;
+    padding: .5em;
+    float: left;
+}
+
+#nav {
+    float: left;
+    width: 200px;
+    margin-left: 10px;
+    padding-top: 1em;
+}
+
+#nav p {
+    margin-top: 0;
+}
+
+#content {
+    padding-top: 1em;
+    margin: 0 2em 10px 200px;
+    min-height: 350px;
+}
+
+#content2 {
+    padding-top: 1em;
+    margin: 0 2em 0 0;
+    min-height: 350px;
+}
+
+#footer {
+    clear: both;
+    background-color: #2E4A8E;
+    padding: 1em;
+}
+
+label {
+    font-weight: bold;
+}
+
+.chart rect {
+    stroke: white;
+    fill: steelblue;
+}
+
+#chartPanel {
+    margin-left: 30px;
+}
+
+#graphPanel {
+    width: 100%;
+    height: 600px;
+}
+
+.datepicker {
+    width: 75px;
+}
+
+#topicList {
+    height: 12px;
+    margin-bottom: 10px;
+}
+
+.time {
+    margin-left: 5px;
+    margin-right: 2px;
+    width: 20px;
+}
+
+#topicList {
+    width: 180px;
+}
+
+#countChart {
+    width: 850px;
+    height: 350px;
+    margin-top: 10px;
+}
+
+#errorChart {
+    width: 850px;
+    height: 150px;
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
+
+#lagChart {
+    width: 850px;
+    height: 350px;
+    margin-top: 50px;
+}
+
+#lastHours {
+    margin-bottom: 30px;
+}
+
+.rangeSelect {
+    margin-bottom: 5px;
+}
+
+#menu {
+    padding-top: 20px;
+    padding-left: 300px;
+}
+
+#menu a {
+    color: #FFFFFF;
+    margin-left: 5px;
+    font-weight: bold;
+    font-size: 12pt;
+    text-decoration: none;
+}
+
+#menu a.selected {
+    color: #FFFFFF;
+    text-decoration: underline;
+}
+
+#menu a:hover {
+    color: #FFFFCC;
+    text-decoration: underline;
+}
+
+#sumPanel {
+    margin: 20px;
+}
+
+#sumPanelTitle {
+    font-size: 14pt;
+    font-weight: bold;
+    text-align: center;
+    margin: auto;
+}
+
+#tierCountTable {
+    font-size: 12pt;
+    border-collapse: collapse;
+    margin: auto;
+}
+
+#tierCountTable th {
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+#tierCountTable td, #tierCountTable th {
+    border: 1px solid lightgrey;
+    padding: 4px;
+}
+
+#smallChart {
+    width: 850px;
+    height: 150px;
+    float: left;
+}
+
+.dygraph-title {
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+.dygraph-title:hover {
+    color: #CCCCCC;
+    text-decoration: underline;
+    cursor: pointer
+}
+
+h2.title {
+    margin-left: 30px;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.graphLabel {
+    float: right;
+    margin-right: 150px;
+}
+
+.graphLabelError {
+    float: right;
+    margin-top: 50px;
+    margin-right: 150px;
+}
+
+.summaryLabelError {
+    float: right;
+    margin-top: 20px;
+}
+
+#pastRadio {
+    margin-top: 20px;
+}
+
+#timeHeader {
+    float: right;
+    margin-right: 30px;
+}
+
+.graphCell {
+    padding-bottom: 10px;
+}
+
+.goodPt {
+    color: #009900;
+}
+
+.warningPt {
+    color: #FFCC00;
+}
+
+.errorPt {
+    color: #FF3300;
+}
+
+.noResultLabel {
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 40px;
+}
+
+.largeChart {
+    margin: auto;
+}
+
+.graphLabels {
+    width: 200px;
+    font-size: 11pt;
+    border: 1px solid #ddd;
+    padding: 2px;
+    margin: 2px;
+}

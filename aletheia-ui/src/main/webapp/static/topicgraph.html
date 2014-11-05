@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet" href="css/kafka.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="css/jquery-ui.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="css/ui.theme.css" type="text/css" media="all"/>
+
+    <script src="js/jquery-1.6.1.js" type="text/javascript"></script>
+    <script src="js/jquery-ui-1.8.12.custom.min.js" type="text/javascript"></script>
+    <script src="js/jquery.cookie.js" type="text/javascript"></script>
+    <script src="js/dygraph-combined.js" type="text/javascript"></script>
+    <script src="js/kafka-core.js" type="text/javascript"></script>
+    <script src="js/kafka-topic.js" type="text/javascript"></script>
+
+</head>
+<body>
+<div id="container">
+    <div id="banner">
+        <h1>Kafka Monitor</h1>
+
+        <div id="menu">
+            <a href="../webapp/WEB-INF/static/audit">Home</a>
+            <a href="topicgraph.html" class="selected">Topics</a>
+        </div>
+    </div>
+    <div id="nav">
+        <br/>
+        <br/>
+        <label for="topicList">Select Topics</label>
+        <select id="topicList">
+        </select>
+        <input id="pastRadio" type="radio" class="rangeSelect" name="rangeSelect"
+               value="past"/><label>Latest</label><br/>
+
+        <div id="past">
+            <input id="lastHours" class="time"/><span id="hoursText">hours</span></br>
+        </div>
+
+        <input id="rangeRadio" type="radio" class="rangeSelect" name="rangeSelect" value="range"/><label
+            for="topicList">Select Date Range</label><br/>
+
+        <div id="range">
+            <div id="dateSelection">
+                <p><input class="datepicker" type="text" id="startPicker"></input> <input id="fromHour"
+                                                                                          class="time"/>:<input
+                        id="fromMin" class="time"/></p>
+
+                <p>to</p>
+
+                <p><input class="datepicker" type="text" id="endPicker"></input> <input id="toHour"
+                                                                                        class="time"></input>:<input
+                        id="toMin" class="time"></input></p>
+            </div>
+        </div>
+        <input id="queryButton" type="button" value="Query"></input>
+    </div>
+    <div id="content">
+        <div id="sumPanel">
+            <div id="sumPanelTitle">Event Totals</div>
+            <table id="tierCountTable">
+                <tr>
+                    <th>Tier</th>
+                    <th>Count</th>
+                    <th>Error</th>
+                </tr>
+            </table>
+        </div>
+        <table id="chartPanel">
+            <tr>
+                <td>
+                    <div id="countChart" class="largeChart"></div>
+                </td>
+                <td>
+                    <div id="countChartLabels" class="graphLabels"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="errorChart" class="largeChart"></div>
+                </td>
+                <td>
+                    <div id="errorChartLabels" class="graphLabels"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="lagChart" class="largeChart"></div>
+                </td>
+                <td>
+                    <div id="lagChartLabels" class="graphLabels"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="footer">
+    </div>
+</div>
+</body>
+</html>
