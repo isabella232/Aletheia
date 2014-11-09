@@ -1,9 +1,7 @@
 package com.outbrain.aletheia.datum.production.logFile;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import com.outbrain.aletheia.datum.production.DatumEnvelopePeelingStringSender;
-import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
-import com.outbrain.aletheia.datum.production.NamedSender;
+import com.outbrain.aletheia.datum.production.*;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
@@ -14,6 +12,19 @@ public class LogFileDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFac
   @Override
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final LogFileProductionEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
-    return new DatumEnvelopePeelingStringSender(new StringLogFileSender(productionEndPoint, metricFactory));
+
+    final StringLogFileSender stringLogFileSender = new StringLogFileSender(productionEndPoint, metricFactory);
+
+    return new DatumEnvelopePeelingStringSender(new NamedKeyAwareSender<String>() {
+      @Override
+      public String getName() {
+        return stringLogFileSender.getName();
+      }
+
+      @Override
+      public void send(final String data, final String key) throws SilentSenderException {
+        stringLogFileSender.send(data);
+      }
+    });
   }
 }

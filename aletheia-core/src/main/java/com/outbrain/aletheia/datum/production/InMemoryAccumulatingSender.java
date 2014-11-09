@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * An {@code Sender} that stores incoming items in-memory, allowing one to query them later.
  */
-public class InMemoryAccumulatingSender implements NamedSender, Serializable {
+public class InMemoryAccumulatingSender implements NamedKeyAwareSender, NamedSender, Serializable {
 
   private final List sentData = Collections.synchronizedList(new ArrayList());
   private final int maxSize;
@@ -40,6 +40,11 @@ public class InMemoryAccumulatingSender implements NamedSender, Serializable {
       sentData.add(item);
     }
 
+  }
+
+  @Override
+  public void send(final Object data, final String key) throws SilentSenderException {
+    send(data);
   }
 
   public List getSentData() {

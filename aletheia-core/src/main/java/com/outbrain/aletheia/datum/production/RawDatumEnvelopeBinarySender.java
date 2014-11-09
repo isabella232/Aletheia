@@ -13,30 +13,17 @@ public class RawDatumEnvelopeBinarySender implements NamedSender<DatumEnvelope> 
 
   private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();
 
-  private final NamedSender<ByteBuffer> binaryDataTransporter;
+  private final NamedKeyAwareSender<ByteBuffer> binaryDataTransporter;
 
-  public RawDatumEnvelopeBinarySender(final NamedSender<ByteBuffer> binaryDataTransporter) {
+  public RawDatumEnvelopeBinarySender(final NamedKeyAwareSender<ByteBuffer> binaryDataTransporter) {
     this.binaryDataTransporter = binaryDataTransporter;
-  }
-
-  public RawDatumEnvelopeBinarySender(final Sender<ByteBuffer> binaryDataSender, final String name) {
-    this.binaryDataTransporter = new NamedSender<ByteBuffer>() {
-      @Override
-      public String getName() {
-        return name;
-      }
-
-      @Override
-      public void send(final ByteBuffer byteBuffer) throws SilentSenderException {
-        binaryDataSender.send(byteBuffer);
-      }
-    };
   }
 
   @Override
   public void send(final DatumEnvelope datumEnvelope) throws SilentSenderException {
     final ByteBuffer binaryDatumEnvelope = datumEnvelopeSerializer.serializeDatumEnvelope(datumEnvelope);
-    binaryDataTransporter.send(binaryDatumEnvelope);
+    final String key = datumEnvelope.getDatumKey() != null ? datumEnvelope.getDatumKey().toString() : null;
+    binaryDataTransporter.send(binaryDatumEnvelope, key);
   }
 
   @Override

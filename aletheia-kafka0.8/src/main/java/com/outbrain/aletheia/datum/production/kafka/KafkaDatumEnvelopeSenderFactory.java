@@ -25,8 +25,7 @@ public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFacto
 
       logger.info("Creating kafka sender for input type: " + KafkaTopicProductionEndPoint.EndPointType.RawDatumEnvelope);
 
-      return new RawDatumEnvelopeBinarySender(new KafkaBinarySender(productionEndPoint, metricFactory),
-                                              productionEndPoint.getName());
+      return new RawDatumEnvelopeBinarySender(new KafkaBinarySender(productionEndPoint, metricFactory));
     } else if (productionEndPoint.getEndPointType()
                                  .equals(KafkaTopicProductionEndPoint.EndPointType.String)) {
 

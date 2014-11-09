@@ -4,7 +4,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.outbrain.aletheia.datum.production.NamedKeyAwareSender;
 import com.outbrain.aletheia.datum.production.NamedSender;
+import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -15,12 +17,9 @@ import kafka.producer.async.QueueFullException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
-public abstract class KafkaSender<TInput, TPayload> implements NamedSender<TInput> {
+public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSender<TInput>, NamedSender<TInput> {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaSender.class);
 
@@ -174,8 +173,7 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedSender<TInpu
 
   }
 
-  @Override
-  public void send(final TInput data) {
+  private void internalSend(final TInput data, final String key) {
     if (!connected) {
       failureDueToUnconnected.inc();
       return;
@@ -184,10 +182,19 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedSender<TInpu
     try {
       final TPayload transportPayload = convertInputToSendingFormat(data);
 
-      final ProducerData<Integer, TPayload> messageData = new ProducerData<>(kafkaTopicDeliveryEndPoint.getTopicName(),
-                                                                             transportPayload);
+      if (key != null) {
+        final ProducerData<Integer, TPayload> messageData =
+                new ProducerData<>(kafkaTopicDeliveryEndPoint.getTopicName(),
+                                   Integer.parseInt(key),
+                                   Collections.singletonList(transportPayload));
+        producer.send(messageData);
+      } else {
+        final ProducerData<Integer, TPayload> messageData =
+                new ProducerData<>(kafkaTopicDeliveryEndPoint.getTopicName(),
+                                   transportPayload);
+        producer.send(messageData);
+      }
 
-      producer.send(messageData);
       final int size = getPayloadSize(transportPayload);
 
       final long duration = System.currentTimeMillis() - startTime;
@@ -205,6 +212,16 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedSender<TInpu
         logger.error("Error while sending message to kafka.", e);
       }
     }
+  }
+
+  @Override
+  public void send(final TInput data) throws SilentSenderException {
+    internalSend(data, null);
+  }
+
+  @Override
+  public void send(final TInput data, final String key) throws SilentSenderException {
+    internalSend(data, key);
   }
 
   @Override

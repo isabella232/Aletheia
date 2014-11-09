@@ -22,11 +22,10 @@ public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFacto
 
     if (productionEndPoint.getEndPointType()
                           .equals(KafkaTopicProductionEndPoint.EndPointType.RawDatumEnvelope)) {
-
       logger.info("Creating kafka transporter for input type: " + KafkaTopicProductionEndPoint.EndPointType.RawDatumEnvelope);
 
-      return new RawDatumEnvelopeBinarySender(new KafkaBinarySender(productionEndPoint, metricFactory),
-                                              productionEndPoint.getName());
+      return new RawDatumEnvelopeBinarySender(new KafkaBinarySender(productionEndPoint, metricFactory));
+
     } else if (productionEndPoint.getEndPointType()
                                  .equals(KafkaTopicProductionEndPoint.EndPointType.String)) {
 
