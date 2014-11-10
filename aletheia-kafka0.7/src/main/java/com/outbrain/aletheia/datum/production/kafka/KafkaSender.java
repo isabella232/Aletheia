@@ -23,7 +23,7 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaSender.class);
 
-  private Producer<Integer, TPayload> producer;
+  private Producer<String, TPayload> producer;
   private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
   private final MetricsFactory metricFactory;
   private final int connectionAttempts = 0;
@@ -183,13 +183,13 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
       final TPayload transportPayload = convertInputToSendingFormat(data);
 
       if (key != null) {
-        final ProducerData<Integer, TPayload> messageData =
+        final ProducerData<String, TPayload> messageData =
                 new ProducerData<>(kafkaTopicDeliveryEndPoint.getTopicName(),
-                                   Integer.parseInt(key),
+                                   key,
                                    Collections.singletonList(transportPayload));
         producer.send(messageData);
       } else {
-        final ProducerData<Integer, TPayload> messageData =
+        final ProducerData<String, TPayload> messageData =
                 new ProducerData<>(kafkaTopicDeliveryEndPoint.getTopicName(),
                                    transportPayload);
         producer.send(messageData);
