@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.outbrain.aletheia.datum.consumption.*;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.DatumProducerBuilder;
@@ -10,6 +11,7 @@ import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import org.joda.time.Instant;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +46,9 @@ public class InMemoryProduceConsume {
 
     System.out.println("Building a DatumConsumer...");
 
-    final ConsumptionEndPoint consumptionEndPoint =
-            new ManualFeedConsumptionEndPoint(inMemoryProductionEndPoint.getReceivedData());
+    final ArrayList<byte[]> data = Lists.newArrayList(Iterables.concat(inMemoryProductionEndPoint.getDataAsKey2ByteArrays()
+                                                                                                 .values()));
+    final ConsumptionEndPoint consumptionEndPoint = new ManualFeedConsumptionEndPoint(data);
 
     final DatumConsumerConfig datumConsumerConfig = new DatumConsumerConfig(1, "myHostName");
 

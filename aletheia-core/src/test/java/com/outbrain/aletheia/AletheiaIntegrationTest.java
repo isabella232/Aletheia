@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
+import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.consumption.*;
 import com.outbrain.aletheia.datum.production.*;
@@ -32,9 +30,19 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public abstract class AletheiaIntegrationTest<TDomainClass> {
 
+  private static final String DATUM_KEY = "datumKey";
+
   private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
 
+  private final DatumKeySelector<TDomainClass> datumKeySelector = new DatumKeySelector<TDomainClass>() {
+    @Override
+    public String getDatumKey(final TDomainClass domainObject) {
+      return DATUM_KEY;
+    }
+  };
+
   private static final Duration BREADCRUMB_BUCKET_DURATION = Duration.standardSeconds(30);
+
   private static final Duration BREADCRUMB_BUCKET_FLUSH_INTERVAL = Duration.millis(10);
 
   private static final BreadcrumbsConfig PRODUCER_BREADCRUMBS_CONFIG =
@@ -52,25 +60,30 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                 "src_rx",
                                 "tier_rx",
                                 "dc_rx");
-
   private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
+
   private static final DatumConsumerConfig DATUM_CONSUMER_CONFIG = new DatumConsumerConfig(0, "originalHostname");
-
   private static final boolean SHOULD_BE_SENT = true;
-  private static final boolean SHOULD_NOT_BE_SENT = false;
 
+  private static final boolean SHOULD_NOT_BE_SENT = false;
   protected final Random random = new Random();
   protected final Class<TDomainClass> domainClass;
+  private final Predicate<List<Object>> nonEmpty = new Predicate<List<Object>>() {
+    @Override
+    public boolean apply(final List<Object> list) {
+      return list.size() != 0;
+    }
+  };
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
   }
 
-  private List<byte[]> deliverAll(final List<TDomainClass> originalDatums,
-                                  final InMemoryProductionEndPoint dataProductionEndPoint,
-                                  final ProductionEndPoint breadcrumbProductionEndPoint,
-                                  final DatumSerDe<TDomainClass> datumSerDe,
-                                  final Predicate<TDomainClass> filter) {
+  private Map<String, List<byte[]>> deliverAll(final List<TDomainClass> originalDatums,
+                                               final InMemoryProductionEndPoint dataProductionEndPoint,
+                                               final ProductionEndPoint breadcrumbProductionEndPoint,
+                                               final DatumSerDe<TDomainClass> datumSerDe,
+                                               final Predicate<TDomainClass> filter) {
 
     final DatumProducer<TDomainClass> datumProducer = datumProducer(dataProductionEndPoint,
                                                                     breadcrumbProductionEndPoint,
@@ -81,7 +94,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
       datumProducer.deliver(datum);
     }
 
-    return dataProductionEndPoint.getReceivedData();
+    return dataProductionEndPoint.getDataAsKey2ByteArrays();
   }
 
   private DatumProducer<TDomainClass> datumProducer(final ProductionEndPoint dataProductionEndPoint,
@@ -94,6 +107,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
             .reportMetricsTo(metricsFactory)
             .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG)
             .deliverDataTo(dataProductionEndPoint, datumSerDe, datumFilter)
+            .selectDatumKeyUsing(datumKeySelector)
             .build(DATUM_PRODUCER_CONFIG);
   }
 
@@ -147,8 +161,10 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     // wait for the breadcrumbs to arrive.
     for (int attempts = 1; attempts < 10; attempts++) {
       try {
-        if (breadcrumbProductionEndPoint.getReceivedData().size() != 0) {
-          breadcrumbJsonString = ((List<String>) breadcrumbProductionEndPoint.getReceivedData()).get(0);
+        if (Iterables.any(breadcrumbProductionEndPoint.getReceivedData().values(), nonEmpty)) {
+          final Iterable<String> allBreadcrumbs = Iterables.concat(breadcrumbProductionEndPoint.getDataAsKey2Strings()
+                                                                                               .values());
+          breadcrumbJsonString = FluentIterable.from(allBreadcrumbs).first().get();
         } else {
           Thread.sleep(100);
         }
@@ -164,7 +180,8 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     assertThat(breadcrumb.getDatacenter(), is(breadcrumbsConfig.getDatacenter()));
     assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
     assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
-    assertThat(breadcrumb.getCount(), is(1L));
+    assertThat(Sets.newHashSet(breadcrumbProductionEndPoint.getReceivedData().keySet()),
+               is(Sets.newHashSet(InMemoryAccumulatingSender.DEFAULT_DATUM_KEY)));
   }
 
   protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {
@@ -200,11 +217,14 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     final InMemoryProductionEndPoint producerBreadcrumbProductionEndPoint =
             new InMemoryProductionEndPoint(InMemoryProductionEndPoint.EndPointType.String);
 
-    final List<byte[]> sentOnWire = deliverAll(originalDomainObjects,
-                                               dataProductionEndPoint,
-                                               producerBreadcrumbProductionEndPoint,
-                                               datumSerDe,
-                                               filter);
+
+    final Map<String, List<byte[]>> stringListConcurrentMap = deliverAll(originalDomainObjects,
+                                                                         dataProductionEndPoint,
+                                                                         producerBreadcrumbProductionEndPoint,
+                                                                         datumSerDe,
+                                                                         filter);
+
+    final List<byte[]> sentOnWire = Lists.newArrayList(Iterables.concat(stringListConcurrentMap.values()));
 
     final InMemoryProductionEndPoint consumerBreadcrumbsProductionEndPoint =
             new InMemoryProductionEndPoint(InMemoryProductionEndPoint.EndPointType.String);
@@ -227,6 +247,9 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                is(FluentIterable.from(originalDomainObjects)
                                 .filter(shouldHaveBeenSent)
                                 .toList()));
+    assertThat("Unexpected datum keys were present upon sending.",
+               Sets.newHashSet(dataProductionEndPoint.getReceivedData().keySet()),
+               is(Sets.newHashSet(DATUM_KEY)));
 
     assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
     assertBreadcrumb(consumerBreadcrumbsProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG);

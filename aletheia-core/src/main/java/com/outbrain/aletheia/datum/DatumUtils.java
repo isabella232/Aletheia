@@ -37,9 +37,4 @@ public final class DatumUtils {
     final DatumType datumTypeAnnotation = getDatumAnnotationOrThrow(domainClass);
     return newInstanceOrThrow(datumTypeAnnotation.timestampExtractor());
   }
-
-  public static <T> DatumType.DatumKeyExtractor<T> getDatumKeyExtractor(final Class<T> domainClass) {
-    final DatumType datumTypeAnnotation = getDatumAnnotationOrThrow(domainClass);
-    return newInstanceOrThrow(datumTypeAnnotation.datumKeyExtractor());
-  }
 }

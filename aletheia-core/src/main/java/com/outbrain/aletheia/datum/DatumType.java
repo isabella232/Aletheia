@@ -18,21 +18,7 @@ public @interface DatumType {
     DateTime extractDatumDateTime(TDomainClass domainObject);
   }
 
-  interface DatumKeyExtractor<TDomainClass> {
-    String extractDatumKey(TDomainClass domainObject);
-  }
-
-  static class NullDatumKeyExtractor<T> implements DatumKeyExtractor<T> {
-
-    @Override
-    public String extractDatumKey(final T domainObject) {
-      return null;
-    }
-  }
-
   String datumTypeId();
 
   Class<? extends TimestampExtractor> timestampExtractor();
-
-  Class<? extends DatumKeyExtractor> datumKeyExtractor() default NullDatumKeyExtractor.class;
 }

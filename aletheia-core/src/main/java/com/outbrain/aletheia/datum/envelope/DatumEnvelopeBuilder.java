@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum.envelope;
 
+import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumType;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
@@ -20,10 +21,11 @@ public class DatumEnvelopeBuilder<TDomainClass> {
   private final String datumTypeId;
   private final DatumSerDe<TDomainClass> datumSerDe;
   private final DatumType.TimestampExtractor<TDomainClass> datumTimestampExtractor;
-  private final DatumType.DatumKeyExtractor<TDomainClass> datumKeyExtractor;
+  private final DatumKeySelector<TDomainClass> datumKeySelector;
 
   public DatumEnvelopeBuilder(final Class<TDomainClass> domainClass,
                               final DatumSerDe<TDomainClass> datumSerDe,
+                              final DatumKeySelector<TDomainClass> datumKeySelector,
                               final int incarnation,
                               final String hostname) {
 
@@ -31,15 +33,15 @@ public class DatumEnvelopeBuilder<TDomainClass> {
     this.hostname = hostname;
     this.incarnation = incarnation;
 
+    this.datumKeySelector = datumKeySelector;
     datumTimestampExtractor = DatumUtils.getDatumTimestampExtractor(domainClass);
-    datumKeyExtractor = DatumUtils.getDatumKeyExtractor(domainClass);
     datumTypeId = DatumUtils.getDatumTypeId(domainClass);
   }
 
   public DatumEnvelope buildEnvelope(final TDomainClass domainObject) {
 
     final long logicalTimestamp = datumTimestampExtractor.extractDatumDateTime(domainObject).getMillis();
-    final String datumKey = datumKeyExtractor.extractDatumKey(domainObject);
+    final String datumKey = datumKeySelector.getDatumKey(domainObject);
     final SerializedDatum serializedDatum = datumSerDe.serializeDatum(domainObject);
 
     return new DatumEnvelope(datumTypeId,

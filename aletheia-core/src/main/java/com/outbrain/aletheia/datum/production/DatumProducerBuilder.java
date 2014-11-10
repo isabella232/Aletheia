@@ -7,6 +7,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
+import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
@@ -60,6 +61,7 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   private final List<ProductionEndPointInfo<TDomainClass>> productionEndPointInfos = Lists.newArrayList();
+  private DatumKeySelector<TDomainClass> datumKeySelector;
 
   private DatumProducerBuilder(final Class<TDomainClass> domainClass) {
     super(domainClass);
@@ -100,7 +102,10 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder =
             new DatumEnvelopeBuilder<>(domainClass,
                                        productionEndPointInfo.getDatumSerDe(),
-                                       datumProducerConfig.getIncarnation(), datumProducerConfig.getHostname());
+                                       datumKeySelector != null ? datumKeySelector : DatumKeySelector.NULL,
+                                       datumProducerConfig.getIncarnation(),
+                                       datumProducerConfig.getHostname()
+            );
 
 
     return new AuditingDatumProducer<>(datumEnvelopeBuilder,
@@ -119,7 +124,7 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
             productionEndPoint.getClass());
 
     Preconditions.checkState(datumEnvelopeSenderFactory != null,
-                             String.format("No transporter builder for production end point of type [%s] was provided.",
+                             String.format("No datum sender factory for production end point of type [%s] was provided.",
                                            productionEndPoint.getClass().getSimpleName()));
 
     return datumEnvelopeSenderFactory.buildDatumEnvelopeSender(productionEndPoint, aMetricFactory);
@@ -159,6 +164,19 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
     productionEndPointInfos.add(new ProductionEndPointInfo<>(dataProductionEndPoint,
                                                              datumSerDe,
                                                              datumFilter));
+    return this;
+  }
+
+  /**
+   * Configures a datum key selection strategy.
+   *
+   * @param datumKeySelector the DatumKeySelector instance to use in order to select the datum key from incoming data.
+   * @return a {@code DatumProducerBuilder} instance configured with the specified DatumKeySelector.
+   */
+  public DatumProducerBuilder<TDomainClass> selectDatumKeyUsing(DatumKeySelector<TDomainClass> datumKeySelector) {
+
+    this.datumKeySelector = datumKeySelector;
+
     return this;
   }
 
