@@ -28,12 +28,12 @@ public class InMemoryAccumulatingSender implements NamedKeyAwareSender, NamedSen
   }
 
   @Override
-  public void send(final Object item) throws SilentSenderException {
-    send(item, DEFAULT_DATUM_KEY);
+  public void send(final Object data) throws SilentSenderException {
+    send(data, DEFAULT_DATUM_KEY);
   }
 
   @Override
-  public void send(final Object item, final String key) throws SilentSenderException {
+  public void send(final Object data, final String key) throws SilentSenderException {
 
     final String nonNullKey = key != null ? key : DEFAULT_DATUM_KEY;
 
@@ -48,12 +48,12 @@ public class InMemoryAccumulatingSender implements NamedKeyAwareSender, NamedSen
       }
 
       // type safety, it was nice knowing you, don't forget to write.
-      if (item instanceof ByteBuffer) {
-        sentData.get(nonNullKey).add(((ByteBuffer) item).array());
-      } else if (item instanceof DatumEnvelope) {
-        sentData.get(nonNullKey).add(((DatumEnvelope) item).getDatumBytes().array());
+      if (data instanceof ByteBuffer) {
+        sentData.get(nonNullKey).add(((ByteBuffer) data).array());
+      } else if (data instanceof DatumEnvelope) {
+        sentData.get(nonNullKey).add(((DatumEnvelope) data).getDatumBytes().array());
       } else {
-        sentData.get(nonNullKey).add(item);
+        sentData.get(nonNullKey).add(data);
       }
     }
   }

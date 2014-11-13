@@ -247,7 +247,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                is(FluentIterable.from(originalDomainObjects)
                                 .filter(shouldHaveBeenSent)
                                 .toList()));
-    assertThat("Unexpected datum keys were present upon sending.",
+    assertThat("Unexpected datum keys were used for sending.",
                Sets.newHashSet(dataProductionEndPoint.getReceivedData().keySet()),
                is(Sets.newHashSet(DATUM_KEY)));
 

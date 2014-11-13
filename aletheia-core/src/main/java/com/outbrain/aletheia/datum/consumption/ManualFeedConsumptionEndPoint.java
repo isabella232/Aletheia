@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum.consumption;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -14,19 +15,35 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
   private static final String MANUAL_FEED = "ManualFeed";
 
   private final BlockingQueue<byte[]> queue;
+  private final String endPointAlias;
 
   public ManualFeedConsumptionEndPoint() {
-    this(1);
+    this(MANUAL_FEED, 1);
   }
 
-  public ManualFeedConsumptionEndPoint(final int size) {
-    queue = new ArrayBlockingQueue<>(size);
+  public ManualFeedConsumptionEndPoint(final String endPointAlias) {
+    this(endPointAlias, 1);
   }
 
-  public ManualFeedConsumptionEndPoint(final List<byte[]> data) {
+  public ManualFeedConsumptionEndPoint(final String endPointAlias, final int size) {
+    this(endPointAlias, new ArrayList<byte[]>(size));
+  }
+
+  public ManualFeedConsumptionEndPoint(List<byte[]> data) {
+    this(MANUAL_FEED, data);
+  }
+
+  public ManualFeedConsumptionEndPoint(final String endPointAlias, List<byte[]> data) {
+
+    this.endPointAlias = endPointAlias;
 
     queue = new ArrayBlockingQueue<>(data.size());
 
+    deliverAll(data);
+
+  }
+
+  private void deliverAll(final List<byte[]> data) {
     for (final byte[] bytes : data) {
       try {
         deliver(bytes);
@@ -34,7 +51,6 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
         throw new RuntimeException(e);
       }
     }
-
   }
 
   public void deliver(final byte[] bytes) throws InterruptedException {
@@ -47,6 +63,6 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
 
   @Override
   public String getName() {
-    return MANUAL_FEED;
+    return endPointAlias;
   }
 }
