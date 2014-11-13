@@ -43,7 +43,6 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
     return res;
   }
 
-
   public Map<String, List<byte[]>> getDataAsKey2ByteArrays() {
 
     Map<String, List<byte[]>> res = new ConcurrentHashMap<>();
