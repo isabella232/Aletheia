@@ -9,10 +9,13 @@ import java.util.Properties;
  */
 public class KafkaTopicConsumptionEndPoint extends ConsumptionEndPoint {
 
+  public enum EndPointType {RawDatumEnvelope, String}
+
   private final String zkConnect;
   private final String topicName;
   private final String groupId;
   private final int concurrencyLevel;
+  private final KafkaTopicConsumptionEndPoint.EndPointType endPointType;
   private final Properties properties;
   private final String endPointName;
 
@@ -21,11 +24,13 @@ public class KafkaTopicConsumptionEndPoint extends ConsumptionEndPoint {
                                        final String groupId,
                                        final String endPointName,
                                        final int concurrencyLevel,
+                                       final EndPointType endPointType,
                                        final Properties properties) {
     this.zkConnect = zkConnect;
     this.topicName = topicName;
     this.groupId = groupId;
     this.concurrencyLevel = concurrencyLevel;
+    this.endPointType = endPointType;
     this.properties = properties;
     this.endPointName = endPointName;
   }
@@ -48,6 +53,10 @@ public class KafkaTopicConsumptionEndPoint extends ConsumptionEndPoint {
 
   public int getConcurrencyLevel() {
     return concurrencyLevel;
+  }
+
+  public EndPointType getEndPointType() {
+    return endPointType;
   }
 
   @Override
