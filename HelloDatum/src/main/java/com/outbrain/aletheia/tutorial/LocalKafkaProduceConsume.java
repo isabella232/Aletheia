@@ -72,6 +72,7 @@ public class LocalKafkaProduceConsume {
                                     CONSUMER_GROUP_ID,
                                     END_POINT_NAME,
                                     1,
+                                    KafkaTopicConsumptionEndPoint.EndPointType.RawDatumEnvelope,
                                     new Properties()),
                             new JsonDatumSerDe<>(MyDatum.class))
                     .build(new DatumConsumerConfig(1, "localhost"));
