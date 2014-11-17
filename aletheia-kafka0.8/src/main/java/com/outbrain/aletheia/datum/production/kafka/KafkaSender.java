@@ -68,10 +68,10 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
   private void initMetrics(final MetricsFactory metricFactory) {
     sendCount = metricFactory.createCounter("Send.Attempts", "Success");
     sendDuration = metricFactory.createCounter("Send.Attempts", "Success");
-    failureDuration = metricFactory.createCounter("Send.Attempts.Failures", "Duration");
+    failureDuration = metricFactory.createCounter("Send.Attempts.Failure", "Duration");
     messageLengthCounter = metricFactory.createCounter("Message", "Length");
     messageSizeHistogram = metricFactory.createHistogram("Message", "Size", false);
-    failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failures", "UnableToConnect");
+    failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failure", "UnableToConnect");
   }
 
   private boolean singleConnect(final ProducerConfig config) {
@@ -204,9 +204,9 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
       final long duration = System.currentTimeMillis() - startTime;
       failureDuration.inc(duration);
       if ((e instanceof QueueFullException)) {
-        metricFactory.createCounter("Send.Attempts.Failures", QueueFullException.class.getSimpleName()).inc();
+        metricFactory.createCounter("Send.Attempts.Failure", QueueFullException.class.getSimpleName()).inc();
       } else {
-        metricFactory.createCounter("Send.Attempts.Failures", e.getClass().getSimpleName()).inc();
+        metricFactory.createCounter("Send.Attempts.Failure", e.getClass().getSimpleName()).inc();
         logger.error("Error while sending message to kafka.", e);
       }
     }

@@ -86,7 +86,7 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
                                final MetricsFactory metricsFactory) {
 
     consumedDatumCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Success");
-    consumeFailureCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Failures");
+    consumeFailureCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Failure");
     filteredCounter = metricsFactory.createCounter("Consume.Requests", "Filtered");
 
     this.datumEnvelopeOpener = datumEnvelopeOpener;

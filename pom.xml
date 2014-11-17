@@ -65,7 +65,7 @@
 
   <modules>
     <module>aletheia-core</module>
-    <module>aletheia-ui</module>
+    <module>aletheia-audit</module>
     <module>aletheia-kafka0.8</module>
     <module>aletheia-kafka0.7</module>
     <module>aletheia-log4j</module>

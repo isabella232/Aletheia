@@ -67,11 +67,11 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter("Deliver.Requests.Attempts.Failures." + SilentSenderException.class.getSimpleName(),
+      metricFactory.createCounter("Deliver.Requests.Attempts.Failure." + SilentSenderException.class.getSimpleName(),
                                   e.getCause().getClass().getSimpleName())
                    .inc();
     } catch (final Exception e) {
-      metricFactory.createCounter("Deliver.Requests.Attempts.Failures", e.getCause().getClass().getSimpleName())
+      metricFactory.createCounter("Deliver.Requests.Attempts.Failure", e.getCause().getClass().getSimpleName())
                    .inc();
       logger.error("Could not deliver datum." + datum, e);
     } finally {

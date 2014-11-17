@@ -13,12 +13,13 @@ import java.util.concurrent.BlockingQueue;
 public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
 
   private static final String MANUAL_FEED = "ManualFeed";
+  private static final int DEFAULT_SIZE = 1;
 
   private final BlockingQueue<byte[]> queue;
   private final String endPointAlias;
 
   public ManualFeedConsumptionEndPoint() {
-    this(MANUAL_FEED, 1);
+    this(MANUAL_FEED, DEFAULT_SIZE);
   }
 
   public ManualFeedConsumptionEndPoint(final String endPointAlias) {
@@ -37,9 +38,13 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
 
     this.endPointAlias = endPointAlias;
 
-    queue = new ArrayBlockingQueue<>(data.size());
-
-    deliverAll(data);
+    if(data.size() == 0) {
+      queue = new ArrayBlockingQueue<>(DEFAULT_SIZE);
+    }
+    else {
+      queue = new ArrayBlockingQueue<>(data.size());
+      deliverAll(data);
+    }
 
   }
 

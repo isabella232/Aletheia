@@ -65,10 +65,10 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
   private void initMetrics(final MetricsFactory metricFactory) {
     sendCount = metricFactory.createCounter("Send.Attempts", "Success");
     sendDuration = metricFactory.createCounter("Send.Attempts", "Success");
-    failureDuration = metricFactory.createCounter("Send.Attempts.Failures", "Duration");
+    failureDuration = metricFactory.createCounter("Send.Attempts.Failure", "Duration");
     messageLengthCounter = metricFactory.createCounter("Message", "Length");
     messageSizeHistogram = metricFactory.createHistogram("Message", "Size", false);
-    failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failures", "UnableToConnect");
+    failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failure", "UnableToConnect");
   }
 
   private boolean singleConnect(final ProducerConfig config) {
