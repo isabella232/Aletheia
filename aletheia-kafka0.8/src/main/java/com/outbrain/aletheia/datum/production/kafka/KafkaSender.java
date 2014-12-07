@@ -1,9 +1,5 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.outbrain.aletheia.datum.production.NamedKeyAwareSender;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
@@ -17,7 +13,6 @@ import kafka.producer.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -106,50 +101,9 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
     }
   }
 
-  private static void validate(final Properties properties) {
-
-    final List<String> knownPropertyNames = Lists.newArrayList("serializer.class",
-                                                               "partitioner.class",
-                                                               "producer.type",
-                                                               "broker.list",
-                                                               "zk.connect",
-                                                               "buffer.size",
-                                                               "connect.timeout.ms",
-                                                               "socket.timeout.ms",
-                                                               "reconnect.interval",
-                                                               "reconnect.time.interval.ms",
-                                                               "max.message.size",
-                                                               "compression.codec",
-                                                               "compressed.topics",
-                                                               "zk.read.num.retries",
-                                                               "queue.time",
-                                                               "queue.size",
-                                                               "batch.size",
-                                                               "event.handler",
-                                                               "event.handler.props",
-                                                               "callback.handler",
-                                                               "callback.handler.props");
-
-    final Predicate<Object> unknownPropertyName = new Predicate<Object>() {
-      @Override
-      public boolean apply(final Object propertyName) {
-        return !knownPropertyNames.contains(propertyName);
-      }
-    };
-
-    if (Iterables.any(properties.keySet(), unknownPropertyName)) {
-      final Iterable<Object> unknownProperties = Iterables.filter(properties.keySet(), unknownPropertyName);
-      final String unknownPropertiesString = Joiner.on(",").join(unknownProperties);
-
-      throw new IllegalArgumentException("Unknown properties: " + unknownPropertiesString);
-    }
-  }
-
   protected ProducerConfig getProducerConfig() {
 
     final Properties producerProperties = (Properties) kafkaTopicDeliveryEndPoint.getProperties().clone();
-
-    validate(producerProperties);
 
     if (producerProperties.getProperty("serializer.class") != null) {
       logger.warn(
