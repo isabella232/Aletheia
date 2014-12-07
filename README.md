@@ -8,8 +8,6 @@ Aletheia’s key features are:
 * Pluggable endpoint types 
 * Pluggable serialization formats
 
-Aletheia's aims to be general-purpose data delivery framework.
-
 # Endpoint Types
 The following endpoint types are supported out-of-the-box:
 * Kafka 0.7 (production and consumption)
