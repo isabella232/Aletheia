@@ -1,12 +1,8 @@
 package com.outbrain.aletheia.datum.production;
 
 import com.google.common.collect.Maps;
-import com.outbrain.aletheia.datum.EndPoint;
+import com.outbrain.aletheia.datum.*;
 import com.outbrain.aletheia.breadcrumbs.*;
-import com.outbrain.aletheia.datum.DatumAuditor;
-import com.outbrain.aletheia.datum.DatumUtils;
-import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
-import com.outbrain.aletheia.datum.InMemoryStringEndPoint;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
@@ -151,8 +147,8 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
 
   protected void registerKnownProductionEndPointsTypes() {
     final InMemoryDatumEnvelopeSenderFactory datumEnvelopeSenderFactory = new InMemoryDatumEnvelopeSenderFactory();
-    this.registerProductionEndPointType(InMemoryStringEndPoint.class, datumEnvelopeSenderFactory);
-    this.registerProductionEndPointType(InMemoryBinaryEndPoint.class, datumEnvelopeSenderFactory);
+    this.registerProductionEndPointType(InMemoryEndPoint.RawString.class, datumEnvelopeSenderFactory);
+    this.registerProductionEndPointType(InMemoryEndPoint.Binary.class, datumEnvelopeSenderFactory);
   }
 
   /**

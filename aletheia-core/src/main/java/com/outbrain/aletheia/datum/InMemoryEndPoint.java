@@ -10,6 +10,7 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -21,6 +22,37 @@ import java.util.concurrent.ArrayBlockingQueue;
 public abstract class InMemoryEndPoint<T, U>
         implements ProductionEndPoint, FetchConsumptionEndPoint<U>, DatumKeyAwareNamedSender<T>, NamedSender<T>, DatumKeyAwareFetchEndPoint<U> {
 
+  public static class Binary extends InMemoryEndPoint<ByteBuffer,byte[]> {
+
+    public Binary() {
+
+    }
+
+    public Binary(final int queueSize) {
+      super(queueSize);
+    }
+
+    @Override
+    protected byte[] convert(final ByteBuffer data) {
+      return data.array();
+    }
+  }
+
+  public static class RawString extends InMemoryEndPoint<String, String>  {
+
+    public RawString() {
+    }
+
+    public RawString(final int queueSize) {
+      super(queueSize);
+    }
+
+    @Override
+    protected String convert(final String data) {
+      return data;
+    }
+
+  }
   public static String DEFAULT_DATUM_KEY = "random";
 
   private static final int DEFAULT_QUEUE_SIZE = 100;
@@ -36,11 +68,11 @@ public abstract class InMemoryEndPoint<T, U>
   private Map<String, ArrayBlockingQueue<U>> sentData = Maps.newConcurrentMap();
   private int queueSize;
 
-  public InMemoryEndPoint() {
+  protected InMemoryEndPoint() {
     this(DEFAULT_QUEUE_SIZE);
   }
 
-  public InMemoryEndPoint(int queueSize) {
+  protected InMemoryEndPoint(int queueSize) {
     this.queueSize = queueSize;
   }
 

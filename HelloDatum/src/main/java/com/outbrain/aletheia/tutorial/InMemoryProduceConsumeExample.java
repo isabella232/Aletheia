@@ -1,7 +1,6 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
-import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.consumption.DatumConsumer;
@@ -24,7 +23,7 @@ public class InMemoryProduceConsumeExample {
 
     System.out.println("Building a DatumProducer...");
 
-    final InMemoryEndPoint inMemoryProductionEndPoint = new InMemoryBinaryEndPoint();
+    final InMemoryEndPoint inMemoryProductionEndPoint = new InMemoryEndPoint.Binary();
 
     final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder

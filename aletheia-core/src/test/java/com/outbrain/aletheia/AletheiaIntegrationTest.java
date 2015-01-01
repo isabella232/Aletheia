@@ -9,8 +9,7 @@ import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
 import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumUtils;
-import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
-import com.outbrain.aletheia.datum.InMemoryStringEndPoint;
+import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.consumption.DatumConsumer;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
@@ -97,7 +96,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
             .build(DATUM_PRODUCER_CONFIG);
   }
 
-  private DatumConsumer<TDomainClass> datumConsumer(final InMemoryBinaryEndPoint consumptionEndPoint,
+  private DatumConsumer<TDomainClass> datumConsumer(final InMemoryEndPoint.Binary consumptionEndPoint,
                                                     final ProductionEndPoint breadcrumbProductionEndPoint,
                                                     final DatumSerDe<TDomainClass> datumSerDe) {
     final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
@@ -111,7 +110,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     return Iterables.getFirst(consumptionEndPoint2datumConsumer.get(consumptionEndPoint), null);
   }
 
-  private void assertBreadcrumb(final InMemoryStringEndPoint breadcrumbProductionEndPoint,
+  private void assertBreadcrumb(final InMemoryEndPoint.RawString breadcrumbProductionEndPoint,
                                 final BreadcrumbsConfig breadcrumbsConfig) {
 
     String breadcrumbJsonString = null;
@@ -175,9 +174,9 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                     .toList();
 
 
-    final InMemoryBinaryEndPoint dataProductionEndPoint = new InMemoryBinaryEndPoint(1);
-    final InMemoryStringEndPoint producerBreadcrumbProductionEndPoint = new InMemoryStringEndPoint();
-    final InMemoryStringEndPoint consumerBreadcrumbsProductionEndPoint = new InMemoryStringEndPoint();
+    final InMemoryEndPoint.Binary dataProductionEndPoint = new InMemoryEndPoint.Binary(1);
+    final InMemoryEndPoint.RawString producerBreadcrumbProductionEndPoint = new InMemoryEndPoint.RawString();
+    final InMemoryEndPoint.RawString consumerBreadcrumbsProductionEndPoint = new InMemoryEndPoint.RawString();
 
     final DatumProducer<TDomainClass> datumProducer = datumProducer(dataProductionEndPoint,
                                                                     producerBreadcrumbProductionEndPoint,

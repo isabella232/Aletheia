@@ -1,8 +1,6 @@
 package com.outbrain.aletheia.datum.production;
 
-import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
-import com.outbrain.aletheia.datum.InMemoryStringEndPoint;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
@@ -15,9 +13,9 @@ public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFa
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final InMemoryEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
 
-    if (productionEndPoint instanceof InMemoryBinaryEndPoint) {
+    if (productionEndPoint instanceof InMemoryEndPoint.Binary) {
       return new RawDatumEnvelopeBinarySender(productionEndPoint);
-    } else if (productionEndPoint instanceof InMemoryStringEndPoint) {
+    } else if (productionEndPoint instanceof InMemoryEndPoint.RawString) {
       return new DatumEnvelopePeelingStringSender(productionEndPoint);
     } else {
       throw new IllegalArgumentException(String.format("Unknown encoding type %s", productionEndPoint));

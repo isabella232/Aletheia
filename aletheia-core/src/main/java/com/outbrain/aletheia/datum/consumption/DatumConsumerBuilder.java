@@ -8,9 +8,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
+import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.production.AletheiaBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
-import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -70,7 +70,7 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   private void registerKnownConsumptionEndPointTypes() {
-    registerConsumptionEndPointType(InMemoryBinaryEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(InMemoryEndPoint.Binary.class, new InMemoryDatumEnvelopeFetcherFactory());
     registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 
