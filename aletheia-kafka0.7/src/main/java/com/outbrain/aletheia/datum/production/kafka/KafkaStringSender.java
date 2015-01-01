@@ -5,6 +5,7 @@ import kafka.producer.ProducerConfig;
 
 import java.util.Properties;
 
+@Deprecated
 public class KafkaStringSender extends KafkaNamedSender<String, String> {
 
   @Override
@@ -14,6 +15,7 @@ public class KafkaStringSender extends KafkaNamedSender<String, String> {
     return new ProducerConfig(props);
   }
 
+  @Deprecated
   public KafkaStringSender(final KafkaTopicProductionEndPoint config, final MetricsFactory metricFactory) {
     super(config, metricFactory);
   }

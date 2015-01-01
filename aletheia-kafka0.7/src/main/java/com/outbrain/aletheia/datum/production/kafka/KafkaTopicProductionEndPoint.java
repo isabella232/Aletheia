@@ -4,6 +4,7 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 
 import java.util.Properties;
 
+@Deprecated
 public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public enum EndPointType {RawDatumEnvelope, String}
@@ -16,6 +17,7 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
   private final String endPointName;
   private boolean addShutdownHook;
 
+  @Deprecated
   public KafkaTopicProductionEndPoint(final String zkConnect,
                                       final String topicName,
                                       final EndPointType endPointType,

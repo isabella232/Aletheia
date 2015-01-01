@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Deprecated
 public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput>, NamedSender<TInput> {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaNamedSender.class);
@@ -40,6 +41,7 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
   private final ProducerConfig customConfiguration;
 
 
+  @Deprecated
   public KafkaNamedSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
                           final MetricsFactory metricFactory) {
 
@@ -215,20 +217,24 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
   }
 
   @Override
+  @Deprecated
   public void send(final TInput data) throws SilentSenderException {
     internalSend(data, null);
   }
 
   @Override
+  @Deprecated
   public void send(final TInput data, final String key) throws SilentSenderException {
     internalSend(data, key);
   }
 
   @Override
+  @Deprecated
   public String getName() {
     return kafkaTopicDeliveryEndPoint.getName();
   }
 
+  @Deprecated
   public void close() {
     if (connected) {
       if (producer != null) {

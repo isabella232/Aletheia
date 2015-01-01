@@ -1,3 +1,4 @@
+
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -7,8 +8,10 @@ import kafka.producer.ProducerConfig;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
+@Deprecated
 public class KafkaBinarySender extends KafkaNamedSender<ByteBuffer, Message> {
 
+  @Deprecated
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
                            final MetricsFactory metricFactory) {
     super(kafkaTopicDeliveryEndPoint, metricFactory);

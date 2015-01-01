@@ -12,11 +12,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by slevin on 7/22/14.
  */
+@Deprecated
 public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<KafkaTopicProductionEndPoint> {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaDatumEnvelopeSenderFactory.class);
 
   @Override
+  @Deprecated
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final KafkaTopicProductionEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
 

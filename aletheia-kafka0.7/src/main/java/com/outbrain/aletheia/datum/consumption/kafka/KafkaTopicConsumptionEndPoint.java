@@ -7,6 +7,7 @@ import java.util.Properties;
 /**
  * A consumption endpoint for consuming data from a Kafka topic.
  */
+@Deprecated
 public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
 
   private final String zkConnect;
@@ -16,6 +17,7 @@ public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
   private final Properties properties;
   private final String endPointName;
 
+  @Deprecated
   public KafkaTopicConsumptionEndPoint(final String zkConnect,
                                        final String topicName,
                                        final String groupId,

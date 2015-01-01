@@ -10,7 +10,7 @@
     <version>0.22-SNAPSHOT</version>
   </parent>
 
-  <name>Aletheia Kafka 0.7 extensions</name>
+  <name>Aletheia Kafka 0.7 extensions (deprecated)</name>
   <artifactId>aletheia-kafka0.7</artifactId>
 
   <repositories>
