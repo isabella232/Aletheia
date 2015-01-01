@@ -6,7 +6,7 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import java.nio.ByteBuffer;
 
 /**
- * Builds {@code DatumEnvelopeSender}s capable of sending data to an {@code InMemoryProductionEndPoint}.
+ * Builds {@link com.outbrain.aletheia.datum.production.NamedSender<com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope>}s capable of sending data to an {@link InMemoryProductionEndPoint}.
  */
 public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<InMemoryProductionEndPoint> {
 

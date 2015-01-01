@@ -3,7 +3,7 @@ package com.outbrain.aletheia;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Provides deriving {@code EndPoint} classes with a pretty toString().
+ * Provides deriving {@link EndPoint} classes with a pretty toString().
  */
 public abstract class PrettyToStringEndPoint implements EndPoint {
 

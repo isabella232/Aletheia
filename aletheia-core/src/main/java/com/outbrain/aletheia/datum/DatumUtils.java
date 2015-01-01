@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.datum;
 
 /**
- * A utility class for extracting various information provided via by the {@code DatumType} annotation.
+ * A utility class for extracting various information provided via by the {@link DatumType} annotation.
  */
 public final class DatumUtils {
 

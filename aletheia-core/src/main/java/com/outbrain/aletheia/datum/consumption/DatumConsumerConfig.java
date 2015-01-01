@@ -3,7 +3,7 @@ package com.outbrain.aletheia.datum.consumption;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Configuration details for {@code DatumConsumer}s.
+ * Configuration details for {@link DatumConsumer}s.
  */
 public class DatumConsumerConfig {
 
@@ -13,7 +13,7 @@ public class DatumConsumerConfig {
   /**
    * @param incarnation incarnation provides means to further control data filtering, e.g., discarding all data
    *                    below a certain incarnation.
-   * @param hostname    the hostname this {@code DatumProducer} instance is operating from.
+   * @param hostname    the hostname this {@link com.outbrain.aletheia.datum.production.DatumProducer} instance is operating from.
    */
   public DatumConsumerConfig(final int incarnation, final String hostname) {
 

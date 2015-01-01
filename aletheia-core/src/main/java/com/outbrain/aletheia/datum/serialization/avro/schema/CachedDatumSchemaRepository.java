@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A schema caching {@code DatumSchemaRepository}.
+ * A schema caching {@link DatumSchemaRepository}.
  */
 public class CachedDatumSchemaRepository implements DatumSchemaRepository {
 

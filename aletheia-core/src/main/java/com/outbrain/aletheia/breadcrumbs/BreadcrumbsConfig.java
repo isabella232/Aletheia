@@ -4,7 +4,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.joda.time.Duration;
 
 /**
- * Holds the configuration details for breadcrumbs emitted by the {@code DatumProducer}.
+ * Holds the configuration details for breadcrumbs emitted by the {@link com.outbrain.aletheia.datum.production.DatumProducer}.
  * THe configuration consists of details concerning the length of the bucket each breadcrumb describes,
  * the flush period, which determines how often breadcrumbs will be emitted, plus the metadata that will accompany
  * each outgoing breadcrumb.

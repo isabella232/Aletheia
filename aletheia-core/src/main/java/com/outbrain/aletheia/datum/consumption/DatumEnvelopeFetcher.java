@@ -3,14 +3,14 @@ package com.outbrain.aletheia.datum.consumption;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 
 /**
- * The base interface for fetchers capable of fetching {@code DatumEnvelope}s from a data source.
+ * The base interface for fetchers capable of fetching {@link DatumEnvelope}s from a data source.
  */
 public interface DatumEnvelopeFetcher {
 
   /**
-   * Returns an iterable of {@code DatumEnvelope}s from some source, one at a time, and blocking if none is available.
+   * Returns an iterable of {@link DatumEnvelope}s from some source, one at a time, and blocking if none is available.
    *
-   * @return An {@code Iterable<TDomainClass>} that represents the {@code DatumEnvelope} stream.
+   * @return An {@link Iterable<DatumEnvelope>} that represents the {@link DatumEnvelope} stream.
    */
   Iterable<DatumEnvelope> datumEnvelopes();
 }

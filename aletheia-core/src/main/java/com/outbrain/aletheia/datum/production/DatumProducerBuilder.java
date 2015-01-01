@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Provides a fluent API for building a {@code DatumProducer}.
+ * Provides a fluent API for building a {@link DatumProducer}.
  *
- * @param <TDomainClass> The type of datum for which a {@code DatumProducer} is to be built.
+ * @param <TDomainClass> The type of datum for which a {@link DatumProducer} is to be built.
  */
 public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumProducerBuilder<TDomainClass>> {
 
@@ -136,11 +136,11 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Adds a production endpoint to deliver data to, using the specified {@code DatumSerDe} instance.
+   * Adds a production endpoint to deliver data to, using the specified {@link DatumSerDe} instance.
    *
    * @param dataProductionEndPoint the production endpoint to add.
-   * @param datumSerDe             the {@code DatumSerDe} instance to use to serialize data.
-   * @return a {@code DatumProducerBuilder} instance configured with the specified production endpoint and
+   * @param datumSerDe             the {@link DatumSerDe} instance to use to serialize data.
+   * @return a {@link DatumProducerBuilder} instance configured with the specified production endpoint and
    * serialization method.
    */
   public DatumProducerBuilder<TDomainClass> deliverDataTo(final ProductionEndPoint dataProductionEndPoint,
@@ -149,12 +149,12 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Adds a production endpoint to deliver data to, using the specified {@code DatumSerDe} and filter instances.
+   * Adds a production endpoint to deliver data to, using the specified {@link DatumSerDe} and filter instances.
    *
    * @param dataProductionEndPoint the production endpoint to add.
-   * @param datumSerDe             the {@code DatumSerDe} instance to use to serialize data.
+   * @param datumSerDe             the {@link DatumSerDe} instance to use to serialize data.
    * @param datumFilter            a filter to apply before delivering data.
-   * @return a {@code DatumProducerBuilder} instance configured with the specified production endpoint,
+   * @return a {@link DatumProducerBuilder} instance configured with the specified production endpoint,
    * serialization method and filter.
    */
   public DatumProducerBuilder<TDomainClass> deliverDataTo(final ProductionEndPoint dataProductionEndPoint,
@@ -171,7 +171,7 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    * Configures a datum key selection strategy.
    *
    * @param datumKeySelector the DatumKeySelector instance to use in order to select the datum key from incoming data.
-   * @return a {@code DatumProducerBuilder} instance configured with the specified DatumKeySelector.
+   * @return a {@link DatumProducerBuilder} instance configured with the specified DatumKeySelector.
    */
   public DatumProducerBuilder<TDomainClass> selectDatumKeyUsing(DatumKeySelector<TDomainClass> datumKeySelector) {
 
@@ -181,11 +181,11 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Builds a {@code DatumProducer} instance.
+   * Builds a {@link DatumProducer} instance.
    *
-   * @param datumProducerConfig the configuration information to use for building the {@code DatumProducer}
+   * @param datumProducerConfig the configuration information to use for building the {@link DatumProducer}
    *                            instance configured.
-   * @return a fully configured {@code DatumProducer} instance.
+   * @return a fully configured {@link DatumProducer} instance.
    */
   public DatumProducer<TDomainClass> build(final DatumProducerConfig datumProducerConfig) {
 
@@ -203,11 +203,11 @@ public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Builds a {@code AletheiaBuilder} instance.
+   * Builds a {@link AletheiaBuilder} instance.
    *
    * @param domainClass the type of the datum to be produced.
    * @param <TDomainClass> the type of the datum to be produced.
-   * @return a fluent {@code AletheiaBuilder} to be used for building a {@code DatumProducer} instances.
+   * @return a fluent {@link AletheiaBuilder} to be used for building a {@link DatumProducer} instances.
    */
   public static <TDomainClass> DatumProducerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
     return new DatumProducerBuilder<>(domainClass);

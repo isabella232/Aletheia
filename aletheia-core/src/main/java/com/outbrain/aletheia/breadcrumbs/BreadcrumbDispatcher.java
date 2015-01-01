@@ -3,9 +3,9 @@ package com.outbrain.aletheia.breadcrumbs;
 import java.io.Serializable;
 
 /**
- * A base interface for implementing a class that will be dispatching {@code Breadcrumb} instances.
+ * A base interface for implementing a class that will be dispatching {@link Breadcrumb} instances.
  *
- * @param <TElement> The type of the element this {@code BreadcrumbDispatcher} will be dispatching breadcrumbs for.
+ * @param <TElement> The type of the element this {@link BreadcrumbDispatcher} will be dispatching breadcrumbs for.
  */
 public interface BreadcrumbDispatcher<TElement> extends Serializable {
 

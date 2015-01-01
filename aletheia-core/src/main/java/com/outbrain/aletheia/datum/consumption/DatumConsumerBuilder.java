@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Provides a fluent API for building a {@code DatumConsumer}.
+ * Provides a fluent API for building a {@link DatumConsumer}.
  *
- * @param <TDomainClass> The type of datum for which a {@code DatumConsumer} is to be built.
+ * @param <TDomainClass> The type of datum for which a {@link DatumConsumer} is to be built.
  */
 public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumConsumerBuilder<TDomainClass>> {
 
@@ -132,9 +132,9 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    * endpoint type.
    *
    * @param consumptionEndPointType     the consumption endpoint to add.
-   * @param datumEnvelopeFetcherFactory a {@code DatumEnvelopeFetcherFactory} capable of building
-   *                                    {@code DatumEnvelopeFetcher}s from the specified endpoint type.
-   * @return a {@code DatumConsumerBuilder} instance capable of consuming data from the specified consumption
+   * @param datumEnvelopeFetcherFactory a {@link DatumEnvelopeFetcherFactory} capable of building
+   *                                    {@link DatumEnvelopeFetcher}s from the specified endpoint type.
+   * @return a {@link DatumConsumerBuilder} instance capable of consuming data from the specified consumption
    * endpoint type.
    */
   public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumConsumerBuilder<TDomainClass> registerConsumptionEndPointType(
@@ -147,11 +147,11 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Adds a consumption endpoint to consume data from, using the specified {@code DatumSerDe} instance.
+   * Adds a consumption endpoint to consume data from, using the specified {@link DatumSerDe} instance.
    *
    * @param consumptionEndPoint the consumption endpoint to add.
-   * @param datumSerDe          the {@code DatumSerDe} instance to use to serialize data.
-   * @return a {@code DatumConsumerBuilder} instance configured with the specified consumption endpoint and
+   * @param datumSerDe          the {@link DatumSerDe} instance to use to serialize data.
+   * @return a {@link DatumConsumerBuilder} instance configured with the specified consumption endpoint and
    * serialization method.
    */
   public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
@@ -160,12 +160,12 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Adds a consumption endpoint to consume data from, using the specified {@code DatumSerDe} and filter instances.
+   * Adds a consumption endpoint to consume data from, using the specified {@link DatumSerDe} and filter instances.
    *
    * @param consumptionEndPoint the consumption endpoint to add.
-   * @param datumSerDe          the {@code DatumSerDe} instance to use to serialize data.
+   * @param datumSerDe          the {@link DatumSerDe} instance to use to serialize data.
    * @param datumFilter         a filter to apply before delivering data.
-   * @return a {@code DatumConsumerBuilder} instance configured with the specified consumption endpoint,
+   * @return a {@link DatumConsumerBuilder} instance configured with the specified consumption endpoint,
    * serialization method and filter.
    */
   public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
@@ -177,11 +177,11 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Builds a {@code DatumProducer} instance.
+   * Builds a {@link com.outbrain.aletheia.datum.production.DatumProducer} instance.
    *
-   * @param datumConsumerConfig the configuration information to use for building the {@code DatumConsumer}
+   * @param datumConsumerConfig the configuration information to use for building the {@link DatumConsumer}
    *                            instance configured.
-   * @return a fully configured {@code DatumConsumer} instance.
+   * @return a fully configured {@link DatumConsumer} instance.
    */
   public Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> build(final DatumConsumerConfig datumConsumerConfig) {
 
@@ -201,11 +201,11 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   /**
-   * Builds a {@code AletheiaBuilder} instance.
+   * Builds a {@link AletheiaBuilder} instance.
    *
    * @param domainClass the type of the datum to be consumed.
    * @param <TDomainClass> the type of the datum to be consumed.
-   * @return a fluent {@code AletheiaBuilder} to be used for building a {@code DatumConsumer} instances.
+   * @return a fluent {@link AletheiaBuilder} to be used for building a {@link DatumConsumer} instances.
    */
   public static <TDomainClass> DatumConsumerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
     return new DatumConsumerBuilder<>(domainClass);

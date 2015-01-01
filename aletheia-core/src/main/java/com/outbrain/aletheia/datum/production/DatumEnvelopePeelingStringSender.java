@@ -5,9 +5,9 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import java.io.UnsupportedEncodingException;
 
 /**
- * A special case of a {@code NamedSender&lt;DatumEnvelope&gt;}, that extracts the datum part of the
- * incoming {@code DatumEnvelope}, and decodes it using {@code UTF-8} encoding. It is assumed that
- * the incoming {@code DatumEnvelopes} do indeed have a serialized, {@code UTF-8} encoded, string datum.
+ * A special case of a {@link NamedSender&lt;DatumEnvelope&gt;}, that extracts the datum part of the
+ * incoming {@link DatumEnvelope}, and decodes it using {@code UTF-8} encoding. It is assumed that
+ * the incoming {@link DatumEnvelope} do indeed have a serialized, {@code UTF-8} encoded, string datum.
  */
 public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelope> {
 

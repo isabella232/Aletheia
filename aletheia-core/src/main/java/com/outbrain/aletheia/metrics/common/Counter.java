@@ -7,7 +7,7 @@ public interface Counter {
   public void inc();
 
   /**
-   * Increment the counter by {@code n}.
+   * Increment the counter by n.
    *
    * @param n the amount by which the counter will be increased
    */
@@ -19,7 +19,7 @@ public interface Counter {
   public void dec();
 
   /**
-   * Decrement the counter by {@code n}.
+   * Decrement the counter by n.
    *
    * @param n the amount by which the counter will be increased
    */

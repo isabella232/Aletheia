@@ -6,7 +6,7 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import java.nio.ByteBuffer;
 
 /**
- * A {@code Sender} implementation that sends {@code DatumEnvelope} without manipulating them
+ * A {@link Sender} implementation that sends {@link DatumEnvelope} without manipulating them
  * in any way.
  */
 public class RawDatumEnvelopeBinarySender implements NamedSender<DatumEnvelope> {

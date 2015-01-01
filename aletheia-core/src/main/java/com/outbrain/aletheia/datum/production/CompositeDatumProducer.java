@@ -5,8 +5,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 /**
- * Combines multiple {@code DatumProducer} by creating a new one that upon a request to deliver a datum,
- * delivers it using all the internal {@code DatumProducer}s is a sequential order (the order they were passed in).
+ * Combines multiple {@link DatumProducer} by creating a new one that upon a request to deliver a datum,
+ * delivers it using all the internal {@link DatumProducer}s is a sequential order (the order they were passed in).
  */
 public class CompositeDatumProducer<TDomainClass> implements DatumProducer<TDomainClass> {
 

@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A {@code Breadcrumb} generating, {@code DatumEnvelope} transportation based
- * {@code DatumProducer} implementation.
+ * A {@link com.outbrain.aletheia.breadcrumbs.Breadcrumb} generating, {@link DatumEnvelope} transportation based
+ * {@link DatumProducer} implementation.
  */
 public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomainClass> {
 

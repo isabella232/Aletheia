@@ -9,10 +9,10 @@ import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import org.joda.time.Instant;
 
 /**
- * Builds an enclosing {@code DatumEnvelope}s for a datum, serializing it using
- * the specified {@code DatumSerDe}.
+ * Builds an enclosing {@link DatumEnvelope}s for a datum, serializing it using
+ * the specified {@link DatumSerDe}.
  *
- * @param <TDomainClass> The type of datum to build a {@code DatumEnvelope} for.
+ * @param <TDomainClass> The type of datum to build a {@link DatumEnvelope} for.
  */
 public class DatumEnvelopeBuilder<TDomainClass> {
 

@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * A {@code DatumEnvelopeFetcherFactory} for building {@code DatumEnvelopeFetcher}s capable of
- * consuming data from endpoints of type {@code KafkaTopicConsumptionEndPoint}.
+ * A {@link DatumEnvelopeFetcherFactory} for building {@link DatumEnvelopeFetcher}s capable of
+ * consuming data from endpoints of type {@link KafkaTopicConsumptionEndPoint}.
  */
 public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFactory<KafkaTopicConsumptionEndPoint> {
 

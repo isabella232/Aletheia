@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An {@code Sender} that stores incoming items in-memory, allowing one to query them later.
+ * An {@link Sender} that stores incoming items in-memory, allowing one to query them later.
  */
 public class InMemoryAccumulatingNamedSender<T> implements DatumKeyAwareNamedSender<T>, NamedSender<T>, Serializable {
 

@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This {@code ProductionEndPoint} type works in collaboration with the {@code InMemoryAccumulatingSender},
+ * This {@link ProductionEndPoint} type works in collaboration with the {@link com.outbrain.aletheia.datum.production.InMemoryAccumulatingNamedSender},
  * jointly, they allow one to store incoming items in-memory, and query them later on.
  * This type of endpoint is useful for experiments and tests.
  */
