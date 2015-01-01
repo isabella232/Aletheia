@@ -1,5 +1,7 @@
 package com.outbrain.aletheia.datum.consumption;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -10,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  * A ManualFeedConsumptionEndPoint will block the producing side once it's over the limits, and similarly will block
  * consumption when there is nothing to consume.
  */
-public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
+public class ManualFeedConsumptionEndPoint implements FetchConsumptionEndPoint<byte[]> {
 
   private static final String MANUAL_FEED = "ManualFeed";
   private static final int DEFAULT_SIZE = 1;
@@ -38,13 +40,12 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
 
     this.endPointAlias = endPointAlias;
 
-    if(data.size() == 0) {
+    if (data.size() == 0) {
       queue = new ArrayBlockingQueue<>(DEFAULT_SIZE);
-    }
-    else {
-    queue = new ArrayBlockingQueue<>(data.size());
+    } else {
+      queue = new ArrayBlockingQueue<>(data.size());
 
-    deliverAll(data);
+      deliverAll(data);
     }
 
   }
@@ -63,12 +64,22 @@ public class ManualFeedConsumptionEndPoint extends ConsumptionEndPoint {
     queue.put(bytes);
   }
 
-  public byte[] fetch() throws InterruptedException {
-    return queue.take();
+  @Override
+  public byte[] fetch() {
+    try {
+      return queue.take();
+    } catch (final InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public String getName() {
     return endPointAlias;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }

@@ -11,7 +11,7 @@ import java.util.Iterator;
 /**
  * Created by slevin on 8/15/14.
  */
-public class ManualFeedDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
+public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
 
@@ -37,12 +37,12 @@ public class ManualFeedDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
             }
           };
 
-  private final ManualFeedConsumptionEndPoint consumptionEndPoint;
+  private final FetchConsumptionEndPoint<byte[]> consumptionEndPoint;
   private final Counter receivedDatumEnvelopeCount;
   private final Counter failureCount;
 
-  public ManualFeedDatumEnvelopeFetcher(final ManualFeedConsumptionEndPoint consumptionEndPoint,
-                                        final MetricsFactory metricFactory) {
+  public InMemoryDatumEnvelopeFetcher(final FetchConsumptionEndPoint<byte[]> consumptionEndPoint,
+                                      final MetricsFactory metricFactory) {
 
     this.consumptionEndPoint = consumptionEndPoint;
 
@@ -58,7 +58,7 @@ public class ManualFeedDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
       receivedDatumEnvelopeCount.inc();
 
       return datumEnvelope;
-    } catch (final InterruptedException e) {
+    } catch (final Exception e) {
       failureCount.inc();
       throw new RuntimeException(e);
     }

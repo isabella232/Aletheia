@@ -20,8 +20,8 @@ public class KafkaStringNamedSender extends KafkaNamedSender<String, String> {
   }
 
   @Override
-  protected String convertInputToSendingFormat(final String s) {
-    return s;
+  protected String convertInputToSendingFormat(final String string) {
+    return string;
   }
 
   @Override

@@ -1,52 +1,26 @@
 package com.outbrain.aletheia.datum.production;
 
+import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
+import com.outbrain.aletheia.datum.InMemoryEndPoint;
+import com.outbrain.aletheia.datum.InMemoryStringEndPoint;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
-import java.nio.ByteBuffer;
-
 /**
- * Builds {@link com.outbrain.aletheia.datum.production.NamedSender<com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope>}s capable of sending data to an {@link InMemoryProductionEndPoint}.
+ * Builds {@link com.outbrain.aletheia.datum.production.NamedSender<com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope>}s capable of sending data to an {@link com.outbrain.aletheia.datum.InMemoryEndPoint}.
  */
-public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<InMemoryProductionEndPoint> {
-
-  private <T> InMemoryAccumulatingNamedSender<T> wireInMemoryProductionEndPoint(final InMemoryProductionEndPoint productionEndPoint,
-                                                                                final InMemoryAccumulatingNamedSender<T> sender) {
-    productionEndPoint.setReceivedData(sender.getSentData());
-    return sender;
-  }
+public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<InMemoryEndPoint> {
 
   @Override
-  public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final InMemoryProductionEndPoint productionEndPoint,
+  public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final InMemoryEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
 
-    if (productionEndPoint.getEndPointType() == InMemoryProductionEndPoint.EndPointType.RawDatumEnvelope) {
-
-      return new RawDatumEnvelopeBinarySender(
-
-              new DatumKeyAwareNamedSender<ByteBuffer>() {
-
-                final InMemoryAccumulatingNamedSender<byte[]> byteArraySender =
-                        wireInMemoryProductionEndPoint(productionEndPoint,
-                                                       new InMemoryAccumulatingNamedSender<byte[]>());
-
-                @Override
-                public String getName() {
-                  return byteArraySender.getName();
-                }
-
-                @Override
-                public void send(final ByteBuffer data, final String key) throws SilentSenderException {
-                  byteArraySender.send(data.array(), key);
-                }
-              });
-    } else if (productionEndPoint.getEndPointType() == InMemoryProductionEndPoint.EndPointType.String) {
-      return new DatumEnvelopePeelingStringSender(
-              wireInMemoryProductionEndPoint(productionEndPoint,
-                                             new InMemoryAccumulatingNamedSender<String>()));
+    if (productionEndPoint instanceof InMemoryBinaryEndPoint) {
+      return new RawDatumEnvelopeBinarySender(productionEndPoint);
+    } else if (productionEndPoint instanceof InMemoryStringEndPoint) {
+      return new DatumEnvelopePeelingStringSender(productionEndPoint);
     } else {
-      throw new IllegalArgumentException(String.format("Unknown encoding type %s",
-                                                       productionEndPoint.getEndPointType()));
+      throw new IllegalArgumentException(String.format("Unknown encoding type %s", productionEndPoint));
     }
   }
 }

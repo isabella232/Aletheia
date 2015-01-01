@@ -1,14 +1,17 @@
 package com.outbrain.aletheia.datum.consumption;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
+import com.outbrain.aletheia.datum.InMemoryDatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.production.AletheiaBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
+import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -68,7 +71,8 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   private void registerKnownConsumptionEndPointTypes() {
-    registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new ManualFeedDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(InMemoryBinaryEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 
   private List<AuditingDatumConsumer<TDomainClass>> datumConsumer(final DatumProducerConfig datumProducerConfig,
@@ -98,6 +102,11 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
 
     final DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory =
             endpoint2datumEnvelopeFetcherFactory.get(consumptionEndPointInfo.getConsumptionEndPoint().getClass());
+
+    Preconditions.checkState(datumEnvelopeFetcherFactory != null,
+                             String.format(
+                                     "No datum sender factory for production end point of type [%s] was provided.",
+                                     consumptionEndPointInfo.getClass().getSimpleName()));
 
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
             datumEnvelopeFetcherFactory
@@ -139,7 +148,7 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    */
   public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumConsumerBuilder<TDomainClass> registerConsumptionEndPointType(
           final Class<TConsumptionEndPoint> consumptionEndPointType,
-          final DatumEnvelopeFetcherFactory<UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
+          final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
 
     endpoint2datumEnvelopeFetcherFactory.put(consumptionEndPointType, datumEnvelopeFetcherFactory);
 
@@ -203,7 +212,7 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   /**
    * Builds a {@link AletheiaBuilder} instance.
    *
-   * @param domainClass the type of the datum to be consumed.
+   * @param domainClass    the type of the datum to be consumed.
    * @param <TDomainClass> the type of the datum to be consumed.
    * @return a fluent {@link AletheiaBuilder} to be used for building a {@link DatumConsumer} instances.
    */

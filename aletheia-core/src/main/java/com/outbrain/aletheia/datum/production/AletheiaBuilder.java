@@ -5,6 +5,8 @@ import com.outbrain.aletheia.EndPoint;
 import com.outbrain.aletheia.breadcrumbs.*;
 import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.DatumUtils;
+import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;
+import com.outbrain.aletheia.datum.InMemoryStringEndPoint;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
@@ -148,7 +150,9 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
   }
 
   protected void registerKnownProductionEndPointsTypes() {
-    this.registerProductionEndPointType(InMemoryProductionEndPoint.class, new InMemoryDatumEnvelopeSenderFactory());
+    final InMemoryDatumEnvelopeSenderFactory datumEnvelopeSenderFactory = new InMemoryDatumEnvelopeSenderFactory();
+    this.registerProductionEndPointType(InMemoryStringEndPoint.class, datumEnvelopeSenderFactory);
+    this.registerProductionEndPointType(InMemoryBinaryEndPoint.class, datumEnvelopeSenderFactory);
   }
 
   /**
@@ -179,7 +183,7 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
    */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> TBuilder registerProductionEndPointType(
           final Class<TProductionEndPoint> endPointType,
-          final DatumEnvelopeSenderFactory<UProductionEndPoint> datumEnvelopeSenderFactory) {
+          final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
 
     endpoint2datumEnvelopeSenderFactory.put(endPointType, datumEnvelopeSenderFactory);
 

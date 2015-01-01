@@ -4,7 +4,7 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 
 import java.util.Properties;
 
-public class KafkaTopicProductionEndPoint extends ProductionEndPoint {
+public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public enum EndPointType {RawDatumEnvelope, String}
 

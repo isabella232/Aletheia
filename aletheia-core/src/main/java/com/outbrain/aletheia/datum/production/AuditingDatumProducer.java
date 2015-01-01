@@ -47,6 +47,12 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   }
 
 
+  private String getErrorCategory(final Exception e) {
+    return e.getCause() != null ?
+           e.getCause().getClass().getSimpleName() :
+           e.getClass().getSimpleName();
+  }
+
   public void deliver(final TDomainClass datum) {
 
     final Timer.Context timerContext = deliverDurationTimer.time();
@@ -68,10 +74,10 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
     } catch (final SilentSenderException e) {
       metricFactory.createCounter("Deliver.Requests.Attempts.Failures." + SilentSenderException.class.getSimpleName(),
-                                  e.getCause().getClass().getSimpleName())
+                                  getErrorCategory(e))
                    .inc();
     } catch (final Exception e) {
-      metricFactory.createCounter("Deliver.Requests.Attempts.Failures", e.getCause().getClass().getSimpleName())
+      metricFactory.createCounter("Deliver.Requests.Attempts.Failures", getErrorCategory(e))
                    .inc();
       logger.error("Could not deliver datum." + datum, e);
     } finally {

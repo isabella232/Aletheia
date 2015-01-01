@@ -1,13 +1,14 @@
 package com.outbrain.aletheia.datum.consumption.kafka;
 
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.Properties;
 
 /**
  * A consumption endpoint for consuming data from a Kafka topic.
  */
-public class KafkaTopicConsumptionEndPoint extends ConsumptionEndPoint {
+public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
 
   public enum EndPointType {RawDatumEnvelope, String}
 
@@ -62,5 +63,10 @@ public class KafkaTopicConsumptionEndPoint extends ConsumptionEndPoint {
   @Override
   public String getName() {
     return endPointName;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }

@@ -1,8 +1,9 @@
-package com.outbrain.aletheia.datum.production;
+package com.outbrain.aletheia.tutorial;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
+import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 
 import java.util.List;
 import java.util.Map;
@@ -10,11 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This {@link ProductionEndPoint} type works in collaboration with the {@link com.outbrain.aletheia.datum.production.InMemoryAccumulatingNamedSender},
+ * This {@link com.outbrain.aletheia.datum.production.ProductionEndPoint} type works in collaboration with the {@link com.outbrain.aletheia.datum.production.InMemoryAccumulatingNamedSender},
  * jointly, they allow one to store incoming items in-memory, and query them later on.
  * This type of endpoint is useful for experiments and tests.
  */
-public class InMemoryProductionEndPoint extends ProductionEndPoint {
+public class InMemoryProductionEndPoint implements ProductionEndPoint {
 
   private static final String IN_MEMORY = "InMemory";
 
@@ -22,10 +23,6 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
 
   private final EndPointType endPointType;
   private Map<String, ? extends List> receivedData = Maps.newConcurrentMap();
-
-  private final Map<String, List<String>> receivedStringData = Maps.newConcurrentMap();
-  private final Map<String, List<byte[]>> receivedBinaryData = Maps.newConcurrentMap();
-
 
   public InMemoryProductionEndPoint(final EndPointType endPointType) {
     this.endPointType = endPointType;

@@ -6,7 +6,7 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 /**
  * Created by slevin on 8/5/14.
  */
-public class LogFileProductionEndPoint extends ProductionEndPoint {
+public class LogFileProductionEndPoint implements ProductionEndPoint {
 
   private static final String LOG_FILE = "LogFile";
 

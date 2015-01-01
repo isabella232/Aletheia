@@ -1,13 +1,14 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.Properties;
 
 /**
  * A production endpoint for producing data to a Kafka topic.
  */
-public class KafkaTopicProductionEndPoint extends ProductionEndPoint {
+public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public enum EndPointType {RawDatumEnvelope, String}
 
@@ -60,6 +61,11 @@ public class KafkaTopicProductionEndPoint extends ProductionEndPoint {
   @Override
   public String getName() {
     return endPointName;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }
 

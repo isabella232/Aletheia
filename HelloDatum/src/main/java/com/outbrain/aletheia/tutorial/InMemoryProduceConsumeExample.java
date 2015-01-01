@@ -6,7 +6,6 @@ import com.outbrain.aletheia.datum.consumption.*;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.DatumProducerBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
-import com.outbrain.aletheia.datum.production.InMemoryProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import org.joda.time.Instant;

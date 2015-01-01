@@ -1,13 +1,13 @@
 package com.outbrain.aletheia.datum.production;
 
-import com.outbrain.aletheia.PrettyToStringEndPoint;
+import com.outbrain.aletheia.EndPoint;
 
 import java.io.Serializable;
 
 /**
  * Represents a destination a {@link DatumProducer} can produce data to.
  */
-public abstract class ProductionEndPoint extends PrettyToStringEndPoint implements Serializable {
+public interface ProductionEndPoint extends EndPoint, Serializable {
 
 }
 
