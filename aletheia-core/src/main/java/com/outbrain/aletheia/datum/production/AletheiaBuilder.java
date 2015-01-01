@@ -1,7 +1,7 @@
 package com.outbrain.aletheia.datum.production;
 
 import com.google.common.collect.Maps;
-import com.outbrain.aletheia.EndPoint;
+import com.outbrain.aletheia.datum.EndPoint;
 import com.outbrain.aletheia.breadcrumbs.*;
 import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.DatumUtils;

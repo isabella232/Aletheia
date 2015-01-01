@@ -1,10 +1,6 @@
-package com.outbrain.aletheia.datum;
+package com.outbrain.aletheia.datum.consumption;
 
 import com.google.common.collect.Lists;
-import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
-import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
-import com.outbrain.aletheia.datum.consumption.FetchConsumptionEndPoint;
-import com.outbrain.aletheia.datum.consumption.InMemoryDatumEnvelopeFetcher;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 import java.util.List;

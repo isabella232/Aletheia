@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
-import com.outbrain.aletheia.datum.InMemoryDatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.production.AletheiaBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
 import com.outbrain.aletheia.datum.InMemoryBinaryEndPoint;

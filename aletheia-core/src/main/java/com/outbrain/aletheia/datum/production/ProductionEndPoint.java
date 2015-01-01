@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.datum.production;
 
-import com.outbrain.aletheia.EndPoint;
+import com.outbrain.aletheia.datum.EndPoint;
 
 import java.io.Serializable;
 

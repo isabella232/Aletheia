@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class LocalKafkaProduceConsume {
+public class LocalKafkaProduceConsumeExample {
 
   private static final String END_POINT_NAME = "myTestEndPoint";
   private static final String TOPIC_NAME = "test";

@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.metrics;
 
-import com.outbrain.aletheia.EndPoint;
+import com.outbrain.aletheia.datum.EndPoint;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
