@@ -3,6 +3,6 @@ package com.outbrain.aletheia.datum.production;
 /**
  * A {@code Sender} that has an alias.
  */
-public interface NamedKeyAwareSender<T> extends Named, KeyAwareSender<T> {
+public interface DatumKeyAwareNamedSender<T> extends Named, DatumKeyAwareSender<T> {
   String getName();
 }

@@ -13,9 +13,9 @@ public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelo
 
   public static final String UTF_8 = "UTF-8";
 
-  private final NamedKeyAwareSender<String> stringTransporter;
+  private final DatumKeyAwareNamedSender<String> stringTransporter;
 
-  public DatumEnvelopePeelingStringSender(final NamedKeyAwareSender<String> stringTransporter) {
+  public DatumEnvelopePeelingStringSender(final DatumKeyAwareNamedSender<String> stringTransporter) {
     this.stringTransporter = stringTransporter;
   }
 

@@ -15,7 +15,7 @@ public class LogFileDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFac
 
     final StringLogFileSender stringLogFileSender = new StringLogFileSender(productionEndPoint, metricFactory);
 
-    return new DatumEnvelopePeelingStringSender(new NamedKeyAwareSender<String>() {
+    return new DatumEnvelopePeelingStringSender(new DatumKeyAwareNamedSender<String>() {
       @Override
       public String getName() {
         return stringLogFileSender.getName();

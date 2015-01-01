@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
-import com.outbrain.aletheia.datum.production.NamedKeyAwareSender;
+import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.common.Counter;
@@ -17,9 +17,9 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSender<TInput>, NamedSender<TInput> {
+public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput>, NamedSender<TInput> {
 
-  private static final Logger logger = LoggerFactory.getLogger(KafkaSender.class);
+  private static final Logger logger = LoggerFactory.getLogger(KafkaNamedSender.class);
 
   private Producer<String, TPayload> producer;
   private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
@@ -39,8 +39,8 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
   private final ProducerConfig customConfiguration;
 
 
-  public KafkaSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
-                     final MetricsFactory metricFactory) {
+  public KafkaNamedSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
+                          final MetricsFactory metricFactory) {
 
     this.kafkaTopicDeliveryEndPoint = kafkaTopicDeliveryEndPoint;
     this.metricFactory = metricFactory;

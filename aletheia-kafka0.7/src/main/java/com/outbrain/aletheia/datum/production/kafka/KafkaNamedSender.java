@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.outbrain.aletheia.datum.production.NamedKeyAwareSender;
+import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.common.Counter;
@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSender<TInput>, NamedSender<TInput> {
+public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput>, NamedSender<TInput> {
 
-  private static final Logger logger = LoggerFactory.getLogger(KafkaSender.class);
+  private static final Logger logger = LoggerFactory.getLogger(KafkaNamedSender.class);
 
   private Producer<String, TPayload> producer;
   private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
@@ -40,8 +40,8 @@ public abstract class KafkaSender<TInput, TPayload> implements NamedKeyAwareSend
   private final ProducerConfig customConfiguration;
 
 
-  public KafkaSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
-                     final MetricsFactory metricFactory) {
+  public KafkaNamedSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
+                          final MetricsFactory metricFactory) {
 
     this.kafkaTopicDeliveryEndPoint = kafkaTopicDeliveryEndPoint;
     this.metricFactory = metricFactory;

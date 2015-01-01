@@ -21,7 +21,11 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
   public enum EndPointType {RawDatumEnvelope, String}
 
   private final EndPointType endPointType;
-  private Map<String, List<Object>> receivedData = Maps.newConcurrentMap();
+  private Map<String, ? extends List> receivedData = Maps.newConcurrentMap();
+
+  private final Map<String, List<String>> receivedStringData = Maps.newConcurrentMap();
+  private final Map<String, List<byte[]>> receivedBinaryData = Maps.newConcurrentMap();
+
 
   public InMemoryProductionEndPoint(final EndPointType endPointType) {
     this.endPointType = endPointType;
@@ -31,7 +35,7 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
 
     ConcurrentMap<String, List<String>> res = new ConcurrentHashMap<>();
 
-    for (Map.Entry<String, List<Object>> e : getReceivedData().entrySet()) {
+    for (Map.Entry<String, ? extends List> e : getReceivedData().entrySet()) {
       res.put(e.getKey(), FluentIterable.from(e.getValue()).transform(new Function<Object, String>() {
         @Override
         public String apply(final Object value) {
@@ -47,7 +51,7 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
 
     Map<String, List<byte[]>> res = new ConcurrentHashMap<>();
 
-    for (Map.Entry<String, List<Object>> e : getReceivedData().entrySet()) {
+    for (Map.Entry<String, ? extends List> e : getReceivedData().entrySet()) {
       res.put(e.getKey(), FluentIterable.from(e.getValue()).transform(new Function<Object, byte[]>() {
         @Override
         public byte[] apply(final Object value) {
@@ -59,7 +63,7 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
     return res;
   }
 
-  public Map<String, List<Object>> getReceivedData() {
+  public Map<String, ? extends List> getReceivedData() {
     return receivedData;
   }
 
@@ -67,7 +71,7 @@ public class InMemoryProductionEndPoint extends ProductionEndPoint {
     return endPointType;
   }
 
-  public void setReceivedData(final Map<String, List<Object>> receivedData) {
+  public void setReceivedData(final Map<String, ? extends List> receivedData) {
     this.receivedData = receivedData;
   }
 

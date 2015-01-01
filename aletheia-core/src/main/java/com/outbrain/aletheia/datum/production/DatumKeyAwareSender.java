@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.datum.production;
 
-public interface KeyAwareSender<TInput> {
+public interface DatumKeyAwareSender<TInput> {
   void send(final TInput data, String key) throws SilentSenderException;
 }
 

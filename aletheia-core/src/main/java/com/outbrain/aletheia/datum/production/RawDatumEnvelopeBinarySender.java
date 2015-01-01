@@ -13,9 +13,9 @@ public class RawDatumEnvelopeBinarySender implements NamedSender<DatumEnvelope> 
 
   private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();
 
-  private final NamedKeyAwareSender<ByteBuffer> binaryDataTransporter;
+  private final DatumKeyAwareNamedSender<ByteBuffer> binaryDataTransporter;
 
-  public RawDatumEnvelopeBinarySender(final NamedKeyAwareSender<ByteBuffer> binaryDataTransporter) {
+  public RawDatumEnvelopeBinarySender(final DatumKeyAwareNamedSender<ByteBuffer> binaryDataTransporter) {
     this.binaryDataTransporter = binaryDataTransporter;
   }
 

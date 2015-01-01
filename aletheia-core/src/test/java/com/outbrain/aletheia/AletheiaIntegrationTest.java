@@ -68,9 +68,9 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   private static final boolean SHOULD_NOT_BE_SENT = false;
   protected final Random random = new Random();
   protected final Class<TDomainClass> domainClass;
-  private final Predicate<List<Object>> nonEmpty = new Predicate<List<Object>>() {
+  private final Predicate<List> nonEmpty = new Predicate<List>() {
     @Override
-    public boolean apply(final List<Object> list) {
+    public boolean apply(final List list) {
       return list.size() != 0;
     }
   };
@@ -181,7 +181,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
     assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
     assertThat(Sets.newHashSet(breadcrumbProductionEndPoint.getReceivedData().keySet()),
-               is(Sets.newHashSet(InMemoryAccumulatingSender.DEFAULT_DATUM_KEY)));
+               is(Sets.newHashSet(InMemoryAccumulatingNamedSender.DEFAULT_DATUM_KEY)));
   }
 
   protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {

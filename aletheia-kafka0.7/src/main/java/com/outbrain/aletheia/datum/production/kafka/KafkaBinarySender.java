@@ -7,7 +7,7 @@ import kafka.producer.ProducerConfig;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
-public class KafkaBinarySender extends KafkaSender<ByteBuffer, Message> {
+public class KafkaBinarySender extends KafkaNamedSender<ByteBuffer, Message> {
 
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
                            final MetricsFactory metricFactory) {

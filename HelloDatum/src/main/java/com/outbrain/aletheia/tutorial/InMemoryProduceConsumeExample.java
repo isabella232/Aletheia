@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InMemoryProduceConsume {
+public class InMemoryProduceConsumeExample {
 
   public static void main(String[] args) {
 

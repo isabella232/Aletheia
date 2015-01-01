@@ -6,10 +6,10 @@ import kafka.producer.ProducerConfig;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
-public class KafkaBinarySender extends KafkaSender<ByteBuffer, byte[]> {
+public class KafkaBinaryNamedSender extends KafkaNamedSender<ByteBuffer, byte[]> {
 
-  public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
-                           final MetricsFactory metricFactory) {
+  public KafkaBinaryNamedSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
+                                final MetricsFactory metricFactory) {
     super(kafkaTopicDeliveryEndPoint, metricFactory);
   }
 

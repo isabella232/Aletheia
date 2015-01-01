@@ -5,7 +5,7 @@ import kafka.producer.ProducerConfig;
 
 import java.util.Properties;
 
-public class KafkaStringSender extends KafkaSender<String, String> {
+public class KafkaStringSender extends KafkaNamedSender<String, String> {
 
   @Override
   protected ProducerConfig customizeConfig(final ProducerConfig config) {
