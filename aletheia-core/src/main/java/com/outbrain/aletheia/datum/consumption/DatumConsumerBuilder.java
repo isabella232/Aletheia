@@ -70,7 +70,7 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
   }
 
   private void registerKnownConsumptionEndPointTypes() {
-    registerConsumptionEndPointType(InMemoryEndPoint.Binary.class, new InMemoryDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(InMemoryEndPoint.WithBinaryStorage.class, new InMemoryDatumEnvelopeFetcherFactory());
     registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 

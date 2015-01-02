@@ -147,8 +147,8 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
 
   protected void registerKnownProductionEndPointsTypes() {
     final InMemoryDatumEnvelopeSenderFactory datumEnvelopeSenderFactory = new InMemoryDatumEnvelopeSenderFactory();
-    this.registerProductionEndPointType(InMemoryEndPoint.RawString.class, datumEnvelopeSenderFactory);
-    this.registerProductionEndPointType(InMemoryEndPoint.Binary.class, datumEnvelopeSenderFactory);
+    this.registerProductionEndPointType(InMemoryEndPoint.WithStringStorage.class, datumEnvelopeSenderFactory);
+    this.registerProductionEndPointType(InMemoryEndPoint.WithBinaryStorage.class, datumEnvelopeSenderFactory);
   }
 
   /**

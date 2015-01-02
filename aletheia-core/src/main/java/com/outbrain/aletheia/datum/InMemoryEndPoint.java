@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -13,6 +14,7 @@ import com.outbrain.aletheia.datum.production.SilentSenderException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This {@link com.outbrain.aletheia.datum.production.ProductionEndPoint} type works in collaboration with the {@link com.outbrain.aletheia.datum.production.InMemoryAccumulatingNamedSender},
@@ -20,43 +22,40 @@ import java.util.concurrent.ArrayBlockingQueue;
  * This type of endpoint is useful for experiments and tests.
  */
 public abstract class InMemoryEndPoint<T, U>
-        implements ProductionEndPoint, FetchConsumptionEndPoint<U>, DatumKeyAwareNamedSender<T>, NamedSender<T>, DatumKeyAwareFetchEndPoint<U> {
+        implements ProductionEndPoint,
+        FetchConsumptionEndPoint<U>,
+        DatumKeyAwareNamedSender<T>,
+        NamedSender<T>,
+        DatumKeyAwareFetchEndPoint<U> {
 
-  public static class Binary extends InMemoryEndPoint<ByteBuffer,byte[]> {
+  public static class WithBinaryStorage extends InMemoryEndPoint<ByteBuffer, byte[]> {
 
-    public Binary() {
-
-    }
-
-    public Binary(final int queueSize) {
+    public WithBinaryStorage(final int queueSize) {
       super(queueSize);
     }
 
     @Override
-    protected byte[] convert(final ByteBuffer data) {
+    protected byte[] transform(final ByteBuffer data) {
       return data.array();
     }
   }
 
-  public static class RawString extends InMemoryEndPoint<String, String>  {
+  public static class WithStringStorage extends InMemoryEndPoint<String, String> {
 
-    public RawString() {
-    }
-
-    public RawString(final int queueSize) {
+    public WithStringStorage(final int queueSize) {
       super(queueSize);
     }
 
     @Override
-    protected String convert(final String data) {
+    protected String transform(final String data) {
       return data;
     }
 
   }
-  public static String DEFAULT_DATUM_KEY = "random";
 
-  private static final int DEFAULT_QUEUE_SIZE = 100;
+  public static String DEFAULT_DATUM_KEY = "random";
   private static final String IN_MEMORY = "InMemory";
+  private static final long EMPTY_QUEUES_WAIT_MILLI = 10;
 
   private final Predicate<ArrayBlockingQueue<U>> nonEmptyQueue = new Predicate<ArrayBlockingQueue<U>>() {
     @Override
@@ -65,27 +64,29 @@ public abstract class InMemoryEndPoint<T, U>
     }
   };
 
-  private Map<String, ArrayBlockingQueue<U>> sentData = Maps.newConcurrentMap();
+  private ConcurrentMap<String, ArrayBlockingQueue<U>> producedData = Maps.newConcurrentMap();
   private int queueSize;
-
-  protected InMemoryEndPoint() {
-    this(DEFAULT_QUEUE_SIZE);
-  }
 
   protected InMemoryEndPoint(int queueSize) {
     this.queueSize = queueSize;
   }
 
-  protected abstract U convert(final T data);
+  protected abstract U transform(final T data);
 
   @Override
   public U fetch() {
     try {
-      return FluentIterable.from(sentData.values())
-                           .filter(nonEmptyQueue)
-                           .first()
-                           .get()
-                           .take();
+
+      Optional<ArrayBlockingQueue<U>> firstNonEmptyQueue;
+
+      do {
+        firstNonEmptyQueue = FluentIterable.from(producedData.values())
+                                           .filter(nonEmptyQueue)
+                                           .first();
+        Thread.sleep(EMPTY_QUEUES_WAIT_MILLI);
+      } while (!firstNonEmptyQueue.isPresent());
+
+      return firstNonEmptyQueue.get().take();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -94,7 +95,7 @@ public abstract class InMemoryEndPoint<T, U>
   @Override
   public U fetch(String key) {
     try {
-      return sentData.get(key).take();
+      return producedData.get(key).take();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -105,12 +106,10 @@ public abstract class InMemoryEndPoint<T, U>
 
     final String validKey = key != null ? key : DEFAULT_DATUM_KEY;
 
-    if (!sentData.containsKey(validKey)) {
-      sentData.put(validKey, new ArrayBlockingQueue<U>(queueSize));
-    }
+    producedData.putIfAbsent(validKey, new ArrayBlockingQueue<U>(queueSize));
 
     try {
-      sentData.get(validKey).put(convert(data));
+      producedData.get(validKey).put(transform(data));
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -126,7 +125,7 @@ public abstract class InMemoryEndPoint<T, U>
     return IN_MEMORY;
   }
 
-  public Map<String, ? extends Iterable<U>> getSentData() {
-    return sentData;
+  public Map<String, ? extends Iterable<U>> getData() {
+    return producedData;
   }
 }

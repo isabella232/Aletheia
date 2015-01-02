@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.*;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -34,6 +35,8 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private static final String DATUM_KEY = "datumKey";
+  private static final int CONSUME_DATA_TIMEOUT_MILLI = 200;
+  private static final int BREADCRUMB_WAIT_ATTEMPT_COOLDOWN_MILLIS = 100;
 
   private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
 
@@ -67,17 +70,18 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
 
   private static final DatumConsumerConfig DATUM_CONSUMER_CONFIG = new DatumConsumerConfig(0, "originalHostname");
-  private static final boolean SHOULD_BE_SENT = true;
 
+  private static final boolean SHOULD_BE_SENT = true;
   private static final boolean SHOULD_NOT_BE_SENT = false;
-  protected final Random random = new Random();
-  protected final Class<TDomainClass> domainClass;
-  private final Predicate<Iterable> nonEmpty = new Predicate<Iterable>() {
+
+  protected final Predicate<Iterable> nonEmpty = new Predicate<Iterable>() {
     @Override
     public boolean apply(final Iterable iterable) {
       return iterable.iterator().hasNext();
     }
   };
+  protected final Random random = new Random();
+  protected final Class<TDomainClass> domainClass;
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
@@ -96,9 +100,10 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
             .build(DATUM_PRODUCER_CONFIG);
   }
 
-  private DatumConsumer<TDomainClass> datumConsumer(final InMemoryEndPoint.Binary consumptionEndPoint,
+  private DatumConsumer<TDomainClass> datumConsumer(final ConsumptionEndPoint consumptionEndPoint,
                                                     final ProductionEndPoint breadcrumbProductionEndPoint,
                                                     final DatumSerDe<TDomainClass> datumSerDe) {
+
     final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
             DatumConsumerBuilder
                     .forDomainClass(domainClass)
@@ -110,7 +115,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     return Iterables.getFirst(consumptionEndPoint2datumConsumer.get(consumptionEndPoint), null);
   }
 
-  private void assertBreadcrumb(final InMemoryEndPoint.RawString breadcrumbProductionEndPoint,
+  private void assertBreadcrumb(final InMemoryEndPoint.WithStringStorage breadcrumbProductionEndPoint,
                                 final BreadcrumbsConfig breadcrumbsConfig) {
 
     String breadcrumbJsonString = null;
@@ -118,11 +123,11 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     // wait for the breadcrumbs to arrive.
     for (int attempts = 1; attempts < 10; attempts++) {
       try {
-        if (Iterables.any(breadcrumbProductionEndPoint.getSentData().values(), nonEmpty)) {
-          final Iterable<String> allBreadcrumbs = Iterables.concat(breadcrumbProductionEndPoint.getSentData().values());
+        if (Iterables.any(breadcrumbProductionEndPoint.getData().values(), nonEmpty)) {
+          final Iterable<String> allBreadcrumbs = Iterables.concat(breadcrumbProductionEndPoint.getData().values());
           breadcrumbJsonString = FluentIterable.from(allBreadcrumbs).first().get();
         } else {
-          Thread.sleep(100);
+          Thread.sleep(BREADCRUMB_WAIT_ATTEMPT_COOLDOWN_MILLIS);
         }
       } catch (final InterruptedException e) {
         Assert.fail();
@@ -136,29 +141,50 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     assertThat(breadcrumb.getDatacenter(), is(breadcrumbsConfig.getDatacenter()));
     assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
     assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
-    assertThat(Sets.newHashSet(breadcrumbProductionEndPoint.getSentData().keySet()),
+    assertThat(Sets.newHashSet(breadcrumbProductionEndPoint.getData().keySet()),
                is(Sets.newHashSet(InMemoryAccumulatingNamedSender.DEFAULT_DATUM_KEY)));
   }
 
-  protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {
-    final Breadcrumb breadcrumb;
+  private ImmutableList<TDomainClass> consumeDataOrTimeout(final DatumConsumer<TDomainClass> datumConsumer,
+                                                           final int timeout) {
+
+    final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    final List<TDomainClass> receivedDatums = Lists.newLinkedList();
+
+    final Future<?> submit = executorService.submit(new Runnable() {
+      @Override
+      public void run() {
+        for (TDomainClass aDatum : datumConsumer.datums()) {
+          receivedDatums.add(aDatum);
+        }
+      }
+    });
+
     try {
-      final ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.registerModule(new JodaModule());
-      breadcrumb = objectMapper.readValue(breadcrumbJsonString, Breadcrumb.class);
-    } catch (final IOException e) {
+      submit.get(timeout, TimeUnit.MILLISECONDS);
+    } catch (ExecutionException | InterruptedException e) {
       throw new RuntimeException(e);
+    } catch (TimeoutException e) {
+      // done waiting
     }
-    return breadcrumb;
+
+    return ImmutableList.copyOf(receivedDatums);
   }
 
-  protected abstract TDomainClass randomDomainClassDatum(final boolean shouldBeSent);
+  private void produceData(final List<TDomainClass> domainObjects,
+                           final DatumProducer<TDomainClass> datumProducer) {
+    for (final TDomainClass aDatum : domainObjects) {
+      datumProducer.deliver(aDatum);
+    }
+  }
 
-  protected void testEnd2End(final DatumSerDe<TDomainClass> datumSerDe,
-                             final Predicate<TDomainClass> filter) throws InterruptedException {
+  private void assertDatumFlow(final List<TDomainClass> originalDomainObjects,
+                               final TDomainClass filteredDatum,
+                               final ImmutableList<TDomainClass> consumedDatums,
+                               final InMemoryEndPoint.WithBinaryStorage dataProductionEndPoint,
+                               final InMemoryEndPoint.WithStringStorage producerBreadcrumbProductionEndPoint,
+                               final InMemoryEndPoint.WithStringStorage consumerBreadcrumbsProductionEndPoint) {
 
-    final TDomainClass datum = randomDomainClassDatum(SHOULD_BE_SENT);
-    final TDomainClass filteredDatum = randomDomainClassDatum(SHOULD_NOT_BE_SENT);
     final Predicate<TDomainClass> shouldHaveBeenSent = new Predicate<TDomainClass>() {
       @Override
       public boolean apply(final TDomainClass datum) {
@@ -166,17 +192,51 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
       }
     };
 
+    assertThat(consumedDatums.size(), is(1));
+    assertThat(consumedDatums, not(hasItem(filteredDatum)));
+    assertThat("Received datums were not the same as the ones that were sent.",
+               consumedDatums,
+               is(FluentIterable.from(originalDomainObjects)
+                                .filter(shouldHaveBeenSent)
+                                .toList()));
+    assertThat("Unexpected datum keys were used for sending.",
+               Sets.newHashSet(dataProductionEndPoint.getData().keySet()),
+               is(Sets.newHashSet(DATUM_KEY)));
 
-    final List<TDomainClass> originalDomainObjects =
-            FluentIterable
-                    .from(Lists.newArrayList(datum, filteredDatum))
-                    .filter(Predicates.notNull())
-                    .toList();
+    assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
+    assertBreadcrumb(consumerBreadcrumbsProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG);
+  }
 
+  protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {
 
-    final InMemoryEndPoint.Binary dataProductionEndPoint = new InMemoryEndPoint.Binary(1);
-    final InMemoryEndPoint.RawString producerBreadcrumbProductionEndPoint = new InMemoryEndPoint.RawString();
-    final InMemoryEndPoint.RawString consumerBreadcrumbsProductionEndPoint = new InMemoryEndPoint.RawString();
+    final ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JodaModule());
+
+    try {
+      return objectMapper.readValue(breadcrumbJsonString, Breadcrumb.class);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected abstract TDomainClass randomDomainClassDatum(final boolean shouldBeSent);
+
+  protected void testEnd2End(final DatumSerDe<TDomainClass> datumSerDe, final Predicate<TDomainClass> filter) {
+
+    final TDomainClass datum = randomDomainClassDatum(SHOULD_BE_SENT);
+    final TDomainClass filteredDatum = randomDomainClassDatum(SHOULD_NOT_BE_SENT);
+    final List<TDomainClass> domainObjects = FluentIterable.from(Lists.newArrayList(datum, filteredDatum))
+                                                                   .filter(Predicates.notNull())
+                                                                   .toList();
+
+    final InMemoryEndPoint.WithBinaryStorage dataProductionEndPoint =
+            new InMemoryEndPoint.WithBinaryStorage(1);
+
+    final InMemoryEndPoint.WithStringStorage producerBreadcrumbProductionEndPoint =
+            new InMemoryEndPoint.WithStringStorage(10);
+
+    final InMemoryEndPoint.WithStringStorage consumerBreadcrumbsProductionEndPoint =
+            new InMemoryEndPoint.WithStringStorage(10);
 
     final DatumProducer<TDomainClass> datumProducer = datumProducer(dataProductionEndPoint,
                                                                     producerBreadcrumbProductionEndPoint,
@@ -187,34 +247,16 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                                                     consumerBreadcrumbsProductionEndPoint,
                                                                     datumSerDe);
 
-    // slevin: TODO add timeouts
+    produceData(domainObjects, datumProducer);
+    final ImmutableList<TDomainClass> consumedData = consumeDataOrTimeout(datumConsumer, CONSUME_DATA_TIMEOUT_MILLI);
 
-    for (final TDomainClass aDatum : originalDomainObjects) {
-      datumProducer.deliver(aDatum);
-    }
-
-    List<TDomainClass> receivedDatums = Lists.newLinkedList();
-    try {
-      for (TDomainClass aDatum : datumConsumer.datums()) {
-        receivedDatums.add(aDatum);
-      }
-    } catch (Exception e) {
-      // assuming end of datums
-    }
-
-    assertThat(receivedDatums.size(), is(1));
-    assertThat(receivedDatums, not(hasItem(filteredDatum)));
-    assertThat("Received datums were not the same as the ones that were sent.",
-               ImmutableList.copyOf(receivedDatums),
-               is(FluentIterable.from(originalDomainObjects)
-                                .filter(shouldHaveBeenSent)
-                                .toList()));
-    assertThat("Unexpected datum keys were used for sending.",
-               Sets.newHashSet(dataProductionEndPoint.getSentData().keySet()),
-               is(Sets.newHashSet(DATUM_KEY)));
-
-    assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
-    assertBreadcrumb(consumerBreadcrumbsProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG);
+    assertDatumFlow(domainObjects,
+                    filteredDatum,
+                    consumedData,
+                    dataProductionEndPoint,
+                    producerBreadcrumbProductionEndPoint,
+                    consumerBreadcrumbsProductionEndPoint
+    );
 
     // prints a pretty metric tree
     metricsFactory.getMetricTree().prettyPrint();

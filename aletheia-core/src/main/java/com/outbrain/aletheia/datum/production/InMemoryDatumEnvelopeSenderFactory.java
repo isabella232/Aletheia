@@ -13,9 +13,9 @@ public class InMemoryDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFa
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final InMemoryEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
 
-    if (productionEndPoint instanceof InMemoryEndPoint.Binary) {
+    if (productionEndPoint instanceof InMemoryEndPoint.WithBinaryStorage) {
       return new RawDatumEnvelopeBinarySender(productionEndPoint);
-    } else if (productionEndPoint instanceof InMemoryEndPoint.RawString) {
+    } else if (productionEndPoint instanceof InMemoryEndPoint.WithStringStorage) {
       return new DatumEnvelopePeelingStringSender(productionEndPoint);
     } else {
       throw new IllegalArgumentException(String.format("Unknown encoding type %s", productionEndPoint));
