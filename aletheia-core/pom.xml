@@ -35,6 +35,32 @@
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <!--Embedding Avro to prevent version conflicts with clients-->
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>jarjar-maven-plugin</artifactId>
+        <version>1.9</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jarjar</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>org.apache.avro:avro</include>
+              </includes>
+              <rules>
+                <rule>
+                  <pattern>org.apache.avro.**</pattern>
+                  <result>com.outbrain.aletheia.avro.internal.@1</result>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
