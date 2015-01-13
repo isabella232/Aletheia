@@ -11,9 +11,9 @@ import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
-import com.outbrain.aletheia.datum.consumption.DatumConsumer;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.datum.production.*;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.RecordingMetricFactory;
@@ -23,7 +23,6 @@ import org.joda.time.Duration;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.*;
 
@@ -59,7 +58,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                 "tier_tx",
                                 "dc_tx");
 
-  private static final BreadcrumbsConfig CONSUMER_BREADCRUMBS_CONFIG =
+  private static final BreadcrumbsConfig DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG =
           new BreadcrumbsConfig(BREADCRUMB_BUCKET_DURATION,
                                 BREADCRUMB_BUCKET_FLUSH_INTERVAL,
                                 "app_rx",
@@ -69,28 +68,29 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
 
-  private static final DatumConsumerConfig DATUM_CONSUMER_CONFIG = new DatumConsumerConfig(0, "originalHostname");
+  private static final DatumConsumerStreamConfig
+          DATUM_CONSUMER_STREAM_CONFIG = new DatumConsumerStreamConfig(0, "originalHostname");
 
   private static final boolean SHOULD_BE_SENT = true;
   private static final boolean SHOULD_NOT_BE_SENT = false;
 
-  protected final Predicate<Iterable> nonEmpty = new Predicate<Iterable>() {
+  private final Predicate<Iterable> nonEmpty = new Predicate<Iterable>() {
     @Override
     public boolean apply(final Iterable iterable) {
       return iterable.iterator().hasNext();
     }
   };
   protected final Random random = new Random();
-  protected final Class<TDomainClass> domainClass;
+  private final Class<TDomainClass> domainClass;
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
   }
 
-  private DatumProducer<TDomainClass> datumProducer(final ProductionEndPoint dataProductionEndPoint,
-                                                    final ProductionEndPoint breadcrumbProductionEndPoint,
-                                                    final DatumSerDe<TDomainClass> datumSerDe,
-                                                    final Predicate<TDomainClass> datumFilter) {
+  private DatumProducer<TDomainClass> createDatumProducer(final ProductionEndPoint dataProductionEndPoint,
+                                                          final ProductionEndPoint breadcrumbProductionEndPoint,
+                                                          final DatumSerDe<TDomainClass> datumSerDe,
+                                                          final Predicate<TDomainClass> datumFilter) {
     return DatumProducerBuilder
             .forDomainClass(domainClass)
             .reportMetricsTo(metricsFactory)
@@ -100,19 +100,19 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
             .build(DATUM_PRODUCER_CONFIG);
   }
 
-  private DatumConsumer<TDomainClass> datumConsumer(final ConsumptionEndPoint consumptionEndPoint,
-                                                    final ProductionEndPoint breadcrumbProductionEndPoint,
-                                                    final DatumSerDe<TDomainClass> datumSerDe) {
+  private DatumConsumerStream<TDomainClass> createDatumStream(final ConsumptionEndPoint consumptionEndPoint,
+                                                              final ProductionEndPoint breadcrumbProductionEndPoint,
+                                                              final DatumSerDe<TDomainClass> datumSerDe) {
 
-    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
-            DatumConsumerBuilder
+    final List<DatumConsumerStream<TDomainClass>> datumConsumerStreams =
+            DatumConsumerStreamsBuilder
                     .forDomainClass(domainClass)
                     .reportMetricsTo(metricsFactory)
                     .consumeDataFrom(consumptionEndPoint, datumSerDe)
-                    .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG)
-                    .build(DATUM_CONSUMER_CONFIG);
+                    .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG)
+                    .build(DATUM_CONSUMER_STREAM_CONFIG);
 
-    return Iterables.getFirst(consumptionEndPoint2datumConsumer.get(consumptionEndPoint), null);
+    return Iterables.getFirst(datumConsumerStreams, null);
   }
 
   private void assertBreadcrumb(final InMemoryEndPoint.WithStringStorage breadcrumbProductionEndPoint,
@@ -145,7 +145,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                is(Sets.newHashSet(InMemoryAccumulatingNamedSender.DEFAULT_DATUM_KEY)));
   }
 
-  private ImmutableList<TDomainClass> consumeDataOrTimeout(final DatumConsumer<TDomainClass> datumConsumer,
+  private ImmutableList<TDomainClass> consumeDataOrTimeout(final DatumConsumerStream<TDomainClass> datumConsumerStream,
                                                            final int timeout) {
 
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -154,7 +154,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     final Future<?> submit = executorService.submit(new Runnable() {
       @Override
       public void run() {
-        for (TDomainClass aDatum : datumConsumer.datums()) {
+        for (TDomainClass aDatum : datumConsumerStream.datums()) {
           receivedDatums.add(aDatum);
         }
       }
@@ -183,7 +183,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                final ImmutableList<TDomainClass> consumedDatums,
                                final InMemoryEndPoint.WithBinaryStorage dataProductionEndPoint,
                                final InMemoryEndPoint.WithStringStorage producerBreadcrumbProductionEndPoint,
-                               final InMemoryEndPoint.WithStringStorage consumerBreadcrumbsProductionEndPoint) {
+                               final InMemoryEndPoint.WithStringStorage consumerStreamBreadcrumbsProductionEndPoint) {
 
     final Predicate<TDomainClass> shouldHaveBeenSent = new Predicate<TDomainClass>() {
       @Override
@@ -204,7 +204,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                is(Sets.newHashSet(DATUM_KEY)));
 
     assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
-    assertBreadcrumb(consumerBreadcrumbsProductionEndPoint, CONSUMER_BREADCRUMBS_CONFIG);
+    assertBreadcrumb(consumerStreamBreadcrumbsProductionEndPoint, DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG);
   }
 
   protected Breadcrumb deserializeBreadcrumb(final String breadcrumbJsonString) {
@@ -219,15 +219,19 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     }
   }
 
-  protected abstract TDomainClass randomDomainClassDatum(final boolean shouldBeSent);
+  protected abstract TDomainClass domainClassRandomDatum(final boolean shouldBeSent);
+
+  protected Class<TDomainClass> getDomainClass() {
+    return domainClass;
+  }
 
   protected void testEnd2End(final DatumSerDe<TDomainClass> datumSerDe, final Predicate<TDomainClass> filter) {
 
-    final TDomainClass datum = randomDomainClassDatum(SHOULD_BE_SENT);
-    final TDomainClass filteredDatum = randomDomainClassDatum(SHOULD_NOT_BE_SENT);
+    final TDomainClass datum = domainClassRandomDatum(SHOULD_BE_SENT);
+    final TDomainClass filteredDatum = domainClassRandomDatum(SHOULD_NOT_BE_SENT);
     final List<TDomainClass> domainObjects = FluentIterable.from(Lists.newArrayList(datum, filteredDatum))
-                                                                   .filter(Predicates.notNull())
-                                                                   .toList();
+                                                           .filter(Predicates.notNull())
+                                                           .toList();
 
     final InMemoryEndPoint.WithBinaryStorage dataProductionEndPoint =
             new InMemoryEndPoint.WithBinaryStorage(1);
@@ -235,27 +239,26 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     final InMemoryEndPoint.WithStringStorage producerBreadcrumbProductionEndPoint =
             new InMemoryEndPoint.WithStringStorage(10);
 
-    final InMemoryEndPoint.WithStringStorage consumerBreadcrumbsProductionEndPoint =
+    final InMemoryEndPoint.WithStringStorage consumerStreamBreadcrumbsProductionEndPoint =
             new InMemoryEndPoint.WithStringStorage(10);
 
-    final DatumProducer<TDomainClass> datumProducer = datumProducer(dataProductionEndPoint,
-                                                                    producerBreadcrumbProductionEndPoint,
-                                                                    datumSerDe,
-                                                                    filter);
+    final DatumProducer<TDomainClass> datumProducer =
+            createDatumProducer(dataProductionEndPoint, producerBreadcrumbProductionEndPoint, datumSerDe, filter);
 
-    final DatumConsumer<TDomainClass> datumConsumer = datumConsumer(dataProductionEndPoint,
-                                                                    consumerBreadcrumbsProductionEndPoint,
-                                                                    datumSerDe);
+    final DatumConsumerStream<TDomainClass> datumConsumerStream =
+            createDatumStream(dataProductionEndPoint, consumerStreamBreadcrumbsProductionEndPoint, datumSerDe);
 
     produceData(domainObjects, datumProducer);
-    final ImmutableList<TDomainClass> consumedData = consumeDataOrTimeout(datumConsumer, CONSUME_DATA_TIMEOUT_MILLI);
+
+    final ImmutableList<TDomainClass> consumedData =
+            consumeDataOrTimeout(datumConsumerStream, CONSUME_DATA_TIMEOUT_MILLI);
 
     assertDatumFlow(domainObjects,
                     filteredDatum,
                     consumedData,
                     dataProductionEndPoint,
                     producerBreadcrumbProductionEndPoint,
-                    consumerBreadcrumbsProductionEndPoint
+                    consumerStreamBreadcrumbsProductionEndPoint
     );
 
     // prints a pretty metric tree

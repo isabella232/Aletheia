@@ -3,9 +3,9 @@ package com.outbrain.aletheia.datum.consumption;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Configuration details for {@link DatumConsumer}s.
+ * Configuration details for {@link DatumConsumerStream}s.
  */
-public class DatumConsumerConfig {
+public class DatumConsumerStreamConfig {
 
   private final int incarnation;
   private final String hostname;
@@ -15,7 +15,7 @@ public class DatumConsumerConfig {
    *                    below a certain incarnation.
    * @param hostname    the hostname this {@link com.outbrain.aletheia.datum.production.DatumProducer} instance is operating from.
    */
-  public DatumConsumerConfig(final int incarnation, final String hostname) {
+  public DatumConsumerStreamConfig(final int incarnation, final String hostname) {
 
     this.incarnation = incarnation;
     this.hostname = hostname;

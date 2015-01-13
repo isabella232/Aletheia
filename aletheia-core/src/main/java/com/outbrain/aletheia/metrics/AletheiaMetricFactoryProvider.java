@@ -16,7 +16,7 @@ public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProv
   protected static final String Tx = "Tx";
   protected static final String Rx = "Rx";
 
-  protected final Class domainClass;
+  private final Class domainClass;
   protected final String componentName;
   protected final MetricsFactory metricsFactory;
 

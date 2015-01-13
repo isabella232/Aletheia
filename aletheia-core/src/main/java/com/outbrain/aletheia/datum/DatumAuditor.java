@@ -24,12 +24,12 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
   private final Runnable flushCommand;
 
   public DatumAuditor(final Duration bucketDuration,
-                      final DatumType.TimestampExtractor<TDomainClass> timestampExtractor,
+                      final DatumType.TimestampSelector<TDomainClass> timestampSelector,
                       final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                       final BreadcrumbHandler breadcrumbHandler,
                       final Duration durationBetweenFlushes) {
     this(bucketDuration,
-         timestampExtractor,
+         timestampSelector,
          breadcrumbBaker,
          breadcrumbHandler,
          Executors.newSingleThreadScheduledExecutor(),
@@ -38,14 +38,14 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
   }
 
   public DatumAuditor(final Duration bucketDuration,
-                      final DatumType.TimestampExtractor<TDomainClass> timestampExtractor,
+                      final DatumType.TimestampSelector<TDomainClass> timestampSelector,
                       final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                       final BreadcrumbHandler breadcrumbHandler,
                       final ScheduledExecutorService scheduledExecutorService,
                       final Duration durationBetweenFlushes,
                       final Duration preAllocatedInterval) {
 
-    super(bucketDuration, timestampExtractor, breadcrumbBaker, breadcrumbHandler, preAllocatedInterval);
+    super(bucketDuration, timestampSelector, breadcrumbBaker, breadcrumbHandler, preAllocatedInterval);
 
     this.scheduledExecutorService = scheduledExecutorService;
     this.durationBetweenFlushes = durationBetweenFlushes;

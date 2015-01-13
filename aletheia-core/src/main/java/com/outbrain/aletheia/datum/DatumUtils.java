@@ -33,7 +33,7 @@ public final class DatumUtils {
     return datumTypeAnnotation.datumTypeId();
   }
 
-  public static <T> DatumType.TimestampExtractor<T> getDatumTimestampExtractor(final Class<T> domainClass) {
+  public static <T> DatumType.TimestampSelector<T> getDatumTimestampExtractor(final Class<T> domainClass) {
     final DatumType datumTypeAnnotation = getDatumAnnotationOrThrow(domainClass);
     return newInstanceOrThrow(datumTypeAnnotation.timestampExtractor());
   }

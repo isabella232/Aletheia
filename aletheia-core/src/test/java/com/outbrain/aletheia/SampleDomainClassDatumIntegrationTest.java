@@ -35,7 +35,7 @@ public class SampleDomainClassDatumIntegrationTest extends AletheiaIntegrationTe
   }
 
   @Override
-  protected SampleDomainClass randomDomainClassDatum(final boolean shouldBeSent) {
+  protected SampleDomainClass domainClassRandomDatum(final boolean shouldBeSent) {
     return new SampleDomainClass(random.nextInt(),
                                  random.nextDouble(),
                                  RandomStringUtils.randomAlphanumeric(random.nextInt(20)),

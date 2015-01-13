@@ -13,7 +13,7 @@ import java.util.Map;
 
 /**
  * @param <TDomainClass> The datum type this builder will be building a
- *                       {@link DatumProducer} or {@link com.outbrain.aletheia.datum.consumption.DatumConsumer} for.
+ *                       {@link DatumProducer} or {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} for.
  * @param <TBuilder>     The concrete type of builder, used for type safety, to be filled in by deriving classes.
  */
 public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TDomainClass, ?>> {
@@ -58,9 +58,9 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
     }
 
     @Override
-    public MetricsFactory forAuditingDatumConsumer(final EndPoint endPoint) {
+    public MetricsFactory forAuditingDatumStreamConsumer(final EndPoint endPoint) {
       throw new IllegalStateException(
-              "No MetricFactory for datum envelope consumer instance should be asked for when already in internal breadcrumb producer mode.");
+              "No MetricFactory for auditing datum stream consumer instance should be asked for when already in internal breadcrumb producer mode.");
     }
 
     @Override
@@ -113,11 +113,11 @@ public abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBui
 
   protected final Class<TDomainClass> domainClass;
   protected final Map<Class, DatumEnvelopeSenderFactory> endpoint2datumEnvelopeSenderFactory = Maps.newHashMap();
-  protected ProductionEndPoint breadcrumbsProductionEndPoint;
-  protected BreadcrumbsConfig breadcrumbsConfig;
+  private ProductionEndPoint breadcrumbsProductionEndPoint;
+  private BreadcrumbsConfig breadcrumbsConfig;
   protected MetricsFactory metricFactory = MetricsFactory.NULL;
 
-  public AletheiaBuilder(final Class<TDomainClass> domainClass) {
+  protected AletheiaBuilder(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
     registerKnownProductionEndPointsTypes();
   }

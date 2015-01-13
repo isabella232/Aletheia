@@ -4,10 +4,10 @@ import com.outbrain.aletheia.datum.DatumType;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
-@DatumType(datumTypeId = "my_datum_id", timestampExtractor = MyDatum.TimeExtractor.class)
+@DatumType(datumTypeId = "my_datum_id", timestampExtractor = MyDatum.TimeSelector.class)
 public class MyDatum {
 
-  public static class TimeExtractor implements DatumType.TimestampExtractor<MyDatum> {
+  public static class TimeSelector implements DatumType.TimestampSelector<MyDatum> {
     @Override
     public DateTime extractDatumDateTime(final MyDatum domainObject) {
       return domainObject.getTimestamp().toDateTime();

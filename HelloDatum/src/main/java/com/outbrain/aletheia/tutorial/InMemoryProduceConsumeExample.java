@@ -2,10 +2,9 @@ package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
-import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
-import com.outbrain.aletheia.datum.consumption.DatumConsumer;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.DatumProducerBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducerConfig;
@@ -13,7 +12,6 @@ import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import org.joda.time.Instant;
 
 import java.util.List;
-import java.util.Map;
 
 public class InMemoryProduceConsumeExample {
 
@@ -23,7 +21,7 @@ public class InMemoryProduceConsumeExample {
 
     System.out.println("Building a DatumProducer...");
 
-    final InMemoryEndPoint.WithBinaryStorage inMemoryProductionEndPoint = new InMemoryEndPoint.WithBinaryStorage(100);
+    final InMemoryEndPoint.WithBinaryStorage inMemoryProductionEndPoint = new InMemoryEndPoint.WithBinaryStorage(10);
 
     final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder
@@ -37,15 +35,15 @@ public class InMemoryProduceConsumeExample {
 
     datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
 
-    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<MyDatum>>> datumConsumerMap =
-            DatumConsumerBuilder
+    final List<DatumConsumerStream<MyDatum>> datumConsumerStreams =
+            DatumConsumerStreamsBuilder
                     .forDomainClass(MyDatum.class)
                     .consumeDataFrom(inMemoryProductionEndPoint, new JsonDatumSerDe<>(MyDatum.class))
-                    .build(new DatumConsumerConfig(1, "myHostName"));
+                    .build(new DatumConsumerStreamConfig(1, "myHostName"));
 
     System.out.println("Iterating over received data...");
 
-    for (final MyDatum myDatum : Iterables.getFirst(datumConsumerMap.get(inMemoryProductionEndPoint), null).datums()) {
+    for (final MyDatum myDatum : Iterables.getFirst(datumConsumerStreams, null).datums()) {
       System.out.println("Received a datum with info field = " + myDatum.getInfo());
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block

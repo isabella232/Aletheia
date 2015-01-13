@@ -45,18 +45,18 @@ public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<
   private final Duration bucketDuration;
   private final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker;
   private final BreadcrumbHandler breadcrumbHandler;
-  private final DatumType.TimestampExtractor<T> timestampExtractor;
+  private final DatumType.TimestampSelector<T> timestampSelector;
   private final Duration preAllocatedInterval;
 
   public BucketBasedBreadcrumbDispatcher(final Duration bucketDuration,
-                                         final DatumType.TimestampExtractor<T> timestampExtractor,
+                                         final DatumType.TimestampSelector<T> timestampSelector,
                                          final BreadcrumbBaker<BucketStartWithDuration> breadcrumbBaker,
                                          final BreadcrumbHandler breadcrumbHandler,
                                          final Duration preAllocatedInterval) {
     this.bucketDuration = bucketDuration;
     this.breadcrumbBaker = breadcrumbBaker;
     this.breadcrumbHandler = breadcrumbHandler;
-    this.timestampExtractor = timestampExtractor;
+    this.timestampSelector = timestampSelector;
     this.preAllocatedInterval = preAllocatedInterval;
 
     bucketId2hitsPerInterval = initBucketId2hitCountsMap(preAllocatedInterval);
@@ -81,12 +81,12 @@ public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<
 
   private Instant bucketStart(final T item) {
     return new Instant(
-            (timestampExtractor.extractDatumDateTime(item).getMillis() /
+            (timestampSelector.extractDatumDateTime(item).getMillis() /
                     bucketDuration.getMillis()) * bucketDuration.getMillis());
   }
 
   private long bucketId(final T item) {
-    final long millis = timestampExtractor.extractDatumDateTime(item).getMillis() % preAllocatedInterval.getMillis();
+    final long millis = timestampSelector.extractDatumDateTime(item).getMillis() % preAllocatedInterval.getMillis();
     return millis / bucketDuration.getMillis();
   }
 

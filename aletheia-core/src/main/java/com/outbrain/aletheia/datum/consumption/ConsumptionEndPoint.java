@@ -5,7 +5,7 @@ import com.outbrain.aletheia.datum.EndPoint;
 import java.io.Serializable;
 
 /**
- * Represents a source a {@link DatumConsumer} can consume data from.
+ * Represents a source a {@link DatumConsumerStream} can be built on top of.
  */
 public interface ConsumptionEndPoint extends EndPoint, Serializable {
 

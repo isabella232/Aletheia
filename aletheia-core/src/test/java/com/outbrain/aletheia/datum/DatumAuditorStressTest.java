@@ -28,7 +28,7 @@ import static org.junit.Assert.assertThat;
 public class DatumAuditorStressTest {
 
   @Rule
-  public TestName testName = new TestName();
+  public final TestName testName = new TestName();
 
   private static final String TEST_RESULT_FILE_NAME = "/tmp/breadcrumb_%s.txt";
   private static final int THREAD_COUNT = 500;

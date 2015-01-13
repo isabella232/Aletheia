@@ -14,11 +14,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DatumType {
 
-  interface TimestampExtractor<TDomainClass> {
+  interface TimestampSelector<TDomainClass> {
     DateTime extractDatumDateTime(TDomainClass domainObject);
   }
 
   String datumTypeId();
 
-  Class<? extends TimestampExtractor> timestampExtractor();
+  Class<? extends TimestampSelector> timestampExtractor();
 }

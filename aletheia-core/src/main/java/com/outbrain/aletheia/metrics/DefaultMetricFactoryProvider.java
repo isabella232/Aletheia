@@ -9,7 +9,7 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
  */
 public class DefaultMetricFactoryProvider extends AletheiaMetricFactoryProvider {
 
-  public static final String META = "Meta";
+  private static final String META = "Meta";
 
   public DefaultMetricFactoryProvider(final Class domainClass,
                                       final String componentName,
@@ -51,7 +51,7 @@ public class DefaultMetricFactoryProvider extends AletheiaMetricFactoryProvider 
   }
 
   @Override
-  public MetricsFactory forAuditingDatumConsumer(final EndPoint endPoint) {
+  public MetricsFactory forAuditingDatumStreamConsumer(final EndPoint endPoint) {
     return MetricFactoryPrefixer.prefix(metricsFactory).with(ALETHEIA,
                                                              DATUM_TYPES,
                                                              datumTypeId(),

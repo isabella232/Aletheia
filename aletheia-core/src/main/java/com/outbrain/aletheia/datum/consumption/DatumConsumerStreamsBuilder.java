@@ -21,15 +21,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Provides a fluent API for building a {@link DatumConsumer}.
+ * Provides a fluent API for building a {@link DatumConsumerStream}.
  *
- * @param <TDomainClass> The type of datum for which a {@link DatumConsumer} is to be built.
+ * @param <TDomainClass> The type of datum for which a {@link DatumConsumerStream} is to be built.
  */
-public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumConsumerBuilder<TDomainClass>> {
+public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumConsumerStreamsBuilder<TDomainClass>> {
 
-  private static final Logger logger = LoggerFactory.getLogger(DatumConsumerBuilder.class);
+  private static final Logger logger = LoggerFactory.getLogger(DatumConsumerStreamsBuilder.class);
 
-  private static final String DATUM_CONSUMER = "DatumConsumer";
+  private static final String DATUM_STREAM = "DatumConsumerStream";
 
   private static class ConsumptionEndPointInfo<TDomainClass> {
 
@@ -59,31 +59,32 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
 
   }
 
-  private final List<ConsumptionEndPointInfo<TDomainClass>> consumptionEndPointInfos = Lists.newArrayList();
+  private ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo = null;
 
   private final Map<Class, DatumEnvelopeFetcherFactory> endpoint2datumEnvelopeFetcherFactory =
           Maps.newHashMap();
 
-  private DatumConsumerBuilder(final Class<TDomainClass> domainClass) {
+  private DatumConsumerStreamsBuilder(final Class<TDomainClass> domainClass) {
     super(domainClass);
     registerKnownConsumptionEndPointTypes();
   }
 
   private void registerKnownConsumptionEndPointTypes() {
-    registerConsumptionEndPointType(InMemoryEndPoint.WithBinaryStorage.class, new InMemoryDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(InMemoryEndPoint.WithBinaryStorage.class,
+                                    new InMemoryDatumEnvelopeFetcherFactory());
     registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 
-  private List<AuditingDatumConsumer<TDomainClass>> datumConsumer(final DatumProducerConfig datumProducerConfig,
-                                                                  final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
+  private List<DatumConsumerStream<TDomainClass>> createDatumConsumerStream(final DatumProducerConfig datumProducerConfig,
+                                                                            final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
 
-    logger.info("Creating a datum consumer for end point: {} with config: {}",
+    logger.info("Creating a datum stream for end point: {} with config: {}",
                 consumptionEndPointInfo.getConsumptionEndPoint(),
                 datumProducerConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
     final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass,
-                                                                                         DATUM_CONSUMER,
+                                                                                         DATUM_STREAM,
                                                                                          metricFactory);
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
@@ -114,24 +115,24 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
                                                        .forDatumEnvelopeFetcher(
                                                                consumptionEndPointInfo.getConsumptionEndPoint()));
 
-    final Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>> toDatumConsumers =
-            new Function<DatumEnvelopeFetcher, AuditingDatumConsumer<TDomainClass>>() {
+    final Function<DatumEnvelopeFetcher, DatumConsumerStream<TDomainClass>> toDatumConsumerStreams =
+            new Function<DatumEnvelopeFetcher, DatumConsumerStream<TDomainClass>>() {
               @Override
-              public AuditingDatumConsumer<TDomainClass> apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
-                return new AuditingDatumConsumer<>(datumEnvelopeFetcher,
-                                                   datumEnvelopeOpener,
-                                                   consumptionEndPointInfo.getFilter(),
-                                                   metricFactoryProvider
-                                                           .forAuditingDatumConsumer(
-                                                                   consumptionEndPointInfo.getConsumptionEndPoint()));
+              public AuditingDatumConsumerStream<TDomainClass> apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
+                return new AuditingDatumConsumerStream<>(datumEnvelopeFetcher,
+                                                         datumEnvelopeOpener,
+                                                         consumptionEndPointInfo.getFilter(),
+                                                         metricFactoryProvider
+                                                                 .forAuditingDatumStreamConsumer(
+                                                                         consumptionEndPointInfo.getConsumptionEndPoint()));
               }
             };
 
-    return Lists.transform(datumEnvelopeFetchers, toDatumConsumers);
+    return Lists.transform(datumEnvelopeFetchers, toDatumConsumerStreams);
   }
 
   @Override
-  protected DatumConsumerBuilder<TDomainClass> This() {
+  protected DatumConsumerStreamsBuilder<TDomainClass> This() {
     return this;
   }
 
@@ -142,10 +143,10 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    * @param consumptionEndPointType     the consumption endpoint to add.
    * @param datumEnvelopeFetcherFactory a {@link DatumEnvelopeFetcherFactory} capable of building
    *                                    {@link DatumEnvelopeFetcher}s from the specified endpoint type.
-   * @return a {@link DatumConsumerBuilder} instance capable of consuming data from the specified consumption
+   * @return a {@link DatumConsumerStreamsBuilder} instance capable of consuming data from the specified consumption
    * endpoint type.
    */
-  public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumConsumerBuilder<TDomainClass> registerConsumptionEndPointType(
+  public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumConsumerStreamsBuilder<TDomainClass> registerConsumptionEndPointType(
           final Class<TConsumptionEndPoint> consumptionEndPointType,
           final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
 
@@ -159,11 +160,11 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    *
    * @param consumptionEndPoint the consumption endpoint to add.
    * @param datumSerDe          the {@link DatumSerDe} instance to use to serialize data.
-   * @return a {@link DatumConsumerBuilder} instance configured with the specified consumption endpoint and
+   * @return a {@link DatumConsumerStreamsBuilder} instance configured with the specified consumption endpoint and
    * serialization method.
    */
-  public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
-                                                            final DatumSerDe<TDomainClass> datumSerDe) {
+  public DatumConsumerStreamsBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
+                                                                   final DatumSerDe<TDomainClass> datumSerDe) {
     return consumeDataFrom(consumptionEndPoint, datumSerDe, Predicates.<TDomainClass>alwaysTrue());
   }
 
@@ -173,39 +174,28 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    * @param consumptionEndPoint the consumption endpoint to add.
    * @param datumSerDe          the {@link DatumSerDe} instance to use to serialize data.
    * @param datumFilter         a filter to apply before delivering data.
-   * @return a {@link DatumConsumerBuilder} instance configured with the specified consumption endpoint,
+   * @return a {@link DatumConsumerStreamsBuilder} instance configured with the specified consumption endpoint,
    * serialization method and filter.
    */
-  public DatumConsumerBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
-                                                            final DatumSerDe<TDomainClass> datumSerDe,
-                                                            final Predicate<TDomainClass> datumFilter) {
+  public DatumConsumerStreamsBuilder<TDomainClass> consumeDataFrom(final ConsumptionEndPoint consumptionEndPoint,
+                                                                   final DatumSerDe<TDomainClass> datumSerDe,
+                                                                   final Predicate<TDomainClass> datumFilter) {
 
-    consumptionEndPointInfos.add(new ConsumptionEndPointInfo<>(consumptionEndPoint, datumSerDe, datumFilter));
+    consumptionEndPointInfo = new ConsumptionEndPointInfo<>(consumptionEndPoint, datumSerDe, datumFilter);
     return this;
   }
 
   /**
-   * Builds a {@link com.outbrain.aletheia.datum.production.DatumProducer} instance.
+   * Builds a {@link DatumConsumerStream} that can be used to consume datums.
    *
-   * @param datumConsumerConfig the configuration information to use for building the {@link DatumConsumer}
-   *                            instance configured.
-   * @return a fully configured {@link DatumConsumer} instance.
+   * @param datumConsumerStreamConfig the configuration information to use for building the {@link DatumConsumerStream}
+   *                                  instance configured.
+   * @return a fully configured {@link DatumConsumerStream} instance.
    */
-  public Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> build(final DatumConsumerConfig datumConsumerConfig) {
-
-    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<TDomainClass>>> consumptionEndPoint2datumConsumer =
-            Maps.newHashMap();
-
-    for (final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo : consumptionEndPointInfos) {
-      final ConsumptionEndPoint consumptionEndPoint = consumptionEndPointInfo.getConsumptionEndPoint();
-      final List<AuditingDatumConsumer<TDomainClass>> datumConsumers =
-              datumConsumer(new DatumProducerConfig(datumConsumerConfig.getIncarnation(),
-                                                    datumConsumerConfig.getHostname()),
-                            consumptionEndPointInfo);
-      consumptionEndPoint2datumConsumer.put(consumptionEndPoint, datumConsumers);
-    }
-
-    return consumptionEndPoint2datumConsumer;
+  public List<DatumConsumerStream<TDomainClass>> build(final DatumConsumerStreamConfig datumConsumerStreamConfig) {
+    return createDatumConsumerStream(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
+                                                             datumConsumerStreamConfig.getHostname()),
+                                     consumptionEndPointInfo);
   }
 
   /**
@@ -213,10 +203,10 @@ public class DatumConsumerBuilder<TDomainClass> extends AletheiaBuilder<TDomainC
    *
    * @param domainClass    the type of the datum to be consumed.
    * @param <TDomainClass> the type of the datum to be consumed.
-   * @return a fluent {@link AletheiaBuilder} to be used for building a {@link DatumConsumer} instances.
+   * @return a fluent {@link AletheiaBuilder} to be used for building a {@link DatumConsumerStream} instances.
    */
-  public static <TDomainClass> DatumConsumerBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
-    return new DatumConsumerBuilder<>(domainClass);
+  public static <TDomainClass> DatumConsumerStreamsBuilder<TDomainClass> forDomainClass(final Class<TDomainClass> domainClass) {
+    return new DatumConsumerStreamsBuilder<>(domainClass);
   }
 
 }

@@ -11,22 +11,25 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This {@link com.outbrain.aletheia.datum.production.ProductionEndPoint} type works in collaboration with the {@link com.outbrain.aletheia.datum.production.InMemoryAccumulatingNamedSender},
- * jointly, they allow one to store incoming items in-memory, and query them later on.
- * This type of endpoint is useful for experiments and tests.
+ * A special kind of {@link com.outbrain.aletheia.datum.EndPoint} that allows clients to a pipeline where
+ * the {@link com.outbrain.aletheia.datum.production.DatumProducer} produces data in-memory end point and the
+ * {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} consumes data off of it.
+ * This type of endpoint is useful for experiments and tests, and can simulate a synchronous produce/consume model.
  */
 public abstract class InMemoryEndPoint<T, U>
         implements ProductionEndPoint,
         FetchConsumptionEndPoint<U>,
         DatumKeyAwareNamedSender<T>,
         NamedSender<T>,
-        DatumKeyAwareFetchEndPoint<U> {
+        DatumKeyAwareFetchEndPoint<U>,
+        Serializable {
 
   public static class WithBinaryStorage extends InMemoryEndPoint<ByteBuffer, byte[]> {
 
@@ -53,19 +56,12 @@ public abstract class InMemoryEndPoint<T, U>
 
   }
 
-  public static String DEFAULT_DATUM_KEY = "random";
+  public static final String DEFAULT_DATUM_KEY = "random";
   private static final String IN_MEMORY = "InMemory";
   private static final long EMPTY_QUEUES_WAIT_MILLI = 10;
 
-  private final Predicate<ArrayBlockingQueue<U>> nonEmptyQueue = new Predicate<ArrayBlockingQueue<U>>() {
-    @Override
-    public boolean apply(final ArrayBlockingQueue<U> queue) {
-      return queue.size() > 0;
-    }
-  };
-
-  private ConcurrentMap<String, ArrayBlockingQueue<U>> producedData = Maps.newConcurrentMap();
-  private int queueSize;
+  private final ConcurrentMap<String, ArrayBlockingQueue<U>> producedData = Maps.newConcurrentMap();
+  private final int queueSize;
 
   protected InMemoryEndPoint(int queueSize) {
     this.queueSize = queueSize;
@@ -79,9 +75,16 @@ public abstract class InMemoryEndPoint<T, U>
 
       Optional<ArrayBlockingQueue<U>> firstNonEmptyQueue;
 
+      final Predicate<ArrayBlockingQueue<U>> nonEmpty = new Predicate<ArrayBlockingQueue<U>>() {
+        @Override
+        public boolean apply(final ArrayBlockingQueue<U> queue) {
+          return queue.size() > 0;
+        }
+      };
+
       do {
         firstNonEmptyQueue = FluentIterable.from(producedData.values())
-                                           .filter(nonEmptyQueue)
+                                           .filter(nonEmpty)
                                            .first();
         Thread.sleep(EMPTY_QUEUES_WAIT_MILLI);
       } while (!firstNonEmptyQueue.isPresent());

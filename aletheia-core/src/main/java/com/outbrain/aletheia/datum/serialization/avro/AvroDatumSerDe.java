@@ -25,8 +25,8 @@ import java.util.Collections;
  */
 public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
+  private DatumSchemaRepository datumSchemaRepository;
   protected final AvroRoundTripProjector<TDomainClass> avroRoundTripProjector;
-  protected DatumSchemaRepository datumSchemaRepository;
 
   public AvroDatumSerDe(final AvroRoundTripProjector<TDomainClass> avroRoundTripProjector,
                         final DatumSchemaRepository datumSchemaRepository) {

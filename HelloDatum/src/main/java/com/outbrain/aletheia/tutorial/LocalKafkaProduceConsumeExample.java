@@ -1,10 +1,9 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
-import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
-import com.outbrain.aletheia.datum.consumption.DatumConsumer;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerBuilder;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamConfig;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaDatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoint;
 import com.outbrain.aletheia.datum.production.DatumProducer;
@@ -16,7 +15,6 @@ import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import org.joda.time.Instant;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class LocalKafkaProduceConsumeExample {
@@ -58,10 +56,10 @@ public class LocalKafkaProduceConsumeExample {
 
     datumProducer.deliver(datum);
 
-    System.out.println("Building a DatumConsumer...");
+    System.out.println("Building a DatumSteam...");
 
-    final Map<ConsumptionEndPoint, List<? extends DatumConsumer<MyDatum>>> endPointListMap =
-            DatumConsumerBuilder
+    final List<DatumConsumerStream<MyDatum>> datumConsumerStreams =
+            DatumConsumerStreamsBuilder
                     .forDomainClass(MyDatum.class)
                     .registerConsumptionEndPointType(KafkaTopicConsumptionEndPoint.class,
                                                      new KafkaDatumEnvelopeFetcherFactory())
@@ -75,13 +73,13 @@ public class LocalKafkaProduceConsumeExample {
                                     KafkaTopicConsumptionEndPoint.EndPointType.RawDatumEnvelope,
                                     new Properties()),
                             new JsonDatumSerDe<>(MyDatum.class))
-                    .build(new DatumConsumerConfig(1, "localhost"));
+                    .build(new DatumConsumerStreamConfig(1, "localhost"));
 
-    System.out.println("Done building a DatumConsumer.");
+    System.out.println("Done building a DatumSteam.");
 
     System.out.println("Iterating over received data...");
 
-    for (final MyDatum myDatum : Iterables.getFirst(endPointListMap.values(), null).get(0).datums()) {
+    for (final MyDatum myDatum : Iterables.getFirst(datumConsumerStreams, null).datums()) {
       System.out.println("Received a MyDatum datum: " + myDatum.toString());
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block

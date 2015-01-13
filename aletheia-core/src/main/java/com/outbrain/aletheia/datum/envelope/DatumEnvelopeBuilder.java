@@ -20,7 +20,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
   private final int incarnation;
   private final String datumTypeId;
   private final DatumSerDe<TDomainClass> datumSerDe;
-  private final DatumType.TimestampExtractor<TDomainClass> datumTimestampExtractor;
+  private final DatumType.TimestampSelector<TDomainClass> datumTimestampSelector;
   private final DatumKeySelector<TDomainClass> datumKeySelector;
 
   public DatumEnvelopeBuilder(final Class<TDomainClass> domainClass,
@@ -34,13 +34,13 @@ public class DatumEnvelopeBuilder<TDomainClass> {
     this.incarnation = incarnation;
 
     this.datumKeySelector = datumKeySelector;
-    datumTimestampExtractor = DatumUtils.getDatumTimestampExtractor(domainClass);
+    datumTimestampSelector = DatumUtils.getDatumTimestampExtractor(domainClass);
     datumTypeId = DatumUtils.getDatumTypeId(domainClass);
   }
 
   public DatumEnvelope buildEnvelope(final TDomainClass domainObject) {
 
-    final long logicalTimestamp = datumTimestampExtractor.extractDatumDateTime(domainObject).getMillis();
+    final long logicalTimestamp = datumTimestampSelector.extractDatumDateTime(domainObject).getMillis();
     final String datumKey = datumKeySelector.getDatumKey(domainObject);
     final SerializedDatum serializedDatum = datumSerDe.serializeDatum(domainObject);
 

@@ -30,7 +30,7 @@ public interface MetricFactoryProvider {
     }
 
     @Override
-    public MetricsFactory forAuditingDatumConsumer(final EndPoint endPoint) {
+    public MetricsFactory forAuditingDatumStreamConsumer(final EndPoint endPoint) {
       return MetricsFactory.NULL;
     }
 
@@ -48,7 +48,7 @@ public interface MetricFactoryProvider {
 
   MetricsFactory forDatumEnvelopeFetcher(final EndPoint endPoint);
 
-  MetricsFactory forAuditingDatumConsumer(final EndPoint endPoint);
+  MetricsFactory forAuditingDatumStreamConsumer(final EndPoint endPoint);
 
   MetricsFactory forDatumEnvelopeMeta(final EndPoint endPoint);
 }

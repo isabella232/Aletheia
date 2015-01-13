@@ -26,9 +26,9 @@ import java.util.List;
  */
 public class DatumProducerBuilder<TDomainClass> extends AletheiaBuilder<TDomainClass, DatumProducerBuilder<TDomainClass>> {
 
-  protected static final Logger logger = LoggerFactory.getLogger(DatumProducerBuilder.class);
+  private static final Logger logger = LoggerFactory.getLogger(DatumProducerBuilder.class);
 
-  protected static final String DATUM_PRODUCER = "DatumProducer";
+  private static final String DATUM_PRODUCER = "DatumProducer";
 
   private static class ProductionEndPointInfo<T> {
 

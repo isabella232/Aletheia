@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class InMemoryAccumulatingNamedSender<T> implements DatumKeyAwareNamedSender<T>, NamedSender<T>, Serializable {
 
-  public static String DEFAULT_DATUM_KEY = "random";
+  public static final String DEFAULT_DATUM_KEY = "random";
   private final Map<String, List<T>> sentData = Maps.newHashMap();
   private final int maxSize;
 

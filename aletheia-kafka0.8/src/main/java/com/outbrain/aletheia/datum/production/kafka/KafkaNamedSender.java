@@ -1,7 +1,6 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
-import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
@@ -17,7 +16,7 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput>, NamedSender<TInput> {
+public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput> {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaNamedSender.class);
 
@@ -164,11 +163,6 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
         logger.error("Error while sending message to kafka.", e);
       }
     }
-  }
-
-  @Override
-  public void send(final TInput data) throws SilentSenderException {
-    internalSend(data, null);
   }
 
   @Override

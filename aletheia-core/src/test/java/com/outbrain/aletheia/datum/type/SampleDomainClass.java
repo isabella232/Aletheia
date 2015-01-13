@@ -5,10 +5,10 @@ import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
 @DatumType(datumTypeId = "test_domain_class",
-           timestampExtractor = SampleDomainClass.SampleDomainClassTimestampExtractor.class)
+           timestampExtractor = SampleDomainClass.SampleDomainClassTimestampSelector.class)
 public class SampleDomainClass {
 
-  public static class SampleDomainClassTimestampExtractor implements DatumType.TimestampExtractor<SampleDomainClass> {
+  public static class SampleDomainClassTimestampSelector implements DatumType.TimestampSelector<SampleDomainClass> {
     @Override
     public DateTime extractDatumDateTime(final SampleDomainClass domainObject) {
       return domainObject.getEventTimestamp().toDateTime();

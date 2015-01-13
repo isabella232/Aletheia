@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 
 /**
- * A breadcrumb generating {@link DatumConsumer} implementation.
+ * A breadcrumb generating {@link DatumConsumerStream} implementation.
  */
-public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomainClass> {
+public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerStream<TDomainClass> {
 
   private class DatumIterator implements Iterator<TDomainClass> {
 
@@ -71,19 +71,19 @@ public class AuditingDatumConsumer<TDomainClass> implements DatumConsumer<TDomai
 
   }
 
-  private static final Logger logger = LoggerFactory.getLogger(AuditingDatumConsumer.class);
+  private static final Logger logger = LoggerFactory.getLogger(AuditingDatumConsumerStream.class);
 
   private final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener;
   private final Predicate<TDomainClass> datumFilter;
   private final Counter consumedDatumCount;
   private final Counter consumeFailureCount;
   private final Counter filteredCounter;
-  private Iterable<TDomainClass> datumIterable;
+  private final Iterable<TDomainClass> datumIterable;
 
-  public AuditingDatumConsumer(final DatumEnvelopeFetcher datumEnvelopeFetcher,
-                               final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
-                               final Predicate<TDomainClass> datumFilter,
-                               final MetricsFactory metricsFactory) {
+  public AuditingDatumConsumerStream(final DatumEnvelopeFetcher datumEnvelopeFetcher,
+                                     final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
+                                     final Predicate<TDomainClass> datumFilter,
+                                     final MetricsFactory metricsFactory) {
 
     consumedDatumCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Success");
     consumeFailureCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Failures");
