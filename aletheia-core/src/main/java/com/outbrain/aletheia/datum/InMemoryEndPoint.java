@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  * the {@link com.outbrain.aletheia.datum.production.DatumProducer} produces data in-memory end point and the
  * {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} consumes data off of it.
  * This type of endpoint is useful for in-memory experiments and tests, and can simulate a
- * synchronous produce/consume model if it's created with size = 1.
+ * quasi-synchronous, blocking produce/consume model if it's created with size = 1.
  */
 public abstract class InMemoryEndPoint<T, U>
         implements ProductionEndPoint,
