@@ -1,10 +1,8 @@
-com.outbrain.aletheia
 com.outbrain.aletheia.breadcrumbs
 com.outbrain.aletheia.datum
 com.outbrain.aletheia.datum.consumption
 com.outbrain.aletheia.datum.consumption.kafka
 com.outbrain.aletheia.datum.envelope
-com.outbrain.aletheia.datum.envelope.avro
 com.outbrain.aletheia.datum.production
 com.outbrain.aletheia.datum.production.kafka
 com.outbrain.aletheia.datum.production.logFile
