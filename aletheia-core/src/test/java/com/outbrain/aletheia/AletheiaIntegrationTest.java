@@ -234,13 +234,13 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                                                            .toList();
 
     final InMemoryEndPoint.WithBinaryStorage dataProductionEndPoint =
-            new InMemoryEndPoint.WithBinaryStorage(1);
+            new InMemoryEndPoint.WithBinaryStorage("test.producerData", 1);
 
     final InMemoryEndPoint.WithStringStorage producerBreadcrumbProductionEndPoint =
-            new InMemoryEndPoint.WithStringStorage(10);
+            new InMemoryEndPoint.WithStringStorage("test.producerBreadcrumbs", 10);
 
     final InMemoryEndPoint.WithStringStorage consumerStreamBreadcrumbsProductionEndPoint =
-            new InMemoryEndPoint.WithStringStorage(10);
+            new InMemoryEndPoint.WithStringStorage("test.consumerBreadcrumbs", 10);
 
     final DatumProducer<TDomainClass> datumProducer =
             createDatumProducer(dataProductionEndPoint, producerBreadcrumbProductionEndPoint, datumSerDe, filter);

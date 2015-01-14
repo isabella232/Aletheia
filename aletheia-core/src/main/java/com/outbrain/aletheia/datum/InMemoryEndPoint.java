@@ -13,6 +13,7 @@ import com.outbrain.aletheia.datum.production.SilentSenderException;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -21,7 +22,8 @@ import java.util.concurrent.ConcurrentMap;
  * A special kind of {@link com.outbrain.aletheia.datum.EndPoint} that allows clients to a pipeline where
  * the {@link com.outbrain.aletheia.datum.production.DatumProducer} produces data in-memory end point and the
  * {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} consumes data off of it.
- * This type of endpoint is useful for experiments and tests, and can simulate a synchronous produce/consume model.
+ * This type of endpoint is useful for in-memory experiments and tests, and can simulate a
+ * synchronous produce/consume model if it's created with size = 1.
  */
 public abstract class InMemoryEndPoint<T, U>
         implements ProductionEndPoint,
@@ -33,8 +35,15 @@ public abstract class InMemoryEndPoint<T, U>
 
   public static class WithBinaryStorage extends InMemoryEndPoint<ByteBuffer, byte[]> {
 
-    public WithBinaryStorage(final int queueSize) {
-      super(queueSize);
+    public WithBinaryStorage(final String endPointName, final int size) {
+      super(endPointName, size);
+    }
+
+    public WithBinaryStorage(final String endPointName, final List<byte[]> data) throws SilentSenderException {
+      this(endPointName, data.size());
+      for (byte[] bytes : data) {
+        this.send(ByteBuffer.wrap(bytes));
+      }
     }
 
     @Override
@@ -45,8 +54,8 @@ public abstract class InMemoryEndPoint<T, U>
 
   public static class WithStringStorage extends InMemoryEndPoint<String, String> {
 
-    public WithStringStorage(final int queueSize) {
-      super(queueSize);
+    public WithStringStorage(final String endPointName,int size) {
+      super(endPointName, size );
     }
 
     @Override
@@ -57,14 +66,15 @@ public abstract class InMemoryEndPoint<T, U>
   }
 
   public static final String DEFAULT_DATUM_KEY = "random";
-  private static final String IN_MEMORY = "InMemory";
   private static final long EMPTY_QUEUES_WAIT_MILLI = 10;
 
   private final ConcurrentMap<String, ArrayBlockingQueue<U>> producedData = Maps.newConcurrentMap();
-  private final int queueSize;
+  private final String endPointName;
+  private final int size;
 
-  protected InMemoryEndPoint(int queueSize) {
-    this.queueSize = queueSize;
+  protected InMemoryEndPoint(final String endPointName, int size) {
+    this.endPointName = endPointName;
+    this.size = size;
   }
 
   protected abstract U transform(final T data);
@@ -109,7 +119,7 @@ public abstract class InMemoryEndPoint<T, U>
 
     final String validKey = key != null ? key : DEFAULT_DATUM_KEY;
 
-    producedData.putIfAbsent(validKey, new ArrayBlockingQueue<U>(queueSize));
+    producedData.putIfAbsent(validKey, new ArrayBlockingQueue<U>(size));
 
     try {
       producedData.get(validKey).put(transform(data));
@@ -125,7 +135,7 @@ public abstract class InMemoryEndPoint<T, U>
 
   @Override
   public String getName() {
-    return IN_MEMORY;
+    return endPointName;
   }
 
   public Map<String, ? extends Iterable<U>> getData() {

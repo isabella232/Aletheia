@@ -72,7 +72,6 @@ public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<T
   private void registerKnownConsumptionEndPointTypes() {
     registerConsumptionEndPointType(InMemoryEndPoint.WithBinaryStorage.class,
                                     new InMemoryDatumEnvelopeFetcherFactory());
-    registerConsumptionEndPointType(ManualFeedConsumptionEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 
   private List<DatumConsumerStream<TDomainClass>> createDatumConsumerStream(final DatumProducerConfig datumProducerConfig,
