@@ -1,13 +1,13 @@
 package com.outbrain.aletheia.datum.envelope;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope_old;
 import org.apache.avro.io.*;
-import org.apache.avro.specific.SpecificData;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.util.ByteBufferInputStream;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -18,7 +18,6 @@ import java.util.Collections;
 public class AvroDatumEnvelopeSerDe {
 
   public ByteBuffer serializeDatumEnvelope(final DatumEnvelope envelope) {
-
     try {
       final SpecificDatumWriter<DatumEnvelope> envelopeWriter = new SpecificDatumWriter<>(envelope.getSchema());
       final ByteArrayOutputStream envelopeByteStream = new ByteArrayOutputStream();
@@ -33,22 +32,17 @@ public class AvroDatumEnvelopeSerDe {
     } catch (final Exception e) {
       throw new RuntimeException("Could not serialize datum envelope", e);
     }
-
   }
 
   public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
-
-    final DatumReader<DatumEnvelope> datumReader = SpecificData.get().createDatumReader(DatumEnvelope.getClassSchema());
-
-    final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer));
-    final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
-
-    try {
-      final DatumEnvelope envelope = datumReader.read(null, decoder);
-      byteBufferInputStream.close();
-      return envelope;
-    } catch (final IOException e) {
-      throw new RuntimeException("Could not decode datum envelope", e);
+    try (final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer))) {
+      // hack alert: using old envelope to reconcile version diffs
+      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(DatumEnvelope_old.getClassSchema(),
+                                                                               DatumEnvelope.getClassSchema());
+      final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
+      return datumReader.read(null, decoder);
+    } catch (final Exception e) {
+      throw new RuntimeException("Could not deserialize datum envelope", e);
     }
   }
 }
