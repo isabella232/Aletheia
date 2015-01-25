@@ -57,6 +57,8 @@ public class LocalKafkaProduceConsumeExample {
 
     System.out.println("Building a DatumSteam...");
 
+    final Properties properties = new Properties();
+    properties.put("autooffset.reset", "largest");
     final List<DatumConsumerStream<MyDatum>> datumConsumerStreams =
             DatumConsumerStreamsBuilder
                     .forDomainClass(MyDatum.class)
@@ -69,11 +71,11 @@ public class LocalKafkaProduceConsumeExample {
                                     CONSUMER_GROUP_ID,
                                     END_POINT_NAME,
                                     1,
-                                    new Properties()),
+                                    properties),
                             new JsonDatumSerDe<>(MyDatum.class))
                     .build(new DatumConsumerStreamConfig(1, "localhost"));
 
-    System.out.println("Done building a DatumSteam.");
+    System.out.println("Done building a DatumStream.");
 
     System.out.println("Iterating over received data...");
 

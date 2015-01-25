@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
     <artifactId>aletheia.parent</artifactId>
-    <version>0.32</version>
+    <version>0.33</version>
   </parent>
 
   <name>Aletheia Kafka 0.7 extensions (deprecated)</name>

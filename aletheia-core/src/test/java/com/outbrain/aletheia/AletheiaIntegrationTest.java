@@ -34,7 +34,7 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private static final String DATUM_KEY = "datumKey";
-  private static final int CONSUME_DATA_TIMEOUT_MILLI = 200;
+  private static final int CONSUME_DATA_TIMEOUT_MILLI = 500;
 
   private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
 
