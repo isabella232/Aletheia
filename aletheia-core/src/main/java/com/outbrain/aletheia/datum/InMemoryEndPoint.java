@@ -1,8 +1,5 @@
 package com.outbrain.aletheia.datum;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.datum.consumption.DatumKeyAwareFetchEndPoint;
 import com.outbrain.aletheia.datum.consumption.FetchConsumptionEndPoint;
@@ -12,124 +9,128 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 
 import java.io.Serializable;
-import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * A special kind of {@link com.outbrain.aletheia.datum.EndPoint} that allows clients to a pipeline where
- * the {@link com.outbrain.aletheia.datum.production.DatumProducer} produces data in-memory end point and the
+ * A special kind of {@link com.outbrain.aletheia.datum.EndPoint} that allows clients to construct a pipeline where
+ * the {@link com.outbrain.aletheia.datum.production.DatumProducer} produces into an in-memory end point and the
  * {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} consumes data off of it.
  * This type of endpoint is useful for in-memory experiments and tests, and can simulate a
  * quasi-synchronous, blocking produce/consume model if it's created with size = 1.
  */
-public abstract class InMemoryEndPoint<T, U>
+public class InMemoryEndPoint
         implements ProductionEndPoint,
-        FetchConsumptionEndPoint<U>,
-        DatumKeyAwareNamedSender<T>,
-        NamedSender<T>,
-        DatumKeyAwareFetchEndPoint<U>,
+        FetchConsumptionEndPoint<byte[]>,
+        DatumKeyAwareNamedSender<byte[]>,
+        NamedSender<byte[]>,
+        DatumKeyAwareFetchEndPoint<byte[]>,
         Serializable {
 
-  public static class WithBinaryStorage extends InMemoryEndPoint<ByteBuffer, byte[]> {
+  private final static class KeyedData implements Serializable {
+    private byte[] data;
+    private String key;
 
-    public WithBinaryStorage(final String endPointName, final int size) {
-      super(endPointName, size);
+    public KeyedData(final String key, final byte[] data) {
+      this.data = data;
+      this.key = key;
     }
 
-    public WithBinaryStorage(final String endPointName, final List<byte[]> data) throws SilentSenderException {
-      this(endPointName, data.size());
-      for (byte[] bytes : data) {
-        this.send(ByteBuffer.wrap(bytes));
-      }
-    }
-
-    @Override
-    protected byte[] transform(final ByteBuffer data) {
-      return data.array();
-    }
-  }
-
-  public static class WithStringStorage extends InMemoryEndPoint<String, String> {
-
-    public WithStringStorage(final String endPointName,int size) {
-      super(endPointName, size );
-    }
-
-    @Override
-    protected String transform(final String data) {
+    public byte[] getData() {
       return data;
     }
 
+    public String getKey() {
+      return key;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      final KeyedData keyedData = (KeyedData) o;
+
+      return Arrays.equals(data, keyedData.data) && key.equals(keyedData.key);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = Arrays.hashCode(data);
+      result = 31 * result + key.hashCode();
+      return result;
+    }
   }
 
-  public static final String DEFAULT_DATUM_KEY = "random";
-  private static final long EMPTY_QUEUES_WAIT_MILLI = 10;
+  public static final String DEFAULT_DATUM_KEY = "r@|\\|d0|\\/|";
+  //well, "r@|\|d0|\/|" is prettier, but there's no escape, pun intended.
 
-  private final ConcurrentMap<String, ArrayBlockingQueue<U>> producedData = Maps.newConcurrentMap();
+  private final ConcurrentMap<String, BlockingQueue<byte[]>> partitionedProducedData = Maps.newConcurrentMap();
+  private final BlockingQueue<KeyedData> producedData = new LinkedBlockingQueue<>();
   private final String endPointName;
   private final int size;
 
-  protected InMemoryEndPoint(final String endPointName, int size) {
+  public InMemoryEndPoint(final String endPointName, int size) {
     this.endPointName = endPointName;
     this.size = size;
   }
 
-  protected abstract U transform(final T data);
+  public InMemoryEndPoint(final String endPointName, List<byte[]> data) {
+    this(endPointName, data.size());
+
+    for (byte[] bytes : data) {
+      try {
+        send(bytes);
+      } catch (SilentSenderException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+  }
 
   @Override
-  public U fetch() {
+  public byte[] fetch() {
     try {
-
-      Optional<ArrayBlockingQueue<U>> firstNonEmptyQueue;
-
-      final Predicate<ArrayBlockingQueue<U>> nonEmpty = new Predicate<ArrayBlockingQueue<U>>() {
-        @Override
-        public boolean apply(final ArrayBlockingQueue<U> queue) {
-          return queue.size() > 0;
-        }
-      };
-
-      do {
-        firstNonEmptyQueue = FluentIterable.from(producedData.values())
-                                           .filter(nonEmpty)
-                                           .first();
-        Thread.sleep(EMPTY_QUEUES_WAIT_MILLI);
-      } while (!firstNonEmptyQueue.isPresent());
-
-      return firstNonEmptyQueue.get().take();
+      final KeyedData keyedData = producedData.take();
+      partitionedProducedData.get(keyedData.getKey()).remove(keyedData.getData());
+      return keyedData.getData();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public U fetch(String key) {
+  public byte[] fetch(String key) {
     try {
-      return producedData.get(key).take();
+      final byte[] bytes = partitionedProducedData.get(key).take();
+      producedData.remove(new KeyedData(key, bytes));
+      return bytes;
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public void send(final T data, final String key) throws SilentSenderException {
+  public void send(final byte[] data, final String key) throws SilentSenderException {
 
     final String validKey = key != null ? key : DEFAULT_DATUM_KEY;
 
-    producedData.putIfAbsent(validKey, new ArrayBlockingQueue<U>(size));
+    partitionedProducedData.putIfAbsent(validKey, new LinkedBlockingDeque<byte[]>(size));
 
     try {
-      producedData.get(validKey).put(transform(data));
+      partitionedProducedData.get(validKey).put(data);
+      producedData.add(new KeyedData(validKey, data));
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public void send(final T data) throws SilentSenderException {
+  public void send(final byte[] data) throws SilentSenderException {
     send(data, DEFAULT_DATUM_KEY);
   }
 
@@ -138,7 +139,7 @@ public abstract class InMemoryEndPoint<T, U>
     return endPointName;
   }
 
-  public Map<String, ? extends Iterable<U>> getData() {
-    return producedData;
+  public Map<String, ? extends Iterable<byte[]>> getData() {
+    return partitionedProducedData;
   }
 }

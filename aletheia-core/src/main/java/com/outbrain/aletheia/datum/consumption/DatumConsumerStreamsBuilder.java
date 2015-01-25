@@ -70,16 +70,15 @@ public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<T
   }
 
   private void registerKnownConsumptionEndPointTypes() {
-    registerConsumptionEndPointType(InMemoryEndPoint.WithBinaryStorage.class,
-                                    new InMemoryDatumEnvelopeFetcherFactory());
+    registerConsumptionEndPointType(InMemoryEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
   }
 
-  private List<DatumConsumerStream<TDomainClass>> createDatumConsumerStream(final DatumProducerConfig datumProducerConfig,
+  private List<DatumConsumerStream<TDomainClass>> createDatumConsumerStream(final DatumConsumerStreamConfig datumConsumerStreamConfig,
                                                                             final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
 
     logger.info("Creating a datum stream for end point: {} with config: {}",
                 consumptionEndPointInfo.getConsumptionEndPoint(),
-                datumProducerConfig);
+                datumConsumerStreamConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
     final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass,
@@ -88,7 +87,8 @@ public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<T
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
     } else {
-      datumAuditor = getDatumAuditor(datumProducerConfig,
+      datumAuditor = getDatumAuditor(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
+                                                             datumConsumerStreamConfig.getHostname()),
                                      consumptionEndPointInfo.getConsumptionEndPoint(),
                                      metricFactoryProvider);
     }
@@ -185,16 +185,14 @@ public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<T
   }
 
   /**
-   * Builds a {@link DatumConsumerStream} that can be used to consume datums.
+   * Builds a {@link DatumConsumerStream} that can be used to consume data.
    *
    * @param datumConsumerStreamConfig the configuration information to use for building the {@link DatumConsumerStream}
    *                                  instance configured.
    * @return a fully configured {@link DatumConsumerStream} instance.
    */
   public List<DatumConsumerStream<TDomainClass>> build(final DatumConsumerStreamConfig datumConsumerStreamConfig) {
-    return createDatumConsumerStream(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
-                                                             datumConsumerStreamConfig.getHostname()),
-                                     consumptionEndPointInfo);
+    return createDatumConsumerStream(datumConsumerStreamConfig, consumptionEndPointInfo);
   }
 
   /**

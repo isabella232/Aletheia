@@ -13,7 +13,7 @@ public class DatumProducerConfig {
   /**
    * @param incarnation incarnation provides means to further control data filtering, e.g., discarding all data
    *                    below a certain incarnation.
-   * @param hostname    the hostname this {@link DatumProducer} instance is operating from.
+   * @param hostname    the hostname this {@link DatumProducer} instance is running from.
    */
   public DatumProducerConfig(final int incarnation, final String hostname) {
 

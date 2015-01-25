@@ -5,11 +5,10 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import kafka.message.Message;
 import kafka.producer.ProducerConfig;
 
-import java.nio.ByteBuffer;
 import java.util.Properties;
 
 @Deprecated
-public class KafkaBinarySender extends KafkaNamedSender<ByteBuffer, Message> {
+public class KafkaBinarySender extends KafkaNamedSender<byte[], Message> {
 
   @Deprecated
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
@@ -25,9 +24,7 @@ public class KafkaBinarySender extends KafkaNamedSender<ByteBuffer, Message> {
   }
 
   @Override
-  protected Message convertInputToSendingFormat(final ByteBuffer byteBuffer) {
-    final byte[] bytes = new byte[byteBuffer.remaining()];
-    byteBuffer.get(bytes);
+  protected Message convertInputToSendingFormat(final byte[] bytes) {
     return new Message(bytes);
   }
 

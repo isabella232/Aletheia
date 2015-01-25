@@ -13,10 +13,10 @@ public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelo
 
   public static final String UTF_8 = "UTF-8";
 
-  private final DatumKeyAwareNamedSender<String> stringTransporter;
+  private final DatumKeyAwareNamedSender<String> stringSender;
 
-  public DatumEnvelopePeelingStringSender(final DatumKeyAwareNamedSender<String> stringTransporter) {
-    this.stringTransporter = stringTransporter;
+  public DatumEnvelopePeelingStringSender(final DatumKeyAwareNamedSender<String> stringSender) {
+    this.stringSender = stringSender;
   }
 
   private String getDataAsString(final byte[] bytes) {
@@ -31,11 +31,11 @@ public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelo
   public void send(final DatumEnvelope datumEnvelope) throws SilentSenderException {
     final String dataAsString = getDataAsString(datumEnvelope.getDatumBytes().array());
     final String key = datumEnvelope.getDatumKey() != null ? datumEnvelope.getDatumKey().toString() : null;
-    stringTransporter.send(dataAsString, key);
+    stringSender.send(dataAsString, key);
   }
 
   @Override
   public String getName() {
-    return stringTransporter.getName();
+    return stringSender.getName();
   }
 }

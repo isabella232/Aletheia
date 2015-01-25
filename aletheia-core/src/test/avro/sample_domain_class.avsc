@@ -1,7 +1,7 @@
 {
     "namespace": "com.outbrain.aletheia.datum.avro",
     "type": "record",
-    "name": "test_domain_class",
+    "name": "sample_domain_class",
     "fields": [
         {
             "name": "id",

@@ -4,7 +4,7 @@ import com.outbrain.aletheia.datum.DatumType;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
-@DatumType(datumTypeId = "test_domain_class",
+@DatumType(datumTypeId = "sample_domain_class",
            timestampExtractor = SampleDomainClass.SampleDomainClassTimestampSelector.class)
 public class SampleDomainClass {
 

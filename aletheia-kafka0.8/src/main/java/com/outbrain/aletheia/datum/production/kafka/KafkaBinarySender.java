@@ -16,35 +16,36 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwareNamedSender<TInput> {
+/**
+ * A {@link com.outbrain.aletheia.datum.production.Sender} implementation that sends binary data to Kafka.
+ */
+public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
-  private static final Logger logger = LoggerFactory.getLogger(KafkaNamedSender.class);
-
-  private Producer<String, TPayload> producer;
-  private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
-  private final MetricsFactory metricFactory;
-  private final int connectionAttempts = 0;
-  private boolean connected = false;
+  private static final Logger logger = LoggerFactory.getLogger(KafkaBinarySender.class);
   private static final int TEN_SECONDS = 10000;
 
+  private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
+  private final MetricsFactory metricFactory;
+  private final Timer connectionTimer = new Timer(KafkaBinarySender.class.getSimpleName() + "-reconnectTimer");
+  private final ProducerConfig customConfiguration;
 
-  private final Timer connectionTimer = new Timer("KafkaBinaryTransporter-kafkaInitialConnectionTimer");
+  private Producer<String, byte[]> producer;
+  private boolean connected = false;
+
   private Counter sendCount;
   private Counter sendDuration;
   private Counter failureDueToUnconnected;
   private Counter failureDuration;
   private Counter messageLengthCounter;
   private Histogram messageSizeHistogram;
-  private final ProducerConfig customConfiguration;
 
-
-  public KafkaNamedSender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
-                          final MetricsFactory metricFactory) {
+  public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
+                           final MetricsFactory metricFactory) {
 
     this.kafkaTopicDeliveryEndPoint = kafkaTopicDeliveryEndPoint;
     this.metricFactory = metricFactory;
 
-    logger.info("Creating kafka transporter for endpoint:" + kafkaTopicDeliveryEndPoint.toString());
+    logger.info("Creating kafka sender for endpoint:" + kafkaTopicDeliveryEndPoint.toString());
     if (this.kafkaTopicDeliveryEndPoint.getAddShutdownHook()) {
       Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         @Override
@@ -54,9 +55,10 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
       }));
     }
 
-    customConfiguration = customizeConfig(getProducerConfig());
+    customConfiguration = getProducerConfig();
+
     initMetrics(metricFactory);
-    connectToKafka();
+    connect();
   }
 
   private void initMetrics(final MetricsFactory metricFactory) {
@@ -80,7 +82,7 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
     }
   }
 
-  private void connectToKafka() {
+  private void connect() {
     connected = singleConnect(customConfiguration);
     if (!connected) {
       logger.warn("Failed attempting connection to kafka (" + customConfiguration.toString() + ").");
@@ -91,7 +93,7 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
           final String prevName = myThread.getName();
           myThread.setName("Connecting to kafka " + System.currentTimeMillis());
           try {
-            connectToKafka();
+            connect();
           } finally {
             myThread.setName(prevName);
           }
@@ -105,8 +107,8 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
     final Properties producerProperties = (Properties) kafkaTopicDeliveryEndPoint.getProperties().clone();
 
     if (producerProperties.getProperty("serializer.class") != null) {
-      logger.warn(
-              "serializerClass cannot be provided as producer properties. Overriding manually to be the correct serialization type.");
+      logger.warn("serializerClass cannot be provided as producer properties. " +
+                  "Overriding manually to be the correct serialization type.");
     }
 
     producerProperties.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
@@ -115,42 +117,28 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
 
     producerProperties.setProperty("batch.size", Integer.toString(kafkaTopicDeliveryEndPoint.getBatchSize()));
 
+    producerProperties.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
+
     return new ProducerConfig(producerProperties);
-
   }
 
-  protected abstract ProducerConfig customizeConfig(ProducerConfig config);
-
-  protected abstract TPayload convertInputToSendingFormat(TInput input);
-
-  protected abstract int getPayloadSize(TPayload payload);
-
-  protected void validateConfiguration(final ProducerConfig config) {
-
-  }
-
-  private void internalSend(final TInput data, final String key) throws SilentSenderException {
+  @Override
+  public void send(final byte[] data, final String key) throws SilentSenderException {
     if (!connected) {
       failureDueToUnconnected.inc();
       return;
     }
     final long startTime = System.currentTimeMillis();
     try {
-      final TPayload transportPayload = convertInputToSendingFormat(data);
-
       if (key != null) {
-        producer.send(new KeyedMessage<>(kafkaTopicDeliveryEndPoint.getTopicName(),
-                                         key,
-                                         transportPayload));
+        producer.send(new KeyedMessage<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data));
       } else {
-        producer.send(new KeyedMessage<String, TPayload>(kafkaTopicDeliveryEndPoint.getTopicName(), transportPayload));
+        producer.send(new KeyedMessage<String, byte[]>(kafkaTopicDeliveryEndPoint.getTopicName(), data));
       }
 
-      final int size = getPayloadSize(transportPayload);
-
       final long duration = System.currentTimeMillis() - startTime;
-      messageLengthCounter.inc(size);
-      messageSizeHistogram.update(size);
+      messageLengthCounter.inc(data.length);
+      messageSizeHistogram.update(data.length);
       sendCount.inc();
       sendDuration.inc(duration);
     } catch (final Exception e) {
@@ -163,11 +151,6 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
         logger.error("Error while sending message to kafka.", e);
       }
     }
-  }
-
-  @Override
-  public void send(final TInput data, final String key) throws SilentSenderException {
-    internalSend(data, key);
   }
 
   @Override
@@ -189,3 +172,5 @@ public abstract class KafkaNamedSender<TInput, TPayload> implements DatumKeyAwar
     }
   }
 }
+
+

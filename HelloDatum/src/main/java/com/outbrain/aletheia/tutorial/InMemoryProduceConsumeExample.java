@@ -21,8 +21,7 @@ public class InMemoryProduceConsumeExample {
 
     System.out.println("Building a DatumProducer...");
 
-    final InMemoryEndPoint.WithBinaryStorage inMemoryProductionEndPoint =
-            new InMemoryEndPoint.WithBinaryStorage("DemoEndpoint", 10);
+    final InMemoryEndPoint inMemoryProductionEndPoint = new InMemoryEndPoint("DemoEndpoint", 10);
 
     final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder

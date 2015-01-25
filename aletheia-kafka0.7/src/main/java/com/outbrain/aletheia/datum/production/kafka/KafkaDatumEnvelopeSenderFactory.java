@@ -4,7 +4,7 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumEnvelopePeelingStringSender;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.NamedSender;
-import com.outbrain.aletheia.datum.production.RawDatumEnvelopeBinarySender;
+import com.outbrain.aletheia.datum.production.AvroDatumEnvelopeSender;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFacto
                           .equals(KafkaTopicProductionEndPoint.EndPointType.RawDatumEnvelope)) {
       logger.info("Creating kafka transporter for input type: " + KafkaTopicProductionEndPoint.EndPointType.RawDatumEnvelope);
 
-      return new RawDatumEnvelopeBinarySender(new KafkaBinarySender(productionEndPoint, metricFactory));
+      return new AvroDatumEnvelopeSender(new KafkaBinarySender(productionEndPoint, metricFactory));
 
     } else if (productionEndPoint.getEndPointType()
                                  .equals(KafkaTopicProductionEndPoint.EndPointType.String)) {

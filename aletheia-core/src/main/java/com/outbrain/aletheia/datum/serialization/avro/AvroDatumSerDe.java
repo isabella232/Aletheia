@@ -70,14 +70,12 @@ public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
       final DatumTypeVersion datumTypeVersion = serializedDatum.getDatumTypeVersion();
 
-      final Schema incomingDatumSchema = datumSchemaRepository.getSchema(datumTypeVersion);
+      final Schema datumWriterSchema = datumSchemaRepository.getSchema(datumTypeVersion);
 
-      final Schema repositoryLatestDatumSchema =
-              datumSchemaRepository.getLatestSchema(datumTypeVersion.getDatumTypeId());
+      final Schema datumReaderSchema = datumSchemaRepository.getLatestSchema(datumTypeVersion.getDatumTypeId());
 
-      final DatumReader<? extends SpecificRecord> datumReader =
-              new SpecificDatumReader<>(incomingDatumSchema, repositoryLatestDatumSchema);
-
+      final DatumReader<? extends SpecificRecord> datumReader = new SpecificDatumReader<>(datumWriterSchema,
+                                                                                          datumReaderSchema);
       final InputStream byteBufferInputStream =
               new ByteBufferInputStream(Collections.singletonList(serializedDatum.getPayload()));
 

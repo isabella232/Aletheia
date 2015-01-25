@@ -53,10 +53,8 @@ public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFac
             new Function<KafkaStream<byte[], byte[]>, DatumEnvelopeFetcher>() {
               @Override
               public DatumEnvelopeFetcher apply(final KafkaStream<byte[], byte[]> stream) {
-                return consumptionEndPoint.getEndPointType()
-                                          .equals(KafkaTopicConsumptionEndPoint.EndPointType.RawDatumEnvelope) ?
-                        new KafkaStreamDatumEnvelopeFetcher(stream) :
-                        new KafkaRawStringStreamDatumEnvelopeFetcher(stream);
+                return new KafkaStreamDatumEnvelopeFetcher(stream);
+
               }
             };
 

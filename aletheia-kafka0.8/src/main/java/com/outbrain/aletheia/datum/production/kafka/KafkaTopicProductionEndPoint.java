@@ -6,23 +6,19 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.Properties;
 
 /**
- * A production endpoint for producing data to a Kafka topic.
+ * A {@link com.outbrain.aletheia.datum.production.ProductionEndPoint} for producing data to a Kafka topic.
  */
 public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
-
-  public enum EndPointType {RawDatumEnvelope, String}
 
   private final int batchSize;
   private final Properties properties;
   private final String topicName;
-  private final EndPointType endPointType;
   private final String endPointName;
   private boolean addShutdownHook;
   private final String brokerList;
 
   public KafkaTopicProductionEndPoint(final String brokerList,
                                       final String topicName,
-                                      final EndPointType endPointType,
                                       final int batchSize,
                                       final String endPointName,
                                       final Properties properties) {
@@ -30,7 +26,6 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
     this.brokerList = brokerList;
     this.properties = properties;
     this.topicName = topicName;
-    this.endPointType = endPointType;
     this.endPointName = endPointName;
   }
 
@@ -52,10 +47,6 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public boolean getAddShutdownHook() {
     return addShutdownHook;
-  }
-
-  public EndPointType getEndPointType() {
-    return endPointType;
   }
 
   @Override
