@@ -9,8 +9,9 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 /**
-* Created by slevin on 11/17/14.
-*/
+ * A {@link com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher} implementation capable of fetching
+ * {@link com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope}s from a Kafka stream.
+ */
 class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
   private final Iterable<DatumEnvelope> datumEnvelopeIterable =

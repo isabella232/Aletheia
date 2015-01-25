@@ -17,7 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * A {@link com.outbrain.aletheia.datum.production.Sender} implementation that sends binary data to Kafka.
+ * A {@link DatumKeyAwareNamedSender} implementation that sends binary data to Kafka.
  */
 public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 

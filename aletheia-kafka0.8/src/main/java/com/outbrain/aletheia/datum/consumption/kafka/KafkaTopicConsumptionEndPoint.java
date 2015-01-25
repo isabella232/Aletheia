@@ -6,7 +6,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.Properties;
 
 /**
- * A consumption endpoint for consuming data from a Kafka topic.
+ * A {@link com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint} capable of consuming data from a Kafka topic.
  */
 public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
 

@@ -6,6 +6,10 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.AvroDatumEnvelopeSender;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
+/**
+ * A {@link DatumEnvelopeSenderFactory} capable of producing senders capable of sending
+ * {@link com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope}s to a Kafka.
+ */
 public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<KafkaTopicProductionEndPoint> {
   @Override
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final KafkaTopicProductionEndPoint productionEndPoint,
