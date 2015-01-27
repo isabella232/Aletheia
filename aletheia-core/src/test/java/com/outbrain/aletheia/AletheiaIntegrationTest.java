@@ -34,16 +34,6 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private static final String DATUM_KEY = "datumKey";
-  private static final int CONSUME_DATA_TIMEOUT_MILLI = 500;
-
-  private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
-
-  private final DatumKeySelector<TDomainClass> datumKeySelector = new DatumKeySelector<TDomainClass>() {
-    @Override
-    public String getDatumKey(final TDomainClass domainObject) {
-      return DATUM_KEY;
-    }
-  };
 
   private static final Duration BREADCRUMB_BUCKET_DURATION = Duration.standardSeconds(30);
 
@@ -74,11 +64,26 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   private static final boolean SHOULD_NOT_BE_SENT = false;
 
   private final Class<TDomainClass> domainClass;
+  private final Duration datumConsumerStreamConsumeTimeout;
+  private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
+  private final DatumKeySelector<TDomainClass> datumKeySelector = new DatumKeySelector<TDomainClass>() {
+    @Override
+    public String getDatumKey(final TDomainClass domainObject) {
+      return DATUM_KEY;
+    }
+  };
 
   protected final Random random = new Random();
 
+
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
+    this(domainClass, Duration.millis(500));
+  }
+
+  protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass,
+                                    final Duration datumConsumerStreamConsumeTimeout) {
     this.domainClass = domainClass;
+    this.datumConsumerStreamConsumeTimeout = datumConsumerStreamConsumeTimeout;
   }
 
   private DatumProducer<TDomainClass> createDataProducer(final ProductionEndPoint dataProductionEndPoint,
@@ -124,10 +129,12 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   private void assertBreadcrumb(final InMemoryEndPoint breadcrumbProductionEndPoint,
                                 final BreadcrumbsConfig breadcrumbsConfig) {
 
-    final ImmutableList<Breadcrumb> breadcrumbs = consumeDataOrTimeout(
-            createBreadcrumbConsumerStream(breadcrumbProductionEndPoint), CONSUME_DATA_TIMEOUT_MILLI);
+    final int ONE = 1;
 
-    assertThat(breadcrumbs.size(), is(1));
+    final ImmutableList<Breadcrumb> breadcrumbs = consumeDataOrTimeout(
+            createBreadcrumbConsumerStream(breadcrumbProductionEndPoint), ONE, datumConsumerStreamConsumeTimeout);
+
+    assertThat(breadcrumbs.size(), is(ONE));
 
     final Breadcrumb breadcrumb = Iterables.getFirst(breadcrumbs, null);
 
@@ -142,7 +149,8 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   }
 
   private <T> ImmutableList<T> consumeDataOrTimeout(final DatumConsumerStream<T> datumConsumerStream,
-                                                    final int timeoutInMilli) {
+                                                    final int datumCountToConsume,
+                                                    final Duration timeout) {
 
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     final List<T> receivedDatums = Lists.newLinkedList();
@@ -150,14 +158,14 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     final Future<?> submit = executorService.submit(new Runnable() {
       @Override
       public void run() {
-        for (T aDatum : datumConsumerStream.datums()) {
-          receivedDatums.add(aDatum);
+        for (int consumedCount = 0; consumedCount < datumCountToConsume; consumedCount++) {
+          receivedDatums.add(Iterables.getFirst(datumConsumerStream.datums(), null));
         }
       }
     });
 
     try {
-      submit.get(timeoutInMilli, TimeUnit.MILLISECONDS);
+      submit.get(timeout.getMillis(), TimeUnit.MILLISECONDS);
     } catch (ExecutionException | InterruptedException e) {
       throw new RuntimeException(e);
     } catch (TimeoutException e) {
@@ -188,7 +196,6 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
       }
     };
 
-    assertThat(consumedData.size(), is(1));
     assertThat(consumedData, not(hasItem(filteredDatum)));
     assertThat("Received data was was different from the one that was sent.",
                consumedData,
@@ -231,8 +238,14 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
     produceData(domainObjects, datumProducer);
 
+    final int ONE = 1;
+
     final ImmutableList<TDomainClass> consumedData = consumeDataOrTimeout(datumConsumerStream,
-                                                                          CONSUME_DATA_TIMEOUT_MILLI);
+                                                                          ONE,
+                                                                          datumConsumerStreamConsumeTimeout);
+
+    assertThat(consumedData.size(), is(ONE));
+
     assertDatumFlow(domainObjects,
                     filteredDatum,
                     consumedData,
