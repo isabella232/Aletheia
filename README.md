@@ -17,7 +17,7 @@ The following endpoint types are supported out-of-the-box:
 Custom endpoint types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
 
 # Datum Production Example
-Build the Datum Producer once:
+Build a Datum Producer once:
 
 ```java
 DatumProducer<Click> datumProducer = 
@@ -36,6 +36,33 @@ Then, produce away:
 
 ```java
 datumProducer.deliver(new Click(...));
+```
+
+# Datum Consumption Example
+
+Build a DatumConsumerStream list once:
+
+```java
+List<DatumConsumerStream<Click>> datumConsumerStreams =
+    DatumConsumerStreamsBuilder
+        .forDomainClass(Click.class)
+        .registerConsumptionEndPointType(KafkaTopicConsumptionEndPoint.class,
+                                         new KafkaDatumEnvelopeFetcherFactory())
+        .consumeDataFrom(new KafkaTopicConsumptionEndPoint(...), 
+                         new JsonDatumSerDe<Click>(Click.class))
+        .build(new DatumConsumerStreamConfig(1, "localhost"));
+```
+
+Then, consume away:
+
+```java
+// parallelism is 1, so we take the first DatumConsumerStream and forget about the list
+DatumConsumerStream<Click> clickStream = Iterables.getFirst(datumConsumerStreams, null);
+
+// blocking
+for (final Click click : clickStream.datums()) {
+ // handling logic goes here
+}
 ```
 
 # Usage
