@@ -25,10 +25,8 @@ DatumProducer<Click> datumProducer =
       .forDomainClass(Click.class)
       .registerProductionEndPointType(KafkaTopicProductionEndPoint.class,
                                       new KafkaDatumEnvelopeSenderFactory())
-      .registerProductionEndPointType(LogFileProductionEndPoint.class,
-                                      new LogFileDatumEnvelopeSenderFactory())
-      .deliverDataTo(new KafkaTopicProductionEndPoint(...))
-      .deliverDataTo(new LogFileProductionEndPoint(...))
+      .deliverDataTo(new KafkaTopicProductionEndPoint(...), 
+                     new JsonDatumSerDe<Click>(Click.class))
       .build(new DatumProducerConfig(...));
 ```
 
