@@ -48,7 +48,7 @@ List<DatumConsumerStream<Click>> datumConsumerStreams =
                                          new KafkaDatumEnvelopeFetcherFactory())
         .consumeDataFrom(new KafkaTopicConsumptionEndPoint(...), 
                          new JsonDatumSerDe<Click>(Click.class))
-        .build(new DatumConsumerStreamConfig(1, "localhost"));
+        .build(new DatumConsumerStreamConfig(...));
 ```
 
 Then, consume away:
