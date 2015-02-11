@@ -49,8 +49,16 @@ public class DatumEnvelopeOpener<TDomainClass> {
               new Interval(new DateTime(envelope.getLogicalTimestamp()), now).toDuration().getStandardSeconds();
       logicalDelayAverager.addSample((int) logicalSecondsBehind);
       logicalTimestampDelayHistogram.update(logicalSecondsBehind);
+    } catch (final IllegalArgumentException e) {
+      logger.warn(String.format("A message with a future logical timestamp has arrived from %s. " +
+                                "Arriving timestamp is: %d, now reference is %d, delta is: %d, skipping lag metrics update.",
+                                envelope.getSourceHost(),
+                                envelope.getLogicalTimestamp(),
+                                now.getMillis(),
+                                envelope.getLogicalTimestamp() - now.getMillis()));
+      futureLogicalMessagesCount.inc();
     } catch (final Exception e) {
-      logger.error("A message with a future logical time detected, metrics update will not take place", e);
+      logger.error("Error while updating lag metric", e);
       futureLogicalMessagesCount.inc();
     }
   }

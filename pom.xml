@@ -8,7 +8,7 @@
   <name>Aletheia parent</name>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia.parent</artifactId>
-  <version>0.35-SNAPSHOT</version>
+  <version>0.35</version>
   <description>The Aletheia parent project</description>
   <url>https://github.com/outbrain/Aletheia/wiki</url>
   <licenses>
