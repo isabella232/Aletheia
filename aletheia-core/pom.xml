@@ -15,8 +15,8 @@
   <artifactId>aletheia-core</artifactId>
 
   <scm>
-    <connection>scm:git:ssh://github.com:outbrain/Aletheia.git</connection>
-    <developerConnection>scm:git:ssh://github.com:outbrain/Aletheia.git</developerConnection>
+    <connection>scm:git:https://github.com:outbrain/Aletheia.git</connection>
+    <developerConnection>scm:git:https://github.com:outbrain/Aletheia.git</developerConnection>
     <url>https://github.com/outbrain/Aletheia/</url>
   </scm>
 
