@@ -12,18 +12,6 @@
   <name>Aletheia core</name>
   <artifactId>aletheia-core</artifactId>
 
-  <scm>
-    <connection>scm:git:https://github.com:outbrain/Aletheia.git</connection>
-    <developerConnection>scm:git:https://github.com:outbrain/Aletheia.git</developerConnection>
-    <url>https://github.com/outbrain/Aletheia/</url>
-    <tag>aletheia.parent-0.36</tag>
-  </scm>
-
-  <organization>
-    <name>Outbrain</name>
-    <url>http://www.outbrain.com</url>
-  </organization>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
