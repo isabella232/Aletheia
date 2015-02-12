@@ -6,7 +6,7 @@
   <name>Aletheia parent</name>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia.parent</artifactId>
-  <version>0.38-SNAPSHOT</version>
+  <version>0.38</version>
   <description>The Aletheia parent project</description>
   <url>https://github.com/outbrain/Aletheia/wiki</url>
   <licenses>
@@ -23,7 +23,7 @@
     <connection>scm:git:https://github.com/outbrain/Aletheia.git</connection>
     <developerConnection>scm:git:https://github.com/outbrain/Aletheia.git</developerConnection>
     <url>https://github.com/outbrain/Aletheia/</url>
-    <tag>aletheia.parent-0.36</tag>
+    <tag>aletheia.parent-0.38</tag>
   </scm>
 
   <organization>
