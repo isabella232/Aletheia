@@ -1,29 +1,16 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
     <artifactId>aletheia.parent</artifactId>
-    <version>0.36-SNAPSHOT</version>
+    <version>0.37-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
 
   <name>Aletheia core</name>
   <artifactId>aletheia-core</artifactId>
-
-  <scm>
-    <connection>scm:git:ssh://github.com:outbrain/Aletheia.git</connection>
-    <developerConnection>scm:git:ssh://github.com:outbrain/Aletheia.git</developerConnection>
-    <url>https://github.com/outbrain/Aletheia/</url>
-  </scm>
-
-  <organization>
-    <name>Outbrain</name>
-    <url>http://www.outbrain.com</url>
-  </organization>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
