@@ -71,7 +71,7 @@ First, have the aletheia-core jar included in your pom:
 <dependency>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia-core</artifactId>
-  <version>0.17</version>
+  <version>x.y</version>
 </dependency>
 ```
 
@@ -81,7 +81,7 @@ Then, include the aletheia extensions you'll be using, which can be one or more 
 <dependency>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia-kafka0.7</artifactId>
-  <version>0.17</version>
+  <version>x.y</version>
 </dependency>
 ```
 
@@ -89,7 +89,7 @@ Then, include the aletheia extensions you'll be using, which can be one or more 
 <dependency>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia-kafka0.8</artifactId>
-  <version>0.17</version>
+  <version>x.y</version>
 </dependency>
 ```
 
@@ -97,7 +97,7 @@ Then, include the aletheia extensions you'll be using, which can be one or more 
 <dependency>
   <groupId>com.outbrain.aletheia</groupId>
   <artifactId>aletheia-log4j</artifactId>
-  <version>0.17</version>
+  <version>x.y</version>
 </dependency>
 ```
 
