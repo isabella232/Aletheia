@@ -3,7 +3,7 @@
 
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
-    <artifactId>aletheia.parent</artifactId>
+    <artifactId>aletheia</artifactId>
     <version>0.41-SNAPSHOT</version>
   </parent>
 

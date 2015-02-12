@@ -3,9 +3,9 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <name>Aletheia parent</name>
+  <name>Aletheia</name>
   <groupId>com.outbrain.aletheia</groupId>
-  <artifactId>aletheia.parent</artifactId>
+  <artifactId>aletheia</artifactId>
   <version>0.41-SNAPSHOT</version>
   <description>The Aletheia parent project</description>
   <url>https://github.com/outbrain/Aletheia/wiki</url>
