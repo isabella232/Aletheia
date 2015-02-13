@@ -5,7 +5,7 @@
 
 Aletheia is a framework for implementing high volume, datum (event) bassed, producer-consumer data piplelines. Its key features are:
  * A unifrom API
- * Fine grained visibility features
+ * Fine grained visibility
  * Multiple serializatoin formats
  * Schema evolution support
 
