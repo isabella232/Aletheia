@@ -3,20 +3,18 @@
 
 [![Build Status](https://travis-ci.org/outbrain/Aletheia.svg?branch=master)](https://travis-ci.org/outbrain/Aletheia)
 
-Aletheia is a library that provides a uniform and extendable way for moving streaming data between endpoints with a built in, fine-grained visibility.
+Aletheia is a framework for implementing high volume, datum (event) bassed, producer-consumer data piplelines. Its key features are:
+ * A unifrom API
+ * Fine grained visibility features
+ * Multiple serializatoin formats
+ * Schema evolution support
 
-Aletheia’s key features are:
-* Datum-level near real time visibility
-* Pluggable endpoint types 
-* Pluggable serialization formats
-
-# Endpoint Types
-The following endpoint types are supported out-of-the-box:
+Aletehia supports the following producers/consumers out-of-the-box:
 * Kafka 0.7 (production and consumption)
 * Kafka 0.8 (production and consumption)
 * Log files (production only)
 
-Custom endpoint types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
+Custom producer/consumer types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
 
 # Datum Production Example
 Build a Datum Producer once:
