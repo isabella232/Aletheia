@@ -16,7 +16,9 @@ Aletehia supports the following producers/consumers out-of-the-box:
 
 Custom producer/consumer types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
 
-# Datum Production Example
+Datum Production Example
+-------------------------
+
 Build a Datum Producer once:
 
 ```java
@@ -36,7 +38,8 @@ Then, produce away:
 datumProducer.deliver(new Click(...));
 ```
 
-# Datum Consumption Example
+Datum Consumption Example
+--------------------------
 
 Build a DatumConsumerStream list once:
 
@@ -63,7 +66,8 @@ for (final Click click : clickStream.datums()) {
 }
 ```
 
-# Usage
+Usage
+------
 
 First, have the aletheia-core jar included in your pom:
 
@@ -104,11 +108,15 @@ Then, include the aletheia extensions you'll be using, which can be one or more 
 
 If you prefer building Aletheia yourself, please see the [Hello Datum!](https://github.com/outbrain/Aletheia/wiki/Hello-Datum%21) wiki page.
 
-# Documentation
+Documentation
+--------------
+
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
-# Developers
+Developers
+----------
+
 Aletheia has been developed by the data infrastructure team at Outbrain.   
 Please feel free to contact us for any details:
 
