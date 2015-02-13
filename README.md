@@ -1,7 +1,7 @@
 <img src="/logo/Aletheia-logo.png" height="115"></img>
 ![](https://github.com/outbrain/Aletheia/blob/master/logo/Aletheia.png)
 
-[![Build Status](https://travis-ci.org/outbrain/Aletheia.svg?branch=master)](https://travis-ci.org/outbrain/Aletheia)
+master branch: [![Build Status](https://travis-ci.org/outbrain/Aletheia.svg?branch=master)](https://travis-ci.org/outbrain/Aletheia)
 
 Aletheia is a framework for implementing high volume, datum (event) bassed, producer-consumer data piplelines. Its key features are:
  * A unifrom API
