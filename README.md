@@ -1,6 +1,8 @@
 <img src="/logo/Aletheia-logo.png" height="115"></img>
 ![](https://github.com/outbrain/Aletheia/blob/master/logo/Aletheia.png)
 
+[![Build Status](https://travis-ci.org/outbrain/Aletheia.svg?branch=master)](https://travis-ci.org/outbrain/Aletheia)
+
 Aletheia is a library that provides a uniform and extendable way for moving streaming data between endpoints with a built in, fine-grained visibility.
 
 Aletheia’s key features are:
