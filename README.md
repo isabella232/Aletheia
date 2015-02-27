@@ -113,6 +113,7 @@ Documentation
 
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
+*  [Prezi] (https://prezi.com/pqfbp7umqtvh/presentation)
 
 Developers
 ----------
