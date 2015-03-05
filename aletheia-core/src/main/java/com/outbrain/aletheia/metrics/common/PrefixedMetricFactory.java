@@ -28,9 +28,9 @@ public class PrefixedMetricFactory implements MetricsFactory {
     return decoratedMetricFactory.createTimer(getComponentWithPrefix(component), methodName);
   }
 
-  protected String getComponentFullPrefix() {
+  protected String getFullPrefix() {
     if (decoratedMetricFactory instanceof PrefixedMetricFactory) {
-      final String fullPrefix = ((PrefixedMetricFactory) decoratedMetricFactory).getComponentFullPrefix();
+      final String fullPrefix = ((PrefixedMetricFactory) decoratedMetricFactory).getFullPrefix();
       return fullPrefix + "." + prefix;
     } else {
       return prefix;

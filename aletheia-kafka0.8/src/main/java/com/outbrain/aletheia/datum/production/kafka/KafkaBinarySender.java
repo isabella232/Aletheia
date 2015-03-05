@@ -1,7 +1,9 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
+import com.outbrain.aletheia.datum.metrics.kafka.KafkaMetrics;
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
+import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -9,12 +11,14 @@ import kafka.common.QueueFullException;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
+import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 /**
  * A {@link DatumKeyAwareNamedSender} implementation that sends binary data to Kafka.
@@ -33,10 +37,8 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private boolean connected = false;
 
   private Counter sendCount;
-  private Counter sendDuration;
   private Counter failureDueToUnconnected;
-  private Counter failureDuration;
-  private Counter messageLengthCounter;
+  private com.outbrain.aletheia.metrics.common.Timer sendDuration;
   private Histogram messageSizeHistogram;
 
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
@@ -57,17 +59,25 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
     customConfiguration = getProducerConfig();
 
-    initMetrics(metricFactory);
+    initMetrics(metricFactory, customConfiguration);
+
     connect();
   }
 
-  private void initMetrics(final MetricsFactory metricFactory) {
+  private void initMetrics(final MetricsFactory metricFactory, final ProducerConfig customConfiguration) {
     sendCount = metricFactory.createCounter("Send.Attempts", "Success");
-    sendDuration = metricFactory.createCounter("Send.Attempts", "Success");
-    failureDuration = metricFactory.createCounter("Send.Attempts.Failures", "Duration");
-    messageLengthCounter = metricFactory.createCounter("Message", "Length");
+    sendDuration = metricFactory.createTimer("Send.Attempts", "Duration");
     messageSizeHistogram = metricFactory.createHistogram("Message", "Size", false);
     failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failures", "UnableToConnect");
+
+    KafkaMetrics.reportTo(metricFactory,
+                          customConfiguration.clientId(),
+                          Duration.standardSeconds(
+                                  Long.parseLong(
+                                          kafkaTopicDeliveryEndPoint.getProperties()
+                                                                    .getProperty(
+                                                                            "kafka.client.metrics.periodic.sync.intervalInSec",
+                                                                            "30"))));
   }
 
   private boolean singleConnect(final ProducerConfig config) {
@@ -111,11 +121,15 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
                   "Overriding manually to be the correct serialization type.");
     }
 
+    producerProperties.setProperty("client.id",
+                                   kafkaTopicDeliveryEndPoint.getProperties()
+                                                             .getProperty("client.id", UUID.randomUUID().toString()));
+
     producerProperties.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
 
     producerProperties.setProperty("metadata.broker.list", kafkaTopicDeliveryEndPoint.getBrokerList());
 
-    producerProperties.setProperty("batch.size", Integer.toString(kafkaTopicDeliveryEndPoint.getBatchSize()));
+    producerProperties.setProperty("batch.num.messages", Integer.toString(kafkaTopicDeliveryEndPoint.getBatchSize()));
 
     producerProperties.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
 
@@ -128,28 +142,24 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
       failureDueToUnconnected.inc();
       return;
     }
-    final long startTime = System.currentTimeMillis();
+
+    final com.outbrain.aletheia.metrics.common.Timer.Context timerContext = sendDuration.time();
+
     try {
       if (key != null) {
         producer.send(new KeyedMessage<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data));
       } else {
         producer.send(new KeyedMessage<String, byte[]>(kafkaTopicDeliveryEndPoint.getTopicName(), data));
       }
-
-      final long duration = System.currentTimeMillis() - startTime;
-      messageLengthCounter.inc(data.length);
-      messageSizeHistogram.update(data.length);
       sendCount.inc();
-      sendDuration.inc(duration);
+      messageSizeHistogram.update(data.length);
+    } catch (final QueueFullException e) {
+      throw new SilentSenderException(e);
     } catch (final Exception e) {
-      final long duration = System.currentTimeMillis() - startTime;
-      failureDuration.inc(duration);
-      if ((e instanceof QueueFullException)) {
-        metricFactory.createCounter("Send.Attempts.Failures", QueueFullException.class.getSimpleName()).inc();
-      } else {
-        metricFactory.createCounter("Send.Attempts.Failures", e.getClass().getSimpleName()).inc();
-        logger.error("Error while sending message to kafka.", e);
-      }
+      metricFactory.createCounter("Send.Attempts.Failures", MoreExceptionUtils.getType(e)).inc();
+      logger.error("Error while sending message to kafka.", e);
+    } finally {
+      timerContext.stop();
     }
   }
 

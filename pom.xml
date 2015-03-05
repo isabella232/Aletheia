@@ -65,7 +65,6 @@
   <modules>
     <module>aletheia-core</module>
     <module>aletheia-kafka0.8</module>
-    <module>aletheia-kafka0.7</module>
     <module>aletheia-log4j</module>
     <module>HelloDatum</module>
   </modules>
