@@ -1,9 +1,11 @@
 package com.outbrain.aletheia.datum.production;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.Timer;
@@ -18,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);
+
+  private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver.Requests.Attempts.Failures";
 
   private final Timer deliverDurationTimer;
   private final Counter deliverRequestSuccessCounter;
@@ -46,13 +50,6 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     deliverRequestSuccessCounter = metricFactory.createCounter("Deliver.Requests.Attempts", "Success");
   }
 
-
-  private String getErrorCategory(final Exception e) {
-    return e.getCause() != null ?
-           e.getCause().getClass().getSimpleName() :
-           e.getClass().getSimpleName();
-  }
-
   public void deliver(final TDomainClass datum) {
 
     final Timer.Context timerContext = deliverDurationTimer.time();
@@ -73,12 +70,13 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter("Deliver.Requests.Attempts.Failures." + SilentSenderException.class.getSimpleName(),
-                                  getErrorCategory(e))
+      metricFactory.createCounter(Joiner.on(".")
+                                        .join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+                                              SilentSenderException.class.getSimpleName()),
+                                  MoreExceptionUtils.getType(e))
                    .inc();
     } catch (final Exception e) {
-      metricFactory.createCounter("Deliver.Requests.Attempts.Failures", getErrorCategory(e))
-                   .inc();
+      metricFactory.createCounter(DELIVER_REQUESTS_ATTEMPTS_FAILURES, MoreExceptionUtils.getType(e)).inc();
       logger.error("Could not deliver datum." + datum, e);
     } finally {
       timerContext.stop();
