@@ -8,7 +8,7 @@
     <version>0.41-SNAPSHOT</version>
   </parent>
 
-  <name>Aletheia Kafka 0.8 extensions</name>
+  <name>Aletheia Kafka 0.8</name>
   <artifactId>aletheia-kafka0.8</artifactId>
 
   <dependencies>

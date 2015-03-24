@@ -8,7 +8,7 @@
     <version>0.41-SNAPSHOT</version>
   </parent>
 
-  <name>Aletheia Log4j extensions</name>
+  <name>Aletheia Log4j</name>
   <artifactId>aletheia-log4j</artifactId>
 
   <dependencies>
