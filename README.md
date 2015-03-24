@@ -10,8 +10,8 @@ Aletheia is a framework for implementing high volume, datum (event) bassed, prod
  * Schema evolution support
 
 Aletehia supports the following producers/consumers out-of-the-box:
-* Kafka 0.7 (production and consumption)
 * Kafka 0.8 (production and consumption)
+* ~~Kafka 0.7 (production and consumption)~~
 * Log files (production only)
 
 Custom producer/consumer types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
@@ -80,14 +80,6 @@ First, have the aletheia-core jar included in your pom:
 ```
 
 Then, include the aletheia extensions you'll be using, which can be one or more of the following:
-
-```xml
-<dependency>
-  <groupId>com.outbrain.aletheia</groupId>
-  <artifactId>aletheia-kafka0.7</artifactId>
-  <version>x.y</version>
-</dependency>
-```
 
 ```xml
 <dependency>
