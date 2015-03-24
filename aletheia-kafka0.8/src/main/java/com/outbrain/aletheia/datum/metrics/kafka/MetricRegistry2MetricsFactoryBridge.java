@@ -85,7 +85,7 @@ class MetricRegistry2MetricsFactoryBridge implements MetricProcessor<Object> {
                            final com.yammer.metrics.core.Metered meter,
                            final Object context) throws Exception {
 
-    createOrSetGauge(name, "15nMinuteRate", meter.fifteenMinuteRate());
+    createOrSetGauge(name, "15MinuteRate", meter.fifteenMinuteRate());
     createOrSetGauge(name, "5MinuteRate", meter.fiveMinuteRate());
     createOrSetGauge(name, "1MinuteRate", meter.oneMinuteRate());
     createOrSetGauge(name, "meanRate", meter.meanRate());
