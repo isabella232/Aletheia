@@ -165,6 +165,10 @@
               </goals>
             </execution>
           </executions>
+          <configuration>
+            <!-- without this the build fails due to these self closing HTML elements which are not not allowed in Java 8 javadocs -->
+            <additionalparam>-Xdoclint:none</additionalparam>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
