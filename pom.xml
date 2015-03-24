@@ -23,7 +23,6 @@
     <connection>scm:git:https://github.com/outbrain/Aletheia.git</connection>
     <developerConnection>scm:git:https://github.com/outbrain/Aletheia.git</developerConnection>
     <url>https://github.com/outbrain/Aletheia/</url>
-    <tag>aletheia.parent-0.36</tag>
   </scm>
 
   <organization>
