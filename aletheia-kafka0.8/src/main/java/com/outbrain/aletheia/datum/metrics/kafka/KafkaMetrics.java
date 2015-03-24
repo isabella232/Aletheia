@@ -46,7 +46,7 @@ public class KafkaMetrics {
                                 public MetricName apply(final MetricName name) {
                                   return new MetricName(replaceKafkaClientId(name.getGroup()),
                                                         replaceKafkaClientId(name.getType()),
-                                                        replaceKafkaClientId(name.getName()));
+                                                        replaceKafkaClientId(name.getName()).replaceAll("\\.", "_"));
                                 }
                               };
 
