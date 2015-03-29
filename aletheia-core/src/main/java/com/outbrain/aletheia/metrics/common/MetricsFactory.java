@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 public interface MetricsFactory {
 
-  public static MetricsFactory NULL = new MetricsFactory() {
+  MetricsFactory NULL = new MetricsFactory() {
     @Override
     public Timer createTimer(final String component, final String methodName) {
       return new Timer() {

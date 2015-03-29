@@ -8,7 +8,7 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
  */
 public interface MetricFactoryProvider {
 
-  public static MetricFactoryProvider NULL = new MetricFactoryProvider() {
+  MetricFactoryProvider NULL = new MetricFactoryProvider() {
     @Override
     public MetricsFactory forAuditingDatumProducer(final EndPoint endPoint) {
       return MetricsFactory.NULL;

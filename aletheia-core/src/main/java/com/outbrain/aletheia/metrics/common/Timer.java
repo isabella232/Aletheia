@@ -10,12 +10,12 @@ public interface Timer {
    *
    * @author Eran Harel
    */
-  public static interface Context {
+  interface Context {
 
     /**
      * Stops recording the elapsed time and updates the timer.
      */
-    public void stop();
+    void stop();
   }
 
   /**
@@ -24,7 +24,7 @@ public interface Timer {
    * @param duration the length of the duration
    * @param unit     the scale unit of duration
    */
-  public void update(long duration, TimeUnit unit);
+  void update(long duration, TimeUnit unit);
 
   /**
    * Times and records the duration of event.
@@ -35,7 +35,7 @@ public interface Timer {
    * @return the value returned by event
    * @throws Exception if event throws an {@link Exception}
    */
-  public <T> T time(Callable<T> event) throws Exception;
+  <T> T time(Callable<T> event) throws Exception;
 
   /**
    * Returns a new {@link com.outbrain.aletheia.metrics.common.Timer.Context}.
@@ -43,5 +43,5 @@ public interface Timer {
    * @return a new {@link com.outbrain.aletheia.metrics.common.Timer.Context}
    * @see com.outbrain.aletheia.metrics.common.Timer.Context
    */
-  public Context time();
+  Context time();
 }

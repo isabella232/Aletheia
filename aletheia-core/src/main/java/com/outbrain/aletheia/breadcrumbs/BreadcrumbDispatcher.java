@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public interface BreadcrumbDispatcher<TElement> extends Serializable {
 
-  public static BreadcrumbDispatcher NULL = new BreadcrumbDispatcher() {
+  BreadcrumbDispatcher NULL = new BreadcrumbDispatcher() {
     @Override
     public void report(final Object domainClass) {
 

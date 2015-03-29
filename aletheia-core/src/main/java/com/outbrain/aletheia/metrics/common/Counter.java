@@ -4,32 +4,32 @@ public interface Counter {
   /**
    * Increment the counter by one.
    */
-  public void inc();
+  void inc();
 
   /**
    * Increment the counter by n.
    *
    * @param n the amount by which the counter will be increased
    */
-  public void inc(long n);
+  void inc(long n);
 
   /**
    * Decrement the counter by one.
    */
-  public void dec();
+  void dec();
 
   /**
    * Decrement the counter by n.
    *
    * @param n the amount by which the counter will be increased
    */
-  public void dec(long n);
+  void dec(long n);
 
   /**
    * Returns the counter's current value.
    *
    * @return the counter's current value
    */
-  public long getCount();
+  long getCount();
 
 }
