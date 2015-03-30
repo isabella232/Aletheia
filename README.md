@@ -3,10 +3,10 @@
 
 master branch: [![Build Status](https://travis-ci.org/outbrain/Aletheia.svg?branch=master)](https://travis-ci.org/outbrain/Aletheia)
 
-Aletheia is a framework for implementing high volume, datum (event) bassed, producer-consumer data piplelines. Its key features are:
- * A unifrom API
+Aletheia is a framework for implementing high volume, datum (event) based, producer-consumer data pipelines. Its key features are:
+ * A uniform API
  * Fine grained visibility
- * Multiple serializatoin formats
+ * Multiple serialization formats
  * Schema evolution support
 
 Aletehia supports the following producers/consumers out-of-the-box:
