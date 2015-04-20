@@ -5,8 +5,10 @@ import com.outbrain.aletheia.metrics.common.*;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by slevin on 8/13/14.
@@ -59,15 +61,15 @@ public class RecordingMetricFactory implements MetricsFactory {
 
   private final MetricsFactory decoratedMetricFactory;
 
-  private final List<String> createdMetrics = new ArrayList<>();
+  private final Collection<String> createdMetrics = new ConcurrentLinkedQueue<>();
 
-  public List<String> getCreatedMetrics() {
+  public Collection<String> getCreatedMetrics() {
     return createdMetrics;
   }
 
   public MetricsTree getMetricTree() {
 
-    final List<String> createdMetrics = getCreatedMetrics();
+    final Collection<String> createdMetrics = getCreatedMetrics();
 
     final MetricsTree metricsTree = new MetricsTree("root");
 
