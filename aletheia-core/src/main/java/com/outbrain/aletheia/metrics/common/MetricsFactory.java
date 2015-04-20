@@ -63,7 +63,7 @@ public interface MetricsFactory {
 
     @Override
     public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric) {
-      return new Gauge<T>() {
+      return metric != null ? metric : new Gauge<T>() {
         @Override
         public T getValue() {
           return null;
