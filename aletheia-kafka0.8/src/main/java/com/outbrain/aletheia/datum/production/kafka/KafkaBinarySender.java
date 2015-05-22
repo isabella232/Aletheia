@@ -129,8 +129,6 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
     producerProperties.setProperty("metadata.broker.list", kafkaTopicDeliveryEndPoint.getBrokerList());
 
-    producerProperties.setProperty("batch.num.messages", Integer.toString(kafkaTopicDeliveryEndPoint.getBatchSize()));
-
     producerProperties.setProperty("serializer.class", "kafka.serializer.DefaultEncoder");
 
     return new ProducerConfig(producerProperties);

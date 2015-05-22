@@ -40,7 +40,6 @@ public class LocalKafkaProduceConsumeExample {
                             new KafkaTopicProductionEndPoint(
                                     "localhost:9092",
                                     TOPIC_NAME,
-                                    1,
                                     END_POINT_NAME,
                                     new Properties()),
                             new JsonDatumSerDe<>(MyDatum.class))

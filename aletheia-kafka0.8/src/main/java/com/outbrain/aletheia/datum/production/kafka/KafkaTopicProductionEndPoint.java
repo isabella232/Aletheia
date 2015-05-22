@@ -10,7 +10,6 @@ import java.util.Properties;
  */
 public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
-  private final int batchSize;
   private final Properties properties;
   private final String topicName;
   private final String endPointName;
@@ -19,10 +18,8 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public KafkaTopicProductionEndPoint(final String brokerList,
                                       final String topicName,
-                                      final int batchSize,
                                       final String endPointName,
                                       final Properties properties) {
-    this.batchSize = batchSize;
     this.brokerList = brokerList;
     this.properties = properties;
     this.topicName = topicName;
@@ -31,10 +28,6 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   public String getBrokerList() {
     return brokerList;
-  }
-
-  public int getBatchSize() {
-    return batchSize;
   }
 
   public Properties getProperties() {
