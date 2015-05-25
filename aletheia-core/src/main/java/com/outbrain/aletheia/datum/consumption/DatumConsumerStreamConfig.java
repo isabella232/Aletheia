@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.datum.consumption;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * Configuration details for {@link DatumConsumerStream}s.
@@ -31,6 +32,6 @@ public class DatumConsumerStreamConfig {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }

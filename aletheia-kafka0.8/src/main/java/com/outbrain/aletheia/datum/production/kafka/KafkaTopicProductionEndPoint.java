@@ -2,6 +2,7 @@ package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.util.Properties;
 
@@ -49,7 +50,7 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }
 

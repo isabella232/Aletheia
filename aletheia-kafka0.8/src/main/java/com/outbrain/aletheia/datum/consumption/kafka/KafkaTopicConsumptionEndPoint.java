@@ -2,6 +2,7 @@ package com.outbrain.aletheia.datum.consumption.kafka;
 
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.util.Properties;
 
@@ -58,6 +59,6 @@ public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }

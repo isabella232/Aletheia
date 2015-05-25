@@ -2,6 +2,7 @@ package com.outbrain.aletheia.breadcrumbs;
 
 import com.outbrain.aletheia.datum.DatumType;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
@@ -136,6 +137,6 @@ public class Breadcrumb {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }
