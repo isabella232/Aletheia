@@ -62,6 +62,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
   private static final boolean SHOULD_BE_SENT = true;
   private static final boolean SHOULD_NOT_BE_SENT = false;
+  private static final Duration DATUM_CONSUMER_STREAM_CONSUME_TIMEOUT = Duration.standardSeconds(1);
 
   private final Class<TDomainClass> domainClass;
   private final Duration datumConsumerStreamConsumeTimeout;
@@ -77,7 +78,7 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
 
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
-    this(domainClass, Duration.millis(500));
+    this(domainClass, DATUM_CONSUMER_STREAM_CONSUME_TIMEOUT);
   }
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass,

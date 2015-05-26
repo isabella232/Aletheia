@@ -1,6 +1,7 @@
 package com.outbrain.aletheia;
 
 import com.google.common.base.Predicate;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.datum.serialization.SampleDomainClassAvroRoundTripProjector;
@@ -25,7 +26,8 @@ public class SampleDomainClassDatumIntegrationTest extends AletheiaIntegrationTe
   };
 
   private final AvroDatumSerDe<SampleDomainClass> avroDatumSerDe =
-          new AvroDatumSerDe<>(new SampleDomainClassAvroRoundTripProjector(),
+          new AvroDatumSerDe<>(DatumUtils.getDatumTypeId(SampleDomainClass.class),
+                               new SampleDomainClassAvroRoundTripProjector(),
                                CachedDatumSchemaRepository.from(new StaticDatumAvroSchemaRepository()));
 
   private final DatumSerDe<SampleDomainClass> jsonDatumSerDe = new JsonDatumSerDe<>(SampleDomainClass.class);

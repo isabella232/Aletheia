@@ -15,16 +15,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class CachedDatumSchemaRepository implements DatumSchemaRepository {
 
-  private static final int DEFAULT_MAX_SIZE = 100;
-  private static final Duration DEFAULT_REFRESH_TIME = Duration.standardHours(1);
+  protected static final int DEFAULT_MAX_SIZE = 100;
+  protected static final Duration DEFAULT_REFRESH_TIME = Duration.standardHours(1);
 
   private final LoadingCache<Schema, DatumTypeVersion> schema2datumTypeVersion;
   private final LoadingCache<DatumTypeVersion, Schema> datumTypeVersion2schema;
   private final LoadingCache<String, Schema> datumTypeId2schema;
 
-  private CachedDatumSchemaRepository(final DatumSchemaRepository datumSchemaRepository,
-                                      final int maxSize,
-                                      final Duration refresh) {
+  protected CachedDatumSchemaRepository(final DatumSchemaRepository datumSchemaRepository,
+                                        final int maxSize,
+                                        final Duration refresh) {
 
     final CacheBuilder<Object, Object> cacheTemplate = CacheBuilder.newBuilder()
                                                                    .maximumSize(maxSize)

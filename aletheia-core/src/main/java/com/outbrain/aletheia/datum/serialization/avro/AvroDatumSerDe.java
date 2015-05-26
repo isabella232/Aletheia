@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.datum.serialization.avro;
 
-import com.outbrain.aletheia.datum.DatumUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
@@ -26,11 +26,13 @@ import java.util.Collections;
 public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
   private DatumSchemaRepository datumSchemaRepository;
+  private String datumTypeId;
   protected final AvroRoundTripProjector<TDomainClass> avroRoundTripProjector;
 
-  public AvroDatumSerDe(final AvroRoundTripProjector<TDomainClass> avroRoundTripProjector,
-                        final DatumSchemaRepository datumSchemaRepository) {
-
+  public AvroDatumSerDe(@JsonProperty("datum.type.id") final String datumTypeId,
+                        @JsonProperty("projector") final AvroRoundTripProjector<TDomainClass> avroRoundTripProjector,
+                        @JsonProperty("schema.repository") final DatumSchemaRepository datumSchemaRepository) {
+    this.datumTypeId = datumTypeId;
     this.avroRoundTripProjector = avroRoundTripProjector;
     this.datumSchemaRepository = datumSchemaRepository;
   }
@@ -55,9 +57,7 @@ public class AvroDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
 
       final int datumSchemaVersion = datumSchemaRepository.getDatumTypeVersion(schema).getVersion();
 
-      return new SerializedDatum(datumBody,
-                                 new DatumTypeVersion(DatumUtils.getDatumTypeId(domainObject.getClass()),
-                                                      datumSchemaVersion));
+      return new SerializedDatum(datumBody, new DatumTypeVersion(datumTypeId, datumSchemaVersion));
 
     } catch (final Exception e) {
       throw new RuntimeException("Could not create datum body", e);
