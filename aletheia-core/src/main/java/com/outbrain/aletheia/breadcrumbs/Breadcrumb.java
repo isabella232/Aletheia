@@ -11,7 +11,7 @@ import org.joda.time.Instant;
  * transportation from one point to another. Breadcrumbs are aimed to assist at monitor data flow along the pipeline
  * by comparing outgoing and incoming numbers.
  */
-@DatumType(datumTypeId = "Breadcrumb", timestampExtractor = Breadcrumb.BreadcrumbTimestampSelector.class)
+@DatumType(datumTypeId = "breadcrumb", timestampExtractor = Breadcrumb.BreadcrumbTimestampSelector.class)
 public class Breadcrumb {
 
   public static class BreadcrumbTimestampSelector implements DatumType.TimestampSelector<Breadcrumb> {
