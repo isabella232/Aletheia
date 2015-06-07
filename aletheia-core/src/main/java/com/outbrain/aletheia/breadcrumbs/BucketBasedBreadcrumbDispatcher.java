@@ -82,7 +82,7 @@ public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<
   private Instant bucketStart(final T item) {
     return new Instant(
             (timestampSelector.extractDatumDateTime(item).getMillis() /
-                    bucketDuration.getMillis()) * bucketDuration.getMillis());
+             bucketDuration.getMillis()) * bucketDuration.getMillis());
   }
 
   private long bucketId(final T item) {
@@ -106,17 +106,21 @@ public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<
         nextValue = new HitsPerInterval(bucketStart, 1);
       } else {
         if (!bucketStart.equals(currentValue.bucketStart)) {
-          logger.error("Possible bucket collision, ignoring current item.");
+          logger.error(
+                  "Possible bucket collision between exiting bucket id: {} and incoming bucket id: {}," +
+                  " ignoring current item.",
+                  currentValue.bucketStart.getMillis(),
+                  bucketStart.getMillis());
           return;
         }
         currentHitCount = currentValue.hitCount.get();
       }
     } while ((currentValue.isEmpty() &&
-            !bucketId2hitsPerInterval.replace(bucketId, HitsPerInterval.EMPTY, nextValue))
-            ||
-            (currentValue.nonEmpty() &&
-                    !bucketId2hitsPerInterval.get(bucketId).hitCount.compareAndSet(currentHitCount,
-                                                                                   currentHitCount + 1)));
+              !bucketId2hitsPerInterval.replace(bucketId, HitsPerInterval.EMPTY, nextValue))
+             ||
+             (currentValue.nonEmpty() &&
+              !bucketId2hitsPerInterval.get(bucketId).hitCount.compareAndSet(currentHitCount,
+                                                                             currentHitCount + 1)));
   }
 
   @Override
