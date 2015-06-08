@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum.serialization.Json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.outbrain.aletheia.datum.DatumUtils;
@@ -22,7 +23,7 @@ public class JsonDatumSerDe<TDomainClass> implements DatumSerDe<TDomainClass> {
   private final ObjectMapper jsonSerDe;
   private final Class<TDomainClass> datumClass;
 
-  public JsonDatumSerDe(final Class<TDomainClass> datumClass) {
+  public JsonDatumSerDe(@JsonProperty("datum.class") final Class<TDomainClass> datumClass) {
     this.datumClass = datumClass;
     jsonSerDe = new ObjectMapper();
     jsonSerDe.registerModule(new JodaModule());
