@@ -254,8 +254,8 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
                     producerBreadcrumbProductionEndPoint,
                     consumerBreadcrumbsProductionEndPoint);
 
-    // prints a pretty metric tree
-    metricsFactory.getMetricTree().prettyPrint();
+    // prints a pretty metric tree, but emits quite a few characters to the console...
+    //metricsFactory.getMetricTree().prettyPrint();
   }
 
 }
