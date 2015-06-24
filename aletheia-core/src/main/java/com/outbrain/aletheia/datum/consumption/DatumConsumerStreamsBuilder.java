@@ -104,8 +104,8 @@ public class DatumConsumerStreamsBuilder<TDomainClass> extends AletheiaBuilder<T
 
     Preconditions.checkState(datumEnvelopeFetcherFactory != null,
                              String.format(
-                                     "No datum sender factory for production end point of type [%s] was provided.",
-                                     consumptionEndPointInfo.getClass().getSimpleName()));
+                                     "No datum envelope fetcher factory for consumption end point of type [%s] was provided.",
+                                     consumptionEndPointInfo.getConsumptionEndPoint().getClass().getSimpleName()));
 
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
             datumEnvelopeFetcherFactory
