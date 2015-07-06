@@ -2,12 +2,10 @@ package com.outbrain.aletheia.metrics;
 
 import com.google.common.base.Strings;
 import com.outbrain.aletheia.metrics.common.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**

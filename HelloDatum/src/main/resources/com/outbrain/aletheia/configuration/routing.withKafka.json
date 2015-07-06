@@ -1,0 +1,11 @@
+{
+  "my_datum_id": {
+    "routes": [
+      {
+        "endpoint": "kafka_endpoint",
+        "serDe": "json"
+      }
+    ],
+    "breadcrumbs": "breadcrumbs_endpoint"
+  }
+}

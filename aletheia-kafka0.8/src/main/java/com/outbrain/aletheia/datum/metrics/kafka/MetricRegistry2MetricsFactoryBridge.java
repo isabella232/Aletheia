@@ -5,7 +5,7 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.yammer.metrics.core.MetricName;
 import com.yammer.metrics.core.MetricProcessor;
 import com.yammer.metrics.stats.Snapshot;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by slevin on 3/23/15.
@@ -16,11 +16,11 @@ class MetricRegistry2MetricsFactoryBridge implements MetricProcessor<Object> {
 
     protected volatile T value;
 
-    public SettableGauge(T value) {
+    public SettableGauge(final T value) {
       this.value = value;
     }
 
-    public void setValue(T value) {
+    public void setValue(final T value) {
       this.value = value;
     }
 
@@ -59,7 +59,7 @@ class MetricRegistry2MetricsFactoryBridge implements MetricProcessor<Object> {
     return createOrSetGauge(metricName, "", value);
   }
 
-  public static String componentName(MetricName metricName) {
+  public static String componentName(final MetricName metricName) {
     return metricName.getGroup() + "." + metricName.getType();
   }
 

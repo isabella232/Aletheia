@@ -1,0 +1,28 @@
+{
+  "kafka_endpoint": {
+    "type": "kafka",
+    "topic.name": "myDatum",
+    "produce": {
+      "broker.list": "localhost:9092",
+      "producer.type": "sync",
+      "queue.enqueue.timeout.ms": "0",
+      "queue.buffering.max.messages": "250000",
+      "compression.codec": "gzip",
+      "batch.num.messages": "200"
+    },
+    "consume": {
+      "zookeeper.connect": "localhost:2181",
+      "group.id": "myTestGoupId",
+      "concurrency.level": "1",
+      "zookeeper.chroot": "/hello_datum"
+    }
+  },
+  "inMemory_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "breadcrumbs_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  }
+}

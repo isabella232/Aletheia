@@ -62,7 +62,7 @@ class MetricRegistryMirror {
         final Metric metric = entry.getValue();
         final MetricName metricName = entry.getKey();
         metric.processWith(metricRegistry2MetricsFactoryBridge, metricNameAdjuster.apply(metricName), new Object());
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.error("Could not process metrics", e);
       }
     }

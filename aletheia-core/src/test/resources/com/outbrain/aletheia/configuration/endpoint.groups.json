@@ -1,0 +1,12 @@
+{
+  "test_endpoints": [
+    {
+      "endpoint": "test_endpoint_1",
+      "serDe": "avro"
+    },
+    {
+      "endpoint": "test_endpoint_2",
+      "serDe": "json"
+    }
+  ]
+}

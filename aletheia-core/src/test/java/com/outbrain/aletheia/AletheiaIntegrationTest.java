@@ -1,81 +1,57 @@
 package com.outbrain.aletheia;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.*;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbsConfig;
+import com.outbrain.aletheia.configuration.PropertyUtils;
+import com.outbrain.aletheia.configuration.routing.Route;
 import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
-import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import com.outbrain.aletheia.datum.InMemoryEndPoints;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamConfig;
-import com.outbrain.aletheia.datum.consumption.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.datum.production.DatumProducer;
-import com.outbrain.aletheia.datum.production.DatumProducerBuilder;
-import com.outbrain.aletheia.datum.production.DatumProducerConfig;
-import com.outbrain.aletheia.datum.production.ProductionEndPoint;
-import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.RecordingMetricFactory;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.joda.time.Duration;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public abstract class AletheiaIntegrationTest<TDomainClass> {
 
-  private static final String DATUM_KEY = "datumKey";
-
-  private static final Duration BREADCRUMB_BUCKET_DURATION = Duration.standardSeconds(30);
-
-  private static final Duration BREADCRUMB_BUCKET_FLUSH_INTERVAL = Duration.millis(10);
-
-  private static final BreadcrumbsConfig PRODUCER_BREADCRUMBS_CONFIG =
-          new BreadcrumbsConfig(BREADCRUMB_BUCKET_DURATION,
-                                BREADCRUMB_BUCKET_FLUSH_INTERVAL,
-                                "app_tx",
+  protected static final Duration BREADCRUMB_BUCKET_DURATION = Duration.standardSeconds(30);
+  protected static final Duration BREADCRUMB_BUCKET_FLUSH_INTERVAL = Duration.millis(10);
+  protected static final BreadcrumbsConfig PRODUCER_BREADCRUMBS_CONFIG =
+          new BreadcrumbsConfig(AletheiaIntegrationTest.BREADCRUMB_BUCKET_DURATION,
+                                AletheiaIntegrationTest.BREADCRUMB_BUCKET_FLUSH_INTERVAL,
+                                "app_producer_tx",
                                 "src_tx",
                                 "tier_tx",
                                 "dc_tx");
-
-  private static final BreadcrumbsConfig DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG =
-          new BreadcrumbsConfig(BREADCRUMB_BUCKET_DURATION,
-                                BREADCRUMB_BUCKET_FLUSH_INTERVAL,
-                                "app_rx",
+  protected static final BreadcrumbsConfig CONSUMER_STREAM_BREADCRUMBS_CONFIG =
+          new BreadcrumbsConfig(AletheiaIntegrationTest.BREADCRUMB_BUCKET_DURATION,
+                                AletheiaIntegrationTest.BREADCRUMB_BUCKET_FLUSH_INTERVAL,
+                                "app_consumer_rx",
                                 "src_rx",
                                 "tier_rx",
                                 "dc_rx");
-
-  private static final DatumProducerConfig DATUM_PRODUCER_CONFIG = new DatumProducerConfig(0, "originalHostname");
-
-  private static final DatumConsumerStreamConfig DATUM_CONSUMER_STREAM_CONFIG =
-          new DatumConsumerStreamConfig(0, "originalHostname");
-
-  private static final boolean SHOULD_BE_SENT = true;
-  private static final boolean SHOULD_NOT_BE_SENT = false;
-  private static final Duration DATUM_CONSUMER_STREAM_CONSUME_TIMEOUT = Duration.standardSeconds(1);
-
-  private final Class<TDomainClass> domainClass;
-  private final Duration datumConsumerStreamConsumeTimeout;
-  private final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
-  private final DatumKeySelector<TDomainClass> datumKeySelector = new DatumKeySelector<TDomainClass>() {
-    @Override
-    public String getDatumKey(final TDomainClass domainObject) {
-      return DATUM_KEY;
-    }
-  };
-
+  protected static final boolean SHOULD_BE_SENT = true;
+  protected static final Duration DATUM_CONSUMER_STREAM_CONSUME_TIMEOUT = Duration.standardSeconds(1);
+  protected static final boolean SHOULD_NOT_BE_SENT = false;
+  protected final Class<TDomainClass> domainClass;
+  protected final Duration datumConsumerStreamConsumeTimeout;
   protected final Random random = new Random();
 
+  protected final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
 
   protected AletheiaIntegrationTest(final Class<TDomainClass> domainClass) {
     this(domainClass, DATUM_CONSUMER_STREAM_CONSUME_TIMEOUT);
@@ -87,71 +63,226 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     this.datumConsumerStreamConsumeTimeout = datumConsumerStreamConsumeTimeout;
   }
 
-  private DatumProducer<TDomainClass> createDataProducer(final ProductionEndPoint dataProductionEndPoint,
-                                                         final ProductionEndPoint breadcrumbProductionEndPoint,
-                                                         final DatumSerDe<TDomainClass> datumSerDe,
-                                                         final Predicate<TDomainClass> datumFilter) {
-    return DatumProducerBuilder
-            .forDomainClass(domainClass)
+  protected Properties getConsumerBreadcrumbsProperties() {
+    final Properties consumerBreadcrumbs = new Properties();
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.bucketDurationSec",
+                                    Long.toString(BREADCRUMB_BUCKET_DURATION.getStandardSeconds()));
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.flushIntervalSec",
+                                    Long.toString(BREADCRUMB_BUCKET_FLUSH_INTERVAL.getStandardSeconds()));
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.application",
+                                    CONSUMER_STREAM_BREADCRUMBS_CONFIG.getApplication());
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.source",
+                                    CONSUMER_STREAM_BREADCRUMBS_CONFIG.getSource());
+    consumerBreadcrumbs.setProperty("aletheia.consumer.source",
+                                    CONSUMER_STREAM_BREADCRUMBS_CONFIG.getSource());
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.tier",
+                                    CONSUMER_STREAM_BREADCRUMBS_CONFIG.getTier());
+    consumerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.datacenter",
+                                    CONSUMER_STREAM_BREADCRUMBS_CONFIG.getDatacenter());
+    return consumerBreadcrumbs;
+  }
+
+  protected Properties getProducerBreadcrumbsProperties() {
+    final Properties producerBreadcrumbs = new Properties();
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.bucketDurationSec",
+                                    Long.toString(BREADCRUMB_BUCKET_DURATION.getStandardSeconds()));
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.flushIntervalSec",
+                                    Long.toString(BREADCRUMB_BUCKET_FLUSH_INTERVAL.getStandardSeconds()));
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.application",
+                                    PRODUCER_BREADCRUMBS_CONFIG.getApplication());
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.source", PRODUCER_BREADCRUMBS_CONFIG.getSource());
+    producerBreadcrumbs.setProperty("aletheia.producer.source", PRODUCER_BREADCRUMBS_CONFIG.getSource());
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.tier", PRODUCER_BREADCRUMBS_CONFIG.getTier());
+    producerBreadcrumbs.setProperty("aletheia.breadcrumbs.fields.datacenter",
+                                    PRODUCER_BREADCRUMBS_CONFIG.getDatacenter());
+    return producerBreadcrumbs;
+  }
+
+  protected Properties getConfigProperties() {
+    final Properties properties = new Properties();
+    properties.setProperty("datum.class", getDomainClass().getCanonicalName());
+    properties.setProperty("aletheia.routing.config.path",
+                           "com/outbrain/aletheia/configuration/routing.json");
+    properties.setProperty("aletheia.serdes.config.path",
+                           "com/outbrain/aletheia/configuration/serdes.json");
+    properties.setProperty("aletheia.endpoints.config.path",
+                           "com/outbrain/aletheia/configuration/endpoints.json");
+    properties.setProperty("aletheia.endpoints.config.path",
+                           "com/outbrain/aletheia/configuration/endpoints.json");
+    properties.setProperty("aletheia.endpoint.groups.config.path",
+                           "com/outbrain/aletheia/configuration/endpoint.groups.json");
+    return properties;
+  }
+
+  private InMemoryEndPoint getDataProductionEndPoint(final Route route) {
+    return (InMemoryEndPoint) new AletheiaConfig(getConfigProperties()).getProductionEndPoint(route.getEndPointId());
+  }
+
+  private InMemoryEndPoint getBreadcrumbsEndPoint() {
+    return (InMemoryEndPoint)
+            new AletheiaConfig(getConfigProperties())
+                    .getBreadcrumbsProductionEndPoint(DatumUtils.getDatumTypeId(getDomainClass()));
+  }
+
+  private ImmutableList<Breadcrumb> getBreadcrumbs(final int count) {
+    final Properties props =
+            PropertyUtils
+                    .override(getConfigProperties())
+                    .with(getConsumerBreadcrumbsProperties())
+                    .all();
+
+    props.setProperty("datum.class", "com.outbrain.aletheia.breadcrumbs.Breadcrumb");
+    props.setProperty(AletheiaConfig.SERDES, "{\n" +
+                                             "  \"breadcrumbSerDe\": {\n" +
+                                             "    \"@class\": \"com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe\",\n" +
+                                             "    \"datum.class\": \"com.outbrain.aletheia.breadcrumbs.Breadcrumb\"\n" +
+                                             "  }\n" +
+                                             "}");
+
+    final AletheiaConfig config = new AletheiaConfig(props);
+    final String breadcrumbEndPointId = config.getBreadcrumbEndPointId(DatumUtils.getDatumTypeId(domainClass));
+    return consumeDataOrTimeout(DatumConsumerStreamsBuilder
+                                        .withConfig(Breadcrumb.class, config)
+                                        .consumeDataFrom(new Route(breadcrumbEndPointId, "breadcrumbSerDe"))
+                                        .build()
+                                        .get(0),
+                                count,
+                                datumConsumerStreamConsumeTimeout);
+  }
+
+  protected DatumConsumerStream<TDomainClass> getConsumer(final Route route) {
+    return DatumConsumerStreamsBuilder
+            .withConfig(domainClass,
+                        new AletheiaConfig(
+                                PropertyUtils
+                                        .override(getConfigProperties())
+                                        .with(getConsumerBreadcrumbsProperties())
+                                        .all()))
+            .consumeDataFrom(route)
             .reportMetricsTo(metricsFactory)
-            .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG)
-            .deliverDataTo(dataProductionEndPoint, datumSerDe, datumFilter)
-            .selectDatumKeyUsing(datumKeySelector)
-            .build(DATUM_PRODUCER_CONFIG);
+            .build()
+            .get(0);
   }
 
-  private DatumConsumerStream<TDomainClass> createDataConsumerStream(final ConsumptionEndPoint consumptionEndPoint,
-                                                                     final ProductionEndPoint breadcrumbProductionEndPoint,
-                                                                     final DatumSerDe<TDomainClass> datumSerDe) {
-
-    final List<DatumConsumerStream<TDomainClass>> datumConsumerStreams =
-            DatumConsumerStreamsBuilder
-                    .forDomainClass(domainClass)
-                    .reportMetricsTo(metricsFactory)
-                    .consumeDataFrom(consumptionEndPoint, datumSerDe)
-                    .deliverBreadcrumbsTo(breadcrumbProductionEndPoint, DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG)
-                    .build(DATUM_CONSUMER_STREAM_CONFIG);
-
-    return Iterables.getFirst(datumConsumerStreams, null);
+  protected DatumProducer<TDomainClass> getProducer() {
+    return DatumProducerBuilder
+            .withConfig(domainClass,
+                        new AletheiaConfig(
+                                PropertyUtils
+                                        .override(getConfigProperties())
+                                        .with(getProducerBreadcrumbsProperties())
+                                        .all()))
+            .reportMetricsTo(metricsFactory)
+            .build();
   }
 
+  protected void assertBreadcrumbsByRoutes(final List<Route> routes) {
 
-  private DatumConsumerStream<Breadcrumb> createBreadcrumbConsumerStream(final ConsumptionEndPoint consumptionEndPoint) {
+    final InMemoryEndPoint breadcrumbsEndPoint = getBreadcrumbsEndPoint();
 
-    final List<DatumConsumerStream<Breadcrumb>> datumConsumerStreams =
-            DatumConsumerStreamsBuilder
-                    .forDomainClass(Breadcrumb.class)
-                    .consumeDataFrom(consumptionEndPoint, new JsonDatumSerDe<>(Breadcrumb.class))
-                    .build(DATUM_CONSUMER_STREAM_CONFIG);
+    if (breadcrumbsEndPoint != null) {
+      final int producerCount =
+              new AletheiaConfig(getConfigProperties())
+                      .getRouting(DatumUtils.getDatumTypeId(getDomainClass()))
+                      .getRoutes()
+                      .size();
 
-    return Iterables.getFirst(datumConsumerStreams, null);
+      final int consumerCount = routes.size();
+
+      final ImmutableList<Breadcrumb> breadcrumbs = getBreadcrumbs(producerCount + consumerCount);
+
+      assertBreadcrumbsBySource(producerCount, PRODUCER_BREADCRUMBS_CONFIG, breadcrumbs);
+
+      assertBreadcrumbsBySource(consumerCount, CONSUMER_STREAM_BREADCRUMBS_CONFIG, breadcrumbs);
+
+      assertDatumKeys(breadcrumbsEndPoint, Sets.newHashSet(InMemoryEndPoint.DEFAULT_DATUM_KEY));
+    }
   }
 
-  private void assertBreadcrumb(final InMemoryEndPoint breadcrumbProductionEndPoint,
-                                final BreadcrumbsConfig breadcrumbsConfig) {
+  private void assertBreadcrumbsBySource(final int expectedBreadcrumbsCount,
+                                         final BreadcrumbsConfig producerBreadcrumbsConfig,
+                                         final ImmutableList<Breadcrumb> breadcrumbs) {
+    final ImmutableList<Breadcrumb> producerBreadcrumbs =
+            FluentIterable
+                    .from(breadcrumbs)
+                    .filter(new Predicate<Breadcrumb>() {
+                      @Override
+                      public boolean apply(final Breadcrumb breadcrumb) {
+                        return breadcrumb.getSource().equals(producerBreadcrumbsConfig.getSource());
+                      }
+                    })
+                    .toList();
 
-    final int ONE = 1;
+    assertThat(producerBreadcrumbs.size(), is(expectedBreadcrumbsCount));
 
-    final ImmutableList<Breadcrumb> breadcrumbs = consumeDataOrTimeout(
-            createBreadcrumbConsumerStream(breadcrumbProductionEndPoint), ONE, datumConsumerStreamConsumeTimeout);
-
-    assertThat(breadcrumbs.size(), is(ONE));
-
-    final Breadcrumb breadcrumb = Iterables.getFirst(breadcrumbs, null);
-
-    assertThat(breadcrumb.getSource(), is(breadcrumbsConfig.getSource()));
-    assertThat(breadcrumb.getType(), is(DatumUtils.getDatumTypeId(domainClass)));
-    assertThat(breadcrumb.getDatacenter(), is(breadcrumbsConfig.getDatacenter()));
-    assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
-    assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
-    assertThat("Breadcrumbs were not sent with the default datum key",
-               Sets.newHashSet(breadcrumbProductionEndPoint.getData().keySet()),
-               is(Sets.newHashSet(InMemoryEndPoint.DEFAULT_DATUM_KEY)));
+    for (final Breadcrumb breadcrumb : producerBreadcrumbs) {
+      assertSingleBreadcrumb(producerBreadcrumbsConfig, breadcrumb);
+    }
   }
 
-  private <T> ImmutableList<T> consumeDataOrTimeout(final DatumConsumerStream<T> datumConsumerStream,
-                                                    final int datumCountToConsume,
-                                                    final Duration timeout) {
+  private void assertDatumKeys(final InMemoryEndPoint endPoint, final HashSet<String> expectedDatumKeys) {
+    assertThat("Unexpected datum keys were used for sending.",
+               Sets.newHashSet(endPoint.getData().keySet()),
+               is(expectedDatumKeys));
+  }
+
+  protected void assertDataByRoutes(final List<TDomainClass> domainObjects,
+                                    final List<Route> routes) {
+    for (final Route route : routes) {
+      final ImmutableList<TDomainClass> consumedData =
+              consumeDataOrTimeout(getConsumer(route), 1, datumConsumerStreamConsumeTimeout);
+
+      assertData(domainObjects, consumedData);
+
+      assertDatumKeys(getDataProductionEndPoint(route), expectedDatumKeys(domainObjects));
+    }
+  }
+
+  private HashSet<String> expectedDatumKeys(final List<TDomainClass> domainObjects) {
+    final DatumKeySelector<TDomainClass> datumKeySelector =
+            new AletheiaConfig(getConfigProperties()).getRouting(DatumUtils.getDatumTypeId(domainClass))
+                                                     .getDatumKeySelector();
+
+    return Sets.newHashSet(
+            FluentIterable
+                    .from(domainObjects)
+                    .transform(new Function<TDomainClass, String>() {
+                      @Override
+                      public String apply(final TDomainClass datum) {
+                        final String datumKey = datumKeySelector.getDatumKey(datum);
+                        return datumKey != null ? datumKey : InMemoryEndPoint.DEFAULT_DATUM_KEY;
+                      }
+                    })
+                    .filter(Predicates.notNull())
+                    .toList());
+  }
+
+  protected void testRoutes(final Route... routes) {
+    testRoutes(Arrays.asList(routes));
+  }
+
+  protected void testRoutes(final List<Route> routes) {
+
+    assertThat(routes.size(), is(not(0)));
+
+    final List<TDomainClass> domainObjects =
+            FluentIterable.from(Lists.newArrayList(domainClassRandomDatum(SHOULD_BE_SENT)))
+                          .filter(Predicates.notNull())
+                          .toList();
+
+    produceData(getProducer(), domainObjects);
+
+    assertDataByRoutes(domainObjects, routes);
+
+    assertBreadcrumbsByRoutes(routes);
+
+    // prints a pretty metric tree, but emits quite a few characters to the console...
+    //metricsFactory.getMetricTree().prettyPrint();
+  }
+
+  protected <T> ImmutableList<T> consumeDataOrTimeout(final DatumConsumerStream<T> datumConsumerStream,
+                                                      final int datumCountToConsume,
+                                                      final Duration timeout) {
 
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     final List<T> receivedDatums = Lists.newLinkedList();
@@ -169,46 +300,17 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
       submit.get(timeout.getMillis(), TimeUnit.MILLISECONDS);
     } catch (ExecutionException | InterruptedException e) {
       throw new RuntimeException(e);
-    } catch (TimeoutException e) {
+    } catch (final TimeoutException e) {
       // done waiting
     }
 
     return ImmutableList.copyOf(receivedDatums);
   }
 
-  private void produceData(final List<TDomainClass> domainObjects,
-                           final DatumProducer<TDomainClass> datumProducer) {
+  protected void produceData(final DatumProducer<TDomainClass> datumProducer, final List<TDomainClass> domainObjects) {
     for (final TDomainClass aDatum : domainObjects) {
       datumProducer.deliver(aDatum);
     }
-  }
-
-  private void assertDatumFlow(final List<TDomainClass> originalDomainObjects,
-                               final TDomainClass filteredDatum,
-                               final ImmutableList<TDomainClass> consumedData,
-                               final InMemoryEndPoint dataProductionEndPoint,
-                               final InMemoryEndPoint producerBreadcrumbProductionEndPoint,
-                               final InMemoryEndPoint consumerStreamBreadcrumbsProductionEndPoint) {
-
-    final Predicate<TDomainClass> shouldHaveBeenSent = new Predicate<TDomainClass>() {
-      @Override
-      public boolean apply(final TDomainClass datum) {
-        return !datum.equals(filteredDatum);
-      }
-    };
-
-    assertThat(consumedData, not(hasItem(filteredDatum)));
-    assertThat("Received data was was different from the one that was sent.",
-               consumedData,
-               is(FluentIterable.from(originalDomainObjects)
-                                .filter(shouldHaveBeenSent)
-                                .toList()));
-    assertThat("Unexpected datum keys were used for sending.",
-               Sets.newHashSet(dataProductionEndPoint.getData().keySet()),
-               is(Sets.newHashSet(DATUM_KEY)));
-
-    assertBreadcrumb(producerBreadcrumbProductionEndPoint, PRODUCER_BREADCRUMBS_CONFIG);
-    assertBreadcrumb(consumerStreamBreadcrumbsProductionEndPoint, DATUM_CONSUMER_STREAM_BREADCRUMBS_CONFIG);
   }
 
   protected abstract TDomainClass domainClassRandomDatum(final boolean shouldBeSent);
@@ -217,45 +319,36 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
     return domainClass;
   }
 
-  protected void testEnd2End(final DatumSerDe<TDomainClass> datumSerDe, final Predicate<TDomainClass> filter) {
-
-    final TDomainClass datum = domainClassRandomDatum(SHOULD_BE_SENT);
-    final TDomainClass filteredDatum = domainClassRandomDatum(SHOULD_NOT_BE_SENT);
-    final List<TDomainClass> domainObjects = FluentIterable.from(Lists.newArrayList(datum, filteredDatum))
-                                                           .filter(Predicates.notNull())
-                                                           .toList();
-
-    final InMemoryEndPoint dataProductionEndPoint = new InMemoryEndPoint("test.producerData", 1);
-
-    final InMemoryEndPoint producerBreadcrumbProductionEndPoint = new InMemoryEndPoint("test.producerBreadcrumbs", 10);
-
-    final InMemoryEndPoint consumerBreadcrumbsProductionEndPoint = new InMemoryEndPoint("test.consumerBreadcrumbs", 10);
-
-    final DatumProducer<TDomainClass> datumProducer =
-            createDataProducer(dataProductionEndPoint, producerBreadcrumbProductionEndPoint, datumSerDe, filter);
-
-    final DatumConsumerStream<TDomainClass> datumConsumerStream =
-            createDataConsumerStream(dataProductionEndPoint, consumerBreadcrumbsProductionEndPoint, datumSerDe);
-
-    produceData(domainObjects, datumProducer);
-
-    final int ONE = 1;
-
-    final ImmutableList<TDomainClass> consumedData = consumeDataOrTimeout(datumConsumerStream,
-                                                                          ONE,
-                                                                          datumConsumerStreamConsumeTimeout);
-
-    assertThat(consumedData.size(), is(ONE));
-
-    assertDatumFlow(domainObjects,
-                    filteredDatum,
-                    consumedData,
-                    dataProductionEndPoint,
-                    producerBreadcrumbProductionEndPoint,
-                    consumerBreadcrumbsProductionEndPoint);
-
-    // prints a pretty metric tree, but emits quite a few characters to the console...
-    //metricsFactory.getMetricTree().prettyPrint();
+  protected void assertSingleBreadcrumb(final BreadcrumbsConfig breadcrumbsConfig, final Breadcrumb breadcrumb) {
+    assertThat(breadcrumb.getSource(), is(breadcrumbsConfig.getSource()));
+    assertThat(breadcrumb.getType(), is(DatumUtils.getDatumTypeId(domainClass)));
+    assertThat(breadcrumb.getDatacenter(), is(breadcrumbsConfig.getDatacenter()));
+    assertThat(breadcrumb.getTier(), is(breadcrumbsConfig.getTier()));
+    assertThat(breadcrumb.getApplication(), is(breadcrumbsConfig.getApplication()));
   }
 
+  protected void assertData(final List<TDomainClass> originalDomainObjects,
+                            final ImmutableList<TDomainClass> consumedData) {
+    assertThat("Received data was was different from the one that was sent.",
+               consumedData,
+               is(FluentIterable.from(originalDomainObjects).toList()));
+
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    InMemoryEndPoints.clearAll();
+  }
+
+  @Test
+  public void testDatumRoutes() {
+
+    final List<Route> datumRoutes =
+            new AletheiaConfig(getConfigProperties())
+                    .getRouting(DatumUtils.getDatumTypeId(domainClass))
+                    .getRoutes();
+
+    testRoutes(datumRoutes);
+  }
 }
+

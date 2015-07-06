@@ -74,18 +74,18 @@ public class InMemoryEndPoint
   private final String endPointName;
   private final int size;
 
-  public InMemoryEndPoint(final String endPointName, int size) {
+  public InMemoryEndPoint(final String endPointName, final int size) {
     this.endPointName = endPointName;
     this.size = size;
   }
 
-  public InMemoryEndPoint(final String endPointName, List<byte[]> data) {
+  public InMemoryEndPoint(final String endPointName, final List<byte[]> data) {
     this(endPointName, data.size());
 
-    for (byte[] bytes : data) {
+    for (final byte[] bytes : data) {
       try {
         send(bytes);
-      } catch (SilentSenderException e) {
+      } catch (final SilentSenderException e) {
         throw new RuntimeException(e);
       }
     }
@@ -98,18 +98,18 @@ public class InMemoryEndPoint
       final KeyedData keyedData = producedData.take();
       partitionedProducedData.get(keyedData.getKey()).remove(keyedData.getData());
       return keyedData.getData();
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public byte[] fetch(String key) {
+  public byte[] fetch(final String key) {
     try {
       final byte[] bytes = partitionedProducedData.get(key).take();
       producedData.remove(new KeyedData(key, bytes));
       return bytes;
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
@@ -124,7 +124,7 @@ public class InMemoryEndPoint
     try {
       partitionedProducedData.get(validKey).put(data);
       producedData.add(new KeyedData(validKey, data));
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
   }

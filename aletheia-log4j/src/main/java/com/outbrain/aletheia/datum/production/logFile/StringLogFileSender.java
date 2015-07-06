@@ -5,7 +5,7 @@ import com.outbrain.aletheia.datum.production.logFile.writer.DataFileWriterFacto
 import com.outbrain.aletheia.datum.production.logFile.writer.ExtrasRollingAppenderFactory;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

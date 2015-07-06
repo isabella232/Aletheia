@@ -1,6 +1,6 @@
 package com.outbrain.aletheia.metrics;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Created by slevin on 3/1/15.

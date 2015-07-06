@@ -1,0 +1,9 @@
+{
+  "sample_domain_class": {
+    "routeGroups": [
+      "test_endpoints"
+    ],
+    "breadcrumbs": "test_breadcrumbs",
+    "datum.key.selector.class": "com.outbrain.aletheia.SampleDomainClass$SampleDatumKeySelector"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "avro": {
+    "@class": "com.outbrain.aletheia.datum.serialization.avro.AvroDatumSerDe",
+    "datum.type.id": "sample_domain_class",
+    "projector": {
+      "@class": "com.outbrain.aletheia.SampleDomainClass$SampleDomainClassAvroRoundTripProjector"
+    },
+    "schema.repository": {
+      "@class": "com.outbrain.aletheia.datum.serialization.avro.schema.DefaultStaticDatumAvroSchemaRepository"
+    }
+  },
+  "json": {
+    "@class": "com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe",
+    "datum.class": "${datum.class}"
+  }
+}

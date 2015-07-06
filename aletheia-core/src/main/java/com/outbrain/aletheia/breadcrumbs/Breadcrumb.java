@@ -1,8 +1,8 @@
 package com.outbrain.aletheia.breadcrumbs;
 
 import com.outbrain.aletheia.datum.DatumType;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 

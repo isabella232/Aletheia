@@ -1,8 +1,10 @@
 package com.outbrain.aletheia.datum.production.logFile;
 
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 
 /**
@@ -46,6 +48,22 @@ public class LogFileProductionEndPoint implements ProductionEndPoint {
   @Override
   public String getName() {
     return LOG_FILE;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    final LogFileProductionEndPoint that = (LogFileProductionEndPoint) o;
+
+    return EqualsBuilder.reflectionEquals(this, that);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
   }
 
   @Override
