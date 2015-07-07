@@ -16,6 +16,16 @@ Aletehia supports the following producers/consumers out-of-the-box:
 
 Custom producer/consumer types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
 
+Building Alethia
+----------------
+Clone Aletheia (or download the sources):
+
+`git clone https://github.com/outbrain/Aletheia.git`
+
+Build the project:
+
+`mvn clean install -f Aletheia/pom.xml`
+
 Further Info
 ------------
 
