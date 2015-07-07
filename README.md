@@ -14,7 +14,7 @@ Aletehia supports the following producers/consumers out-of-the-box:
 * ~~Kafka 0.7 (production and consumption)~~
 * Log files (production only)
 
-Custom producer/consumer types are easy to write. See the [Wiki - Endpoints](https://github.com/outbrain/Aletheia/wiki/EndPoints) for details.
+Custom producer/consumer types are easy to write. See [Wiki - Endpoints](https://github.com/outbrain/Aletheia/wiki/EndPoints) for details.
 
 Building Alethia
 ----------------
