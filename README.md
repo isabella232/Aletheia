@@ -37,7 +37,7 @@ Further Info
 Developers
 ----------
 
-Aletheia has been developed by the data infrastructure team at Outbrain.   
+Aletheia has been developed by the data infrastructure team at [Outbrain](http://www.outbrain.com/).   
 Please feel free to contact us for any details:
 
 * Stas Levin - <slevin@outbrain.com>
