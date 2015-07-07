@@ -18,7 +18,7 @@ Custom producer/consumer types are easy to write. See [Wiki - Endpoints](https:/
 
 Building Alethia
 ----------------
-Clone Aletheia (or download the sources):
+Clone the repo (or download the sources):
 
 `git clone https://github.com/outbrain/Aletheia.git`
 
