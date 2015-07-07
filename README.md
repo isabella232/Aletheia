@@ -16,12 +16,13 @@ Aletehia supports the following producers/consumers out-of-the-box:
 
 Custom producer/consumer types are easy to write. See the [Wiki](https://github.com/outbrain/Aletheia/wiki/Production-%26-Consumption-EndPoint-types) for details.
 
-Documentation
---------------
+Further Info
+------------
 
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
-*  [Javadoc](http://outbrain.github.io/Aletheia/)
 *  [Prezi] (https://prezi.com/pqfbp7umqtvh/presentation)
+*  [Talk at Java.IL (Hebrew)](https://www.parleys.com/tutorial/aletheia-outbrains-data-pipeline-backbone)
+*  [Javadoc](http://outbrain.github.io/Aletheia/)
 
 Developers
 ----------
