@@ -22,6 +22,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);
 
   private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver.Requests.Attempts.Failures";
+  private static final long LOG_SUPPRESS_INTERVAL_MS = 60 * 1000;
 
   private final Timer deliverDurationTimer;
   private final Counter deliverRequestSuccessCounter;
@@ -32,6 +33,8 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   private final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder;
   private final Predicate<TDomainClass> filter;
   private final MetricsFactory metricFactory;
+
+  private long lastExceptionLoggedTime = 0;
 
   public AuditingDatumProducer(final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder,
                                final Sender<DatumEnvelope> envelopeSender,
@@ -48,6 +51,10 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     deliverDurationTimer = metricFactory.createTimer("Deliver.Requests", "Duration");
     filteredCounter = metricFactory.createCounter("Deliver.Requests", "Filtered");
     deliverRequestSuccessCounter = metricFactory.createCounter("Deliver.Requests.Attempts", "Success");
+
+    // Create counter for QueueFullExceptions
+    metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+            SilentSenderException.class.getSimpleName()), "QueueFullException");
   }
 
   public void deliver(final TDomainClass datum) {
@@ -70,11 +77,16 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter(Joiner.on(".")
-                                        .join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
-                                              SilentSenderException.class.getSimpleName()),
-                                  MoreExceptionUtils.getType(e))
-                   .inc();
+      metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+              SilentSenderException.class.getSimpleName()),
+              MoreExceptionUtils.getType(e)).inc();
+
+      // Log with suppression
+      final long nowTime = System.currentTimeMillis();
+      if (lastExceptionLoggedTime + LOG_SUPPRESS_INTERVAL_MS < nowTime) {
+        lastExceptionLoggedTime = nowTime;
+        logger.error("Datum send failed with exception:", e);
+      }
     } catch (final Exception e) {
       metricFactory.createCounter(DELIVER_REQUESTS_ATTEMPTS_FAILURES, MoreExceptionUtils.getType(e)).inc();
       logger.error("Could not deliver datum." + datum, e);
