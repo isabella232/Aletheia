@@ -34,12 +34,5 @@ Further Info
 *  [Talk at Java.IL (Hebrew)](https://www.parleys.com/tutorial/aletheia-outbrains-data-pipeline-backbone)
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
-Developers
-----------
 
 Aletheia has been developed by the [data infrastructure team](https://gormim.com/outbrain/data-infra) at [Outbrain](http://www.outbrain.com/).   
-Please feel free to contact us for any details:
-
-* Stas Levin - <slevin@outbrain.com>
-* Harel Ben-Attia - <harel@outbrain.com>
-* Izik Shmulewitz - <ishmulewitz@outbrain.com>
