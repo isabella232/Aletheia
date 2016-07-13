@@ -3,13 +3,12 @@ package com.outbrain.aletheia;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.base.*;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -22,14 +21,15 @@ import com.outbrain.aletheia.configuration.routing.RoutingInfo;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 public class AletheiaConfig {
@@ -48,6 +48,13 @@ public class AletheiaConfig {
   public static final String ROUTING = "aletheia.routing.config";
   public static final String ENDPOINTS = "aletheia.endpoints.config";
 
+  public static final String VERIFY_ROUTING = "aletheia.verify.routing";
+  public static final String MULTIPLE_CONFIGURATIONS_PATH = "aletheia.multiple.config.path";
+  public static final String ENDPOINT_GROUPS_EXTENSION = "aletheia.multiple.config.endpoint.groups.extension";
+  public static final String ENDPOINTS_EXTENSION = "aletheia.multiple.config.endpoints.extension";
+  public static final String ROUTING_EXTENSION = "aletheia.multiple.config.routing.extension";
+  public static final String SERDES_EXTENSION = "aletheia.multiple.config.serdes.extension";
+
   private static final String CONSUME_SECTION = "consume";
   private static final String PRODUCE_SECTION = "produce";
 
@@ -58,15 +65,16 @@ public class AletheiaConfig {
   private final String serDeConfig;
   private final Properties properties;
 
+  private static final ObjectMapper simpleObjectMapper = new ObjectMapper();
   private static final Map<String, Class<? extends EndPointTemplate>> customEndPointTemplates = new HashMap<>();
 
 
   public AletheiaConfig(final Properties properties) {
     this(properties,
-         getPropertyOrReadConfig(ENDPOINTS, ENDPOINTS_CONFIG_PATH, properties),
-         getPropertyOrReadConfig(ROUTING, ROUTING_CONFIG_PATH, properties),
-         getPropertyOrReadConfig(ENDPOINT_GROUPS, ENDPOINT_GROUPS_CONFIG_PATH, properties),
-         getPropertyOrReadConfig(SERDES, SERDES_CONFIG_PATH, properties));
+         getPropertyOrReadConfig(ENDPOINTS, ENDPOINTS_CONFIG_PATH, ENDPOINTS_EXTENSION, properties),
+         getPropertyOrReadConfig(ROUTING, ROUTING_CONFIG_PATH, ROUTING_EXTENSION, properties),
+         getPropertyOrReadConfig(ENDPOINT_GROUPS, ENDPOINT_GROUPS_CONFIG_PATH, ENDPOINT_GROUPS_EXTENSION, properties),
+         getPropertyOrReadConfig(SERDES, SERDES_CONFIG_PATH, SERDES_EXTENSION, properties));
   }
 
   private AletheiaConfig(final Properties properties,
@@ -82,6 +90,10 @@ public class AletheiaConfig {
     Preconditions.checkNotNull(endPointGroupsConfig, "endpoint group config cannot be null");
     Preconditions.checkNotNull(serDeConfig, "serDe config cannot be null");
 
+    if ("true".equalsIgnoreCase(properties.getProperty(VERIFY_ROUTING))) {
+      verifyRoutingConfiguration(routingConfig, endPointGroupsConfig, endPointsConfig);
+    }
+
     this.endPointsConfig = endPointsConfig;
     this.routingConfig = routingConfig;
     this.endPointGroupsConfig = endPointGroupsConfig;
@@ -90,12 +102,78 @@ public class AletheiaConfig {
     objectMapper = createObjectMapper();
   }
 
+  private static void verifyRoutingConfiguration(final String routingConfig, final String endPointGroupsConfig, final String endPointsConfig) {
+    try {
+      final ObjectReader reader = simpleObjectMapper.reader();
+      final JsonNode routingJson = reader.readTree(routingConfig);
+      final JsonNode routingGroupsJson = reader.readTree(endPointGroupsConfig);
+      final JsonNode endpointsJson = reader.readTree(endPointsConfig);
+
+      Iterator<JsonNode> routingIterator = routingJson.elements();
+      while (routingIterator.hasNext()) {
+        final JsonNode routeJson = routingIterator.next();
+        final JsonNode routeGroups = routeJson.get("routeGroups");
+        if (!(routeGroups instanceof ArrayNode)) {
+          throw new RuntimeException("RouteGroups " + routeGroups + " are not defined properly in routing configuration");
+        }
+        for (JsonNode group : routeGroups) {
+          final String groupName = group.asText();
+          if (groupName.contains("$")) {
+            continue;
+          }
+          final JsonNode groupNameJson = routingGroupsJson.get(groupName);
+          Preconditions.checkNotNull(groupNameJson, "Routing group " + groupName + " is not defined in endpoint groups configuration");
+          if (!(groupNameJson instanceof ArrayNode)) {
+            throw new RuntimeException("Routing group " + groupName + " is not defined properly in endpoint groups configuration");
+          }
+          for (JsonNode endpoint : groupNameJson) {
+            final String endpointName = endpoint.get("endpoint").asText();
+            if (!endpointName.contains("$")) {
+              Preconditions.checkNotNull(endpointsJson.get(endpointName), "Endpoint " + endpointName + " is not defined properly in endpoints configuration");
+            }
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Error checking routing configuration");
+    }
+  }
+
   private static String getPropertyOrReadConfig(final String property,
-                                                final String config,
+                                                final String configPathProperty,
+                                                final String extensionProperty,
                                                 final Properties properties) {
-    return !Strings.isNullOrEmpty(properties.getProperty(property)) ?
-           properties.getProperty(property) :
-           readConfigFile(properties.getProperty(config));
+    if (!Strings.isNullOrEmpty(properties.getProperty(property))) {
+      return properties.getProperty(property);
+    }
+
+    final Set<String> configPaths = new HashSet<>();
+    configPaths.add(properties.getProperty(configPathProperty));
+
+    final String multipleConfigurationPath = properties.getProperty(MULTIPLE_CONFIGURATIONS_PATH);
+    final String extension = extensionProperty != null ? properties.getProperty(extensionProperty) : null;
+
+    if (!Strings.isNullOrEmpty(multipleConfigurationPath) && !Strings.isNullOrEmpty(extension)) {
+      try {
+        final List<URL> resourceUrls = Collections.list(ClassLoader.getSystemResources(multipleConfigurationPath));
+        for (URL url : resourceUrls) {
+          final File folder = new File(url.getPath());
+          final File[] files = folder.listFiles();
+          if (files != null) {
+            for (final File file : files) {
+              if (file.isFile() && file.getName().endsWith(extension)) {
+                configPaths.add(multipleConfigurationPath + "/" + file.getName());
+              }
+            }
+          }
+        }
+      }
+      catch (IOException e) {
+        logger.error("Could not read resources", e);
+      }
+    }
+
+    return readConfigFiles(configPaths);
   }
 
   Properties getProperties() {
@@ -141,14 +219,36 @@ public class AletheiaConfig {
             .replace(configurationWithPlaceholders);
   }
 
-  private static String readConfigFile(final String configPath) {
-    final InputStream resourceAsStream = AletheiaConfig.class.getClassLoader().getResourceAsStream(configPath);
-    Preconditions.checkNotNull(resourceAsStream, "Could not read configuration resource %s", configPath);
-    try {
-      return IOUtils.toString(resourceAsStream);
-    } catch (final IOException e) {
-      throw new RuntimeException("Could not read config: " + configPath, e);
+  private static String readConfigFiles(final Set<String> configPaths) {
+    if (configPaths == null || configPaths.isEmpty()) {
+      throw new RuntimeException("No Aletheia config files to load");
     }
+
+    final ObjectReader simpleObjectReader = simpleObjectMapper.reader();
+    final JsonNode mergedConfig = simpleObjectReader.createObjectNode();
+
+    for (final String resourcePath : configPaths) {
+      if (!Strings.isNullOrEmpty(resourcePath)) {
+        logger.info("Loading Aletheia config from " + resourcePath);
+        try {
+          final InputStream resourceAsStream = AletheiaConfig.class.getClassLoader().getResourceAsStream(resourcePath);
+          final JsonNode json = simpleObjectReader.readTree(resourceAsStream);
+
+          final Iterator<Map.Entry<String, JsonNode>> fieldsIterator = json.fields();
+          while (fieldsIterator.hasNext()) {
+            final Map.Entry<String, JsonNode> entry = fieldsIterator.next();
+            final String key = entry.getKey();
+            if (mergedConfig.has(key)) {
+              throw new RuntimeException("Element " + key + " in file " + resourcePath + " exists in previously loaded Aletheia configuration");
+            }
+            ((ObjectNode) mergedConfig).set(key, entry.getValue());
+          }
+        } catch (final IOException e) {
+          logger.error("Failed to read config from " + resourcePath, e);
+        }
+      }
+    }
+    return mergedConfig.toString();
   }
 
   private <T> T readSingleConfigKey(final String config,
