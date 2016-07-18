@@ -46,17 +46,28 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
   protected Properties getBreadcrumbEnvironment() {
     final Properties breadcrumbEnv = new Properties();
 
-    breadcrumbEnv.setProperty("aletheia.endpoints.config.path",
-                              properties.getProperty("aletheia.endpoints.config.path"));
-    breadcrumbEnv.setProperty("aletheia.routing.config.path",
-                              properties.getProperty("aletheia.routing.config.path"));
-    breadcrumbEnv.setProperty("aletheia.endpoint.groups.config.path",
-                              properties.getProperty("aletheia.endpoint.groups.config.path"));
-    breadcrumbEnv.setProperty("aletheia.serdes.config.path",
-                              properties.getProperty("aletheia.serdes.config.path"));
-    breadcrumbEnv.setProperty("aletheia.breadcrumbs.endpoint.id",
-                              properties.getProperty("aletheia.breadcrumbs.endpoint.id", ""));
-
+    if (properties != null) {
+      breadcrumbEnv.setProperty(AletheiaConfig.MULTIPLE_CONFIGURATIONS_PATH,
+              properties.getProperty(AletheiaConfig.MULTIPLE_CONFIGURATIONS_PATH, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ENDPOINT_GROUPS_EXTENSION,
+              properties.getProperty(AletheiaConfig.ENDPOINT_GROUPS_EXTENSION, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ENDPOINTS_EXTENSION,
+              properties.getProperty(AletheiaConfig.ENDPOINTS_EXTENSION, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ROUTING_EXTENSION,
+              properties.getProperty(AletheiaConfig.ROUTING_EXTENSION, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.SERDES_EXTENSION,
+              properties.getProperty(AletheiaConfig.SERDES_EXTENSION, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ENDPOINTS_CONFIG_PATH,
+              properties.getProperty(AletheiaConfig.ENDPOINTS_CONFIG_PATH, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ROUTING_CONFIG_PATH,
+              properties.getProperty(AletheiaConfig.ROUTING_CONFIG_PATH, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.ENDPOINT_GROUPS_CONFIG_PATH,
+              properties.getProperty(AletheiaConfig.ENDPOINT_GROUPS_CONFIG_PATH, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.SERDES_CONFIG_PATH,
+              properties.getProperty(AletheiaConfig.SERDES_CONFIG_PATH, ""));
+      breadcrumbEnv.setProperty("aletheia.breadcrumbs.endpoint.id",
+              properties.getProperty("aletheia.breadcrumbs.endpoint.id", ""));
+    }
     return breadcrumbEnv;
   }
 
