@@ -9,10 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.*;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.outbrain.aletheia.configuration.endpoint.EndPointTemplate;
 import com.outbrain.aletheia.configuration.endpoint.InMemoryEndPointTemplate;
 import com.outbrain.aletheia.configuration.routing.ExtendedRoutingInfo;
@@ -29,8 +26,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class AletheiaConfig {
 
@@ -155,25 +155,55 @@ public class AletheiaConfig {
 
     if (!Strings.isNullOrEmpty(multipleConfigurationPath) && !Strings.isNullOrEmpty(extension)) {
       try {
-        final List<URL> resourceUrls = Collections.list(ClassLoader.getSystemResources(multipleConfigurationPath));
-        for (URL url : resourceUrls) {
-          final File folder = new File(url.getPath());
-          final File[] files = folder.listFiles();
-          if (files != null) {
-            for (final File file : files) {
-              if (file.isFile() && file.getName().endsWith(extension)) {
-                configPaths.add(multipleConfigurationPath + "/" + file.getName());
-              }
+        final Enumeration<URL> resourceFolderUrls = ClassLoader.getSystemResources(multipleConfigurationPath);
+        while (resourceFolderUrls.hasMoreElements()) {
+          final URL folderUrl = resourceFolderUrls.nextElement();
+          final Set<String> resourceFiles = getResourceFilesFromFolder(folderUrl, multipleConfigurationPath);
+          final Set<String> filteredResourceFiles = Sets.filter(resourceFiles, new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+              return input != null && input.endsWith(extension);
             }
-          }
+          });
+          configPaths.addAll(filteredResourceFiles);
         }
       }
       catch (IOException e) {
-        logger.error("Could not read resources", e);
+        logger.error("Could not read resources in " + multipleConfigurationPath, e);
       }
     }
 
     return readConfigFiles(configPaths);
+  }
+
+  private static Set<String> getResourceFilesFromFolder(URL folderUrl, String homePath) {
+    final String folderPath = folderUrl.getPath();
+    final Set<String> result = new HashSet<>();
+    try {
+      if (folderUrl.getProtocol().equals("jar")) {
+        final JarURLConnection urlConnection = (JarURLConnection) folderUrl.openConnection();
+        final JarFile jar = urlConnection.getJarFile();
+        final Enumeration<JarEntry> entries = jar.entries();
+        while (entries.hasMoreElements()) {
+          final String fileName = entries.nextElement().getName();
+          if (fileName.startsWith(homePath + "/")) {
+            result.add(fileName);
+          }
+        }
+      } else {
+        final File folder = new File(folderPath);
+        final String[] files = folder.list();
+        if (files != null) {
+          for (final String file : files) {
+            result.add(homePath + "/" + file);
+          }
+        }
+      }
+    }
+    catch (IOException e) {
+      logger.error("Error while reading from: " + folderPath, e);
+    }
+    return result;
   }
 
   Properties getProperties() {
