@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.configuration.routing.Route;
 import com.outbrain.aletheia.configuration.routing.RoutingInfo;
+import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -71,11 +72,20 @@ public class AletheiaConfigTest {
   }
 
   @Test
+  public void testEndpointDefaultConfig() throws Exception {
+    final Properties properties = new Properties();
+    properties.setProperty(AletheiaConfig.DEFAULT_ENDPOINT, "{\"type\": \"inMemory\",\"size\": 100}");
+    AletheiaConfig aletheiaConfig = new AletheiaConfig(properties);
+    ProductionEndPoint endpoint = aletheiaConfig.getProductionEndPoint("my_endpoint_1");
+    assertNotNull(endpoint);
+  }
+
+  @Test
   public void testRoutingConfigReading() throws Exception {
     assertThat(config.getRouting("test.datum"),
-               is(new RoutingInfo(Lists.newArrayList(new Route("my_endpoint_1", "json"),
-                                                     new Route("my_endpoint_2", "json")),
-                                  "myDatumKeySelectorClass")));
+            is(new RoutingInfo(Lists.newArrayList(new Route("my_endpoint_1", "json"),
+                    new Route("my_endpoint_2", "json")),
+                    "myDatumKeySelectorClass")));
   }
 
   @Test
