@@ -20,7 +20,7 @@ public class DataFileWriterFactory {
     this.appenderFactory = appenderFactory;
   }
 
-  private Logger createOrGetConfiguredLogger(final String shortLogFileName) {
+  private org.apache.log4j.Logger createOrGetConfiguredLogger(final String shortLogFileName) {
 
     final org.apache.log4j.Logger logger = createOrGetLogger(shortLogFileName);
 
@@ -41,7 +41,7 @@ public class DataFileWriterFactory {
                                           " ignoring and using the existing one.", shortLogFileName));
     }
 
-    return LoggerFactory.getLogger(logger.getName());
+    return logger;
   }
 
   private boolean hasAppender(final org.apache.log4j.Logger logger, final String appenderName) {
@@ -63,7 +63,7 @@ public class DataFileWriterFactory {
     return "programmatic_appender_" + shortLogFileName;
   }
 
-  public Logger createLogger(final String shortLogFileName) {
+  public org.apache.log4j.Logger createLogger(final String shortLogFileName) {
     return createOrGetConfiguredLogger(shortLogFileName);
   }
 }

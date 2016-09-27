@@ -14,7 +14,7 @@ public class StringLogFileSender implements NamedSender<String> {
   private static final Logger logger = LoggerFactory.getLogger(StringLogFileSender.class);
 
   private final LogFileProductionEndPoint logFileDeliveryEndPoint;
-  private final Logger dataLogFileWriter;
+  private final org.apache.log4j.Logger dataLogFileWriter;
   private final Counter logWriteSuccessCount;
   private final Counter logWriteFailureCount;
   private final Counter sendDuration;
@@ -29,7 +29,7 @@ public class StringLogFileSender implements NamedSender<String> {
     logWriteFailureCount = metricFactory.createCounter("Send.Attempts", "Failure");
   }
 
-  private Logger getLogFileWriter(final LogFileProductionEndPoint logFileDeliveryEndPoint) {
+  private org.apache.log4j.Logger getLogFileWriter(final LogFileProductionEndPoint logFileDeliveryEndPoint) {
 
     final DataFileWriterFactory dataFileWriterFactory =
             new DataFileWriterFactory(
