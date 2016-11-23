@@ -1,6 +1,8 @@
 package com.outbrain.aletheia.tutorial;
 
+import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumType;
+
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
@@ -11,6 +13,13 @@ public class MyDatum {
     @Override
     public DateTime extractDatumDateTime(final MyDatum domainObject) {
       return domainObject.getTimestamp().toDateTime();
+    }
+  }
+
+  public static class MyKeySelector implements DatumKeySelector<MyDatum> {
+    @Override
+    public String getDatumKey(MyDatum domainObject) {
+      return domainObject.getInfo();
     }
   }
 

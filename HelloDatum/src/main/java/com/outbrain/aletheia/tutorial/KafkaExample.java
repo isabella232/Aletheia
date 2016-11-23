@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
+
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.DatumProducerBuilder;
@@ -13,6 +14,7 @@ import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoi
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.kafka.KafkaDatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.kafka.KafkaTopicProductionEndPoint;
+
 import org.joda.time.Instant;
 
 import java.util.List;
@@ -33,7 +35,7 @@ public class KafkaExample {
 
   public static void main(String[] args) {
 
-    System.out.println("Welcome to Aletheia 101 - In memory production & consumption.");
+    System.out.println("Welcome to Aletheia 101 - Kafka production & consumption.");
 
     System.out.println("Building a DatumProducer...");
 
@@ -83,7 +85,7 @@ public class KafkaExample {
     System.out.println("Iterating over received data...");
 
     for (final MyDatum myDatum : Iterables.getFirst(datumConsumerStreams, null).datums()) {
-      System.out.println("Received a datum with info field = " + myDatum.getInfo());
+      System.out.println(String.format("Received a datum: '%s %s'", myDatum.getTimestamp(), myDatum.getInfo()));
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block
       break;

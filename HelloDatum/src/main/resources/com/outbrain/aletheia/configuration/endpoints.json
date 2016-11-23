@@ -3,18 +3,16 @@
     "type": "kafka",
     "topic.name": "myDatum",
     "produce": {
-      "broker.list": "localhost:9092",
+      "bootstrap.servers": "localhost:9092",
       "producer.type": "sync",
-      "queue.enqueue.timeout.ms": "0",
-      "queue.buffering.max.messages": "250000",
-      "compression.codec": "gzip",
-      "batch.num.messages": "200"
+      "compression.type": "gzip"
     },
     "consume": {
-      "zookeeper.connect": "localhost:2181",
-      "group.id": "myTestGoupId",
+      "bootstrap.servers": "localhost:9092",
+      "group.id": "helloDatum",
       "concurrency.level": "1",
-      "zookeeper.chroot": "/hello_datum"
+      "auto.commit.interval.ms": "1000",
+      "auto.offset.reset": "earliest"
     }
   },
   "logFile_endpoint": {

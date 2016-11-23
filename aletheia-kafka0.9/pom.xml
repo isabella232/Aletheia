@@ -8,21 +8,22 @@
     <version>0.55-SNAPSHOT</version>
   </parent>
 
-  <name>Aletheia examples</name>
-  <artifactId>HelloDatum</artifactId>
+  <name>Aletheia Kafka 0.9</name>
+  <artifactId>aletheia-kafka0.9</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>aletheia-core</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>aletheia-kafka0.9</artifactId>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>aletheia-log4j</artifactId>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.11</artifactId>
     </dependency>
   </dependencies>
 

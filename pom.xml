@@ -65,6 +65,7 @@
   <modules>
     <module>aletheia-core</module>
     <module>aletheia-kafka0.8</module>
+    <module>aletheia-kafka0.9</module>
     <module>aletheia-log4j</module>
     <module>HelloDatum</module>
   </modules>
@@ -241,7 +242,7 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>aletheia-kafka0.7</artifactId>
+        <artifactId>aletheia-kafka0.9</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -303,6 +304,22 @@
       </dependency>
       <dependency>
         <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>0.9.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka_2.11</artifactId>
+        <version>0.9.0.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.10</artifactId>
         <version>0.8.1.1</version>
         <exclusions>
@@ -354,11 +371,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
-      </dependency>
-      <dependency>
-        <groupId>org.clojars.smallrivers</groupId>
-        <artifactId>kafka</artifactId>
-        <version>0.7.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

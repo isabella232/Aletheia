@@ -6,6 +6,7 @@
         "serDe": "json"
       }
     ],
-    "breadcrumbs": "breadcrumbs_endpoint"
+    "breadcrumbs": "breadcrumbs_endpoint",
+    "datum.key.selector.class": "com.outbrain.aletheia.tutorial.MyDatum$MyKeySelector"
   }
 }
