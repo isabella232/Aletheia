@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.outbrain.aletheia</groupId>
     <artifactId>aletheia</artifactId>
-    <version>0.55</version>
+    <version>0.56-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
