@@ -17,6 +17,11 @@
       "zookeeper.chroot": "/hello_datum"
     }
   },
+  "logFile_endpoint": {
+    "type": "logFile",
+    "folder": "./",
+    "filename": "myDatumsFile"
+  },
   "inMemory_endpoint": {
     "type": "inMemory",
     "size": 100
