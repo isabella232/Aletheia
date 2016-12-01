@@ -304,11 +304,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-clients</artifactId>
-        <version>0.9.0.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.11</artifactId>
         <version>0.9.0.1</version>
         <exclusions>
@@ -321,7 +316,7 @@
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.10</artifactId>
-        <version>0.8.1.1</version>
+        <version>0.8.2.2</version>
         <exclusions>
           <exclusion>
             <groupId>javax.jms</groupId>
