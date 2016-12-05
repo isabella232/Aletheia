@@ -6,6 +6,8 @@ import com.google.common.base.Predicates;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
+
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,14 +41,18 @@ public class KafkaMetrics {
                               new Function<MetricName, MetricName>() {
 
                                 private String replaceKafkaClientId(final String str) {
-                                  return str.replaceAll(kafkaClientId, "client");
+                                  return str.replaceAll("clientId." + kafkaClientId, "");
                                 }
 
                                 @Override
                                 public MetricName apply(final MetricName name) {
-                                  return new MetricName(replaceKafkaClientId(name.getGroup()),
-                                                        replaceKafkaClientId(name.getType()),
-                                                        replaceKafkaClientId(name.getName()).replaceAll("\\.", "_"));
+                                    final String scope = StringUtils.strip(
+                                                            replaceKafkaClientId(name.getScope())
+                                                                    .replaceAll("\\.", "_"), "_");
+                                    final String prefix = scope.isEmpty() ? "" : (scope + ".");
+                                    return new MetricName(name.getGroup(),
+                                                          name.getType(),
+                                                          prefix + name.getName());
                                 }
                               };
 

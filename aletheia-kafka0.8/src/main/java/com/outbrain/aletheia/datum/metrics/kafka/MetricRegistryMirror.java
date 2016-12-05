@@ -4,10 +4,12 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
+
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.yammer.metrics.core.Metric;
 import com.yammer.metrics.core.MetricName;
 import com.yammer.metrics.core.MetricsRegistry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +32,8 @@ class MetricRegistryMirror {
     return new Predicate<MetricName>() {
       @Override
       public boolean apply(final MetricName metricName) {
-        return filter.apply(MetricRegistry2MetricsFactoryBridge.componentName(metricName) + "." + metricName.getName());
+        return filter.apply(MetricRegistry2MetricsFactoryBridge.componentName(metricName) + "." +
+                            metricName.getScope() + "." + metricName.getName());
       }
     };
   }
