@@ -36,4 +36,4 @@ Further Info
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
 
-Aletheia has been developed by the [data infrastructure team](https://gormim.com/outbrain/data-infra) at [Outbrain](http://www.outbrain.com/).   
+Aletheia has been developed by the Data Infrastructure team at [Outbrain](http://www.outbrain.com/).   
