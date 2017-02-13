@@ -14,4 +14,9 @@ public interface DatumConsumerStream<TDomainClass> {
    * @return An {@link Iterable<TDomainClass>} that represents the incoming datum stream.
    */
   Iterable<TDomainClass> datums();
+
+  /**
+   * Commits consumed offsets to Kafka, blocks until commit either succeeds or an error is encountered
+   */
+  void commitConsumedOffsets();
 }

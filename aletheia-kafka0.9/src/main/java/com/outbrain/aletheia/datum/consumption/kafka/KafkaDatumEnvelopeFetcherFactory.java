@@ -41,7 +41,7 @@ public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFac
 
     if (consumerConfig.getProperty("enable.auto.commit") != null) {
       logger.warn("enable.auto.commit cannot be provided as consumer properties. "
-          + "Aletheia consumer manages offsets internally");
+          + "Please use offset.commit.mode to control offset management mode. see com.outbrain.aletheia.datum.consumption.OffsetCommitMode for supported modes.");
     }
     consumerConfig.put("enable.auto.commit", "false");
 

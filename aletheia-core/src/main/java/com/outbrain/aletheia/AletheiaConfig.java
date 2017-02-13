@@ -265,7 +265,8 @@ public class AletheiaConfig {
         if (typeReference.getType() == EndPointTemplate.class &&
                 !Strings.isNullOrEmpty(properties.getProperty(DEFAULT_ENDPOINT))) {
           final String defaultEndpointJson = properties.getProperty(DEFAULT_ENDPOINT);
-          logger.info("Created default endpoint for " + key);
+          logger.warn("Endpoint with name " + key + " was not found in the current endpoints config path (see property aletheia.endpoints.config.path). " +
+                  "Please make sure the endpoint you requested is present. Using default endpoint instead (see property aletheia.endpoint.defaultEndpoint)");
           return objectMapper.readValue(defaultEndpointJson, typeReference);
         }
         throw new NoSuchElementException(String.format("no such key: \"%s\" in config: \"%s\"", key, config));

@@ -79,6 +79,7 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
   private final Counter consumeFailureCount;
   private final Counter filteredCounter;
   private final Iterable<TDomainClass> datumIterable;
+  private final DatumEnvelopeFetcher datumEnvelopeFetcher;
 
   public AuditingDatumConsumerStream(final DatumEnvelopeFetcher datumEnvelopeFetcher,
                                      final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
@@ -91,6 +92,7 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
 
     this.datumEnvelopeOpener = datumEnvelopeOpener;
     this.datumFilter = datumFilter;
+    this.datumEnvelopeFetcher = datumEnvelopeFetcher;
 
     final DatumIterator datumIterator = new DatumIterator(datumEnvelopeFetcher);
     datumIterable = new Iterable<TDomainClass>() {
@@ -104,6 +106,11 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
   @Override
   public Iterable<TDomainClass> datums() {
     return datumIterable;
+  }
+
+  @Override
+  public void commitConsumedOffsets() {
+    datumEnvelopeFetcher.commitConsumedOffsets();
   }
 }
 

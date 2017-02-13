@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.datum.consumption.kafka;
 
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
+import com.outbrain.aletheia.datum.consumption.OffsetCommitMode;
 import com.outbrain.aletheia.datum.envelope.AvroDatumEnvelopeSerDe;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.Counter;
@@ -50,10 +51,11 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   private final Counter autoCommitAttempt;
   private final Counter autoCommitSuccess;
   private final Counter autoCommitFail;
+  private final OffsetCommitMode offsetCommitMode;
 
-  public KafkaStreamDatumEnvelopeFetcher( final KafkaConsumer<String, byte[]> consumer,
-                                          final KafkaTopicConsumptionEndPoint consumptionEndPoint,
-                                          final MetricsFactory metricFactory) {
+  public KafkaStreamDatumEnvelopeFetcher(final KafkaConsumer<String, byte[]> consumer,
+                                         final KafkaTopicConsumptionEndPoint consumptionEndPoint,
+                                         final MetricsFactory metricFactory) {
     this.kafkaConsumer = consumer;
     this.consumptionEndPoint = consumptionEndPoint;
 
@@ -63,27 +65,36 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
     final long autoCommitInterval =
             Long.parseLong(consumptionEndPoint.getProperties()
-                                              .getProperty( "auto.commit.interval.ms",
-                                                            "5000"));
+                    .getProperty( "auto.commit.interval.ms",
+                                  "5000"));
+    try {
+      offsetCommitMode = OffsetCommitMode.valueOf(consumptionEndPoint.getProperties()
+              .getProperty( "offset.commit.mode",
+                            OffsetCommitMode.AT_LEAST_ONCE.name()));
+    } catch (final IllegalArgumentException e){
+      throw new IllegalArgumentException("Illegal offset commit mode value. See com.outbrain.aletheia.datum.consumption.OffsetCommitMode for supported modes.");
+    }
 
-    // Executor for committing consumer offsets
-    //  (Keep similar behavior to Kafka 0.8 High Level Consumer)
-    autoOffsetCommitExecutor = Executors.newScheduledThreadPool(1);
-    autoOffsetCommitExecutor.scheduleWithFixedDelay(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          synchronized (kafkaConsumer) {
-            kafkaConsumer.commitSync(consumedOffsets);
+    if (OffsetCommitMode.AT_LEAST_ONCE.equals(offsetCommitMode)) {
+      //  Executor for committing consumer offsets
+      //  (Keep similar behavior to Kafka 0.8 High Level Consumer)
+      autoOffsetCommitExecutor = Executors.newScheduledThreadPool(1);
+      autoOffsetCommitExecutor.scheduleWithFixedDelay(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            commitConsumedOffsets();
+            autoCommitSuccess.inc();
+          } catch (Exception e) {
+            logger.error("commitSync failed with exception: ", e);
+            autoCommitFail.inc();
           }
-          autoCommitSuccess.inc();
-        } catch (Exception e) {
-          logger.error("commitSync failed with exception: ", e);
-          autoCommitFail.inc();
+          autoCommitAttempt.inc();
         }
-        autoCommitAttempt.inc();
-      }
-    }, autoCommitInterval, autoCommitInterval, TimeUnit.MILLISECONDS);
+      }, autoCommitInterval, autoCommitInterval, TimeUnit.MILLISECONDS);
+    } else {
+      autoOffsetCommitExecutor = null;
+    }
 
     // Handle consumer cleanup
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -97,6 +108,16 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   @Override
   public Iterable<DatumEnvelope> datumEnvelopes() {
     return datumEnvelopeIterable;
+  }
+
+  @Override
+  public void commitConsumedOffsets() {
+    if (OffsetCommitMode.AT_MOST_ONCE.equals(offsetCommitMode)) {
+      throw new IllegalStateException("Manual offset commit is illegal when offset commit mode is at most once");
+    }
+    synchronized (kafkaConsumer) {
+      kafkaConsumer.commitSync(consumedOffsets);
+    }
   }
 
   private final Iterable<DatumEnvelope> datumEnvelopeIterable = new Iterable<DatumEnvelope>() {
@@ -113,11 +134,7 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
         public DatumEnvelope next() {
           // Obtain next record
           final ConsumerRecord<String, byte[]> record = getConsumerRecords().next();
-
-          // Update consumed offsets
-          consumedOffsets
-              .put(   new TopicPartition(record.topic(), record.partition()),
-                      new OffsetAndMetadata(record.offset() + 1));
+          updateConsumedRecord(record);
 
           // Return deserialized envelope
           return avroDatumEnvelopeSerDe.deserializeDatumEnvelope(ByteBuffer.wrap(record.value()));
@@ -147,13 +164,19 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
   // Poll for new records
   private Iterator<ConsumerRecord<String, byte[]>> pollKafkaConsumer() {
+    final ConsumerRecords<String, byte[]> consumedRecords;
     try {
-      synchronized (kafkaConsumer) {
-        isWaitingForPoll = true;
-        kafkaConsumer.commitSync(consumedOffsets);
-        final ConsumerRecords<String, byte[]> consumerRecords = kafkaConsumer.poll(POLL_TIMEOUT_MS);
-        consumerRecordIterator = consumerRecords.iterator();
+      isWaitingForPoll = true;
+      if (OffsetCommitMode.AT_MOST_ONCE.equals(offsetCommitMode)) {
+        consumedRecords = kafkaConsumer.poll(POLL_TIMEOUT_MS);
+        kafkaConsumer.commitSync();
+      } else {
+        synchronized (kafkaConsumer) {
+          kafkaConsumer.commitSync(consumedOffsets);
+          consumedRecords = kafkaConsumer.poll(POLL_TIMEOUT_MS);
+        }
       }
+      consumerRecordIterator = consumedRecords.iterator();
     } finally {
       isWaitingForPoll = false;
     }
@@ -161,8 +184,11 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   }
 
   private void shutdown() {
-    autoOffsetCommitExecutor.shutdown();
+    if (autoOffsetCommitExecutor != null) {
+      autoOffsetCommitExecutor.shutdown();
+    }
 
+    // This method called twice when
     if (isWaitingForPoll) {
       logger.info("Waking up consumer for endpoint: " + consumptionEndPoint.getName());
       kafkaConsumer.wakeup();
@@ -171,6 +197,15 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
       synchronized (kafkaConsumer) {
         kafkaConsumer.close();
       }
+    }
+  }
+
+  private void updateConsumedRecord(ConsumerRecord<String, byte[]> record) {
+    if (!OffsetCommitMode.AT_MOST_ONCE.equals(offsetCommitMode)) {
+      // Consumed offsets is irrelevant when offset commit is immediately after poll
+      consumedOffsets
+              .put(new TopicPartition(record.topic(), record.partition()),
+                      new OffsetAndMetadata(record.offset() + 1));
     }
   }
 }

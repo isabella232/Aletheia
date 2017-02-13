@@ -49,4 +49,9 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   public Iterable<DatumEnvelope> datumEnvelopes() {
     return datumEnvelopeIterable;
   }
+
+  @Override
+  public void commitConsumedOffsets() {
+    throw new UnsupportedOperationException("Offset management is not supported in Kafka 0.8");
+  }
 }

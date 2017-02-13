@@ -13,4 +13,9 @@ public interface DatumEnvelopeFetcher {
    * @return An {@link Iterable<DatumEnvelope>} that represents the {@link DatumEnvelope} stream.
    */
   Iterable<DatumEnvelope> datumEnvelopes();
+
+  /**
+   * Commits consumed offsets to Kafka, blocks until commit either succeeds or an error is encountered
+   */
+  void commitConsumedOffsets();
 }

@@ -68,4 +68,9 @@ public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   public Iterable<DatumEnvelope> datumEnvelopes() {
     return datumEnvelopeIterable;
   }
+
+  @Override
+  public void commitConsumedOffsets() {
+    // Empty implementation for in memory fetcher
+  }
 }
