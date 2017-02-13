@@ -7,7 +7,7 @@ Aletheia is a framework for implementing high volume, datum (event) based, produ
  * [Routing based data delivery](https://github.com/outbrain/Aletheia/wiki/Routing)
  * [Fine grained visibility (Breadcrumbs)](https://github.com/outbrain/Aletheia/wiki/Architectural-Overview#putting-things-together)
  * [Multiple serialization formats](https://github.com/outbrain/Aletheia/wiki/Serialization)
- * Schema evolution support
+ * Schema evolution support    
 
 Aletehia supports the following producers/consumers out-of-the-box:
 * Kafka 0.8 (production and consumption)
