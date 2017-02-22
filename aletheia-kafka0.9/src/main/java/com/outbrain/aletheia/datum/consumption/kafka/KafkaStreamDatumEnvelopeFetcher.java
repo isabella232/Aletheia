@@ -232,7 +232,7 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
 
   @Override
   public void onPartitionsAssigned(final Collection<TopicPartition> partitions) {
-    // Handle partitions with no explicit offset. Explicit offset should be committed for every new partition-consumer group, otherwise messages will be missed if offset reset strategy is "latest".
+    // Handle partitions with no explicit offset. Explicit offset should be committed for every new partition-consumer group, otherwise messages will be lost if offset reset strategy is "latest".
     if (!isAtMostOnceOffsetCommitMode) {
       synchronized (kafkaConsumer) {
         for (final TopicPartition topicPartition : partitions) {
