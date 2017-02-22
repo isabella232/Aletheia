@@ -66,7 +66,6 @@ public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFac
           createConsumerConfig( consumptionEndPoint.getBrokers(),
                                 consumptionEndPoint.getGroupId(),
                                 consumptionEndPoint.getProperties()));
-      consumer.subscribe(Collections.singletonList(consumptionEndPoint.getTopicName()));
       consumerList.add(consumer);
     }
 
