@@ -31,7 +31,7 @@ Further Info
 ------------
 
 *  [Wiki](https://github.com/outbrain/Aletheia/wiki)
-*  [Prezi] (https://prezi.com/pqfbp7umqtvh/presentation)
+*  [Prezi](https://prezi.com/pqfbp7umqtvh/presentation)
 *  [Talk at Java.IL (Hebrew)](https://www.parleys.com/tutorial/aletheia-outbrains-data-pipeline-backbone)
 *  [Javadoc](http://outbrain.github.io/Aletheia/)
 
