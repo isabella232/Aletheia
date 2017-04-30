@@ -162,7 +162,6 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
     try {
       synchronized (kafkaConsumer) {
         isWaitingForPoll = true;
-        commitOffsetsInternal();
         consumedRecords = kafkaConsumer.poll(POLL_TIMEOUT_MS);
         if (isAtMostOnceOffsetCommitMode) {
           kafkaConsumer.commitSync();
