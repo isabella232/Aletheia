@@ -12,6 +12,7 @@ import java.util.Iterator;
  * A {@link com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher} implementation capable of fetching
  * {@link com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope}s from a Kafka stream.
  */
+@Deprecated
 class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
   private final Iterable<DatumEnvelope> datumEnvelopeIterable =
@@ -41,16 +42,19 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   private final KafkaStream<byte[], byte[]> kafkaMessageStream;
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
 
+  @Deprecated
   public KafkaStreamDatumEnvelopeFetcher(final KafkaStream<byte[], byte[]> kafkaMessageStream) {
     this.kafkaMessageStream = kafkaMessageStream;
   }
 
   @Override
+  @Deprecated
   public Iterable<DatumEnvelope> datumEnvelopes() {
     return datumEnvelopeIterable;
   }
 
   @Override
+  @Deprecated
   public void commitConsumedOffsets() {
     throw new UnsupportedOperationException("Offset management is not supported in Kafka 0.8");
   }

@@ -21,6 +21,7 @@ import java.util.Properties;
  * A {@link DatumEnvelopeFetcherFactory} for building {@link DatumEnvelopeFetcher}s capable of
  * consuming data from endpoints of type {@link KafkaTopicConsumptionEndPoint}.
  */
+@Deprecated
 public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFactory<KafkaTopicConsumptionEndPoint> {
 
 
@@ -37,6 +38,7 @@ public class KafkaDatumEnvelopeFetcherFactory implements DatumEnvelopeFetcherFac
   }
 
   @Override
+  @Deprecated
   public List<DatumEnvelopeFetcher> buildDatumEnvelopeFetcher(final KafkaTopicConsumptionEndPoint consumptionEndPoint,
                                                               final MetricsFactory metricFactory) {
 

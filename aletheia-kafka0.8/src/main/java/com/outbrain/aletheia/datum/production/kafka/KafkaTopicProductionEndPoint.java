@@ -11,6 +11,7 @@ import java.util.Properties;
 /**
  * A {@link com.outbrain.aletheia.datum.production.ProductionEndPoint} for producing data to a Kafka topic.
  */
+@Deprecated
 public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
 
   private final Properties properties;
@@ -19,6 +20,7 @@ public class KafkaTopicProductionEndPoint implements ProductionEndPoint {
   private boolean addShutdownHook;
   private final String brokerList;
 
+  @Deprecated
   public KafkaTopicProductionEndPoint(final String brokerList,
                                       final String topicName,
                                       final String endPointName,

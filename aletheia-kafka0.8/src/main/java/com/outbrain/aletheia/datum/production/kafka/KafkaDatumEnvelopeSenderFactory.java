@@ -10,8 +10,10 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
  * A {@link DatumEnvelopeSenderFactory} capable of producing senders capable of sending
  * {@link com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope}s to a Kafka.
  */
+@Deprecated
 public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFactory<KafkaTopicProductionEndPoint> {
   @Override
+  @Deprecated
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final KafkaTopicProductionEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
     return new AvroDatumEnvelopeSender(new KafkaBinarySender(productionEndPoint, metricFactory));

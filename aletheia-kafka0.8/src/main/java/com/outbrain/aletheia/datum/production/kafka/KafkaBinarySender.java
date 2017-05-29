@@ -23,6 +23,7 @@ import java.util.UUID;
 /**
  * A {@link DatumKeyAwareNamedSender} implementation that sends binary data to Kafka.
  */
+@Deprecated
 public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaBinarySender.class);
@@ -41,6 +42,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private com.outbrain.aletheia.metrics.common.Timer sendDuration;
   private Histogram messageSizeHistogram;
 
+  @Deprecated
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
                            final MetricsFactory metricFactory) {
 

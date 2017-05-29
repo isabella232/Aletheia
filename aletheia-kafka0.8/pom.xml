@@ -8,7 +8,7 @@
     <version>0.62-SNAPSHOT</version>
   </parent>
 
-  <name>Aletheia Kafka 0.8</name>
+  <name>Aletheia Kafka 0.8 (deprecated)</name>
   <artifactId>aletheia-kafka0.8</artifactId>
 
   <dependencies>
