@@ -10,8 +10,8 @@ Aletheia is a framework for implementing high volume, datum (event) based, produ
  * Schema evolution support    
 
 Aletehia supports the following producers/consumers out-of-the-box:
-* Kafka 0.8 (production and consumption)
 * Kafka 0.9 (production and consumption)
+* [Deprecated] Kafka 0.8 (production and consumption)
 * ~~Kafka 0.7 (production and consumption)~~
 * Log files (production only)
 
