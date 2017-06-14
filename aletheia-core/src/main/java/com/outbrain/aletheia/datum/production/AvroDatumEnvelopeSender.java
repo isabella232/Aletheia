@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 /**
  * A {@link Sender} implementation that serializes {@link DatumEnvelope} into Avro format and sends it using
  * a provided binary {@link Sender}.
+ * Deliver with callback api support depends on whether the provided binarySender supports the api.
  */
 public class AvroDatumEnvelopeSender implements NamedSender<DatumEnvelope> {
 
@@ -21,9 +22,14 @@ public class AvroDatumEnvelopeSender implements NamedSender<DatumEnvelope> {
 
   @Override
   public void send(final DatumEnvelope datumEnvelope) throws SilentSenderException {
+    send(datumEnvelope, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void send(final DatumEnvelope datumEnvelope, final DeliveryCallback deliveryCallback) throws SilentSenderException {
     final ByteBuffer serializedDatumEnvelope = datumEnvelopeSerializer.serializeDatumEnvelope(datumEnvelope);
     final String key = datumEnvelope.getDatumKey() != null ? datumEnvelope.getDatumKey().toString() : null;
-    binarySender.send(serializedDatumEnvelope.array(), key);
+    binarySender.send(serializedDatumEnvelope.array(), key, deliveryCallback);
   }
 
   @Override

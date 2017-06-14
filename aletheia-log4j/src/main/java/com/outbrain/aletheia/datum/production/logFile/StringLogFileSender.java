@@ -1,5 +1,7 @@
 package com.outbrain.aletheia.datum.production.logFile;
 
+import com.outbrain.aletheia.datum.production.DeliveryCallback;
+import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.logFile.writer.DataFileWriterFactory;
 import com.outbrain.aletheia.datum.production.logFile.writer.ExtrasRollingAppenderFactory;
@@ -9,6 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A {@link com.outbrain.aletheia.datum.production.NamedSender} implementation that writes data to log files.
+ * Deliver with callback api is not suppoted in this implementation, callbacks will be ignored.
+ */
 public class StringLogFileSender implements NamedSender<String> {
 
   private static final Logger logger = LoggerFactory.getLogger(StringLogFileSender.class);
@@ -27,6 +33,8 @@ public class StringLogFileSender implements NamedSender<String> {
     logWriteSuccessCount = metricFactory.createCounter("Send.Attempts", "Success");
     sendDuration = metricFactory.createCounter("Send.Attempts", "Duration");
     logWriteFailureCount = metricFactory.createCounter("Send.Attempts", "Failure");
+
+    logger.warn("*** Please note deliver with callback API is not supported for Log Files ***");
   }
 
   private org.apache.log4j.Logger getLogFileWriter(final LogFileProductionEndPoint logFileDeliveryEndPoint) {
@@ -43,6 +51,11 @@ public class StringLogFileSender implements NamedSender<String> {
 
   @Override
   public void send(final String line) {
+    send(line, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void send(final String line, final DeliveryCallback deliveryCallback) {
     try {
       final long startTime = System.currentTimeMillis();
       final String chompedString = StringUtils.chomp(line);

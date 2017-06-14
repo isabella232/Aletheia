@@ -1,7 +1,9 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.metrics.kafka.KafkaMetrics;
+import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
+import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
@@ -39,6 +41,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private final MetricsFactory metricFactory;
   private final Timer connectionTimer = new Timer(KafkaBinarySender.class.getSimpleName() + "-reconnectTimer");
   private final Properties customConfiguration;
+  private final KafkaCallbackTransformer kafkaCallbackTransformer;
 
   private KafkaProducer<String, byte[]> producer;
   private boolean connected = false;
@@ -49,10 +52,12 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private com.outbrain.aletheia.metrics.common.Timer sendDuration;
   private Histogram messageSizeHistogram;
 
-  public KafkaBinarySender( final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
-                            final MetricsFactory metricFactory) {
+  public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
+                           final KafkaCallbackTransformer kafkaCallbackTransformer,
+                           final MetricsFactory metricFactory) {
 
     this.kafkaTopicDeliveryEndPoint = kafkaTopicDeliveryEndPoint;
+    this.kafkaCallbackTransformer = kafkaCallbackTransformer;
     this.metricFactory = metricFactory;
 
     logger.info("Creating kafka sender for endpoint:" + kafkaTopicDeliveryEndPoint.toString());
@@ -149,6 +154,11 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
   @Override
   public void send(final byte[] data, final String key) throws SilentSenderException {
+    send(data, key, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void send(byte[] data, String key, DeliveryCallback deliveryCallback) throws SilentSenderException {
     if (!connected) {
       failureDueToUnconnected.inc();
       return;
@@ -159,7 +169,11 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     try {
       // Send datum
       final Future<RecordMetadata> sendResult =
-          producer.send(new ProducerRecord<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data));
+              producer.send(
+                      new ProducerRecord<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data),
+                      isSync ? null : kafkaCallbackTransformer.transform(
+                              deliveryCallback,
+                              kafkaTopicDeliveryEndPoint));
 
       // Wait for result if configured as a sync producer type
       if (isSync) {

@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
+import com.outbrain.aletheia.datum.envelope.AvroDatumEnvelopeSerDe;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.AvroDatumEnvelopeSender;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
@@ -14,6 +15,7 @@ public class KafkaDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFacto
   @Override
   public NamedSender<DatumEnvelope> buildDatumEnvelopeSender(final KafkaTopicProductionEndPoint productionEndPoint,
                                                              final MetricsFactory metricFactory) {
-    return new AvroDatumEnvelopeSender(new KafkaBinarySender(productionEndPoint, metricFactory));
+
+    return new AvroDatumEnvelopeSender(new KafkaBinarySender(productionEndPoint, new KafkaCallbackTransformer(metricFactory), metricFactory));
   }
 }

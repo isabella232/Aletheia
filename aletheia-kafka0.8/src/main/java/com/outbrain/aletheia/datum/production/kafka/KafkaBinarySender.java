@@ -1,7 +1,9 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.metrics.kafka.KafkaMetrics;
+import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
+import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
@@ -22,6 +24,7 @@ import java.util.UUID;
 
 /**
  * A {@link DatumKeyAwareNamedSender} implementation that sends binary data to Kafka.
+ * Deliver with callback api is not suppoted in this implementation, callbacks will be ignored.
  */
 @Deprecated
 public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
@@ -64,6 +67,8 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     initMetrics(metricFactory, customConfiguration);
 
     connect();
+
+    logger.warn("*** Please note deliver with callback API is not supported for Kafka 0.8 ***");
   }
 
   private void initMetrics(final MetricsFactory metricFactory, final ProducerConfig customConfiguration) {
@@ -138,6 +143,11 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
   @Override
   public void send(final byte[] data, final String key) throws SilentSenderException {
+    send(data, key, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void send(final byte[] data, String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
     if (!connected) {
       failureDueToUnconnected.inc();
       return;

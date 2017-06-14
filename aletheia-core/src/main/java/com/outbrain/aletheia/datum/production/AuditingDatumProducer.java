@@ -58,7 +58,11 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   }
 
   public void deliver(final TDomainClass datum) {
+    deliver(datum, EmptyCallback.getEmptyCallback());
+  }
 
+  @Override
+  public void deliver(final TDomainClass datum, final DeliveryCallback deliveryCallback) {
     final Timer.Context timerContext = deliverDurationTimer.time();
 
     try {
@@ -72,7 +76,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
       final DatumEnvelope datumEnvelope = datumEnvelopeBuilder.buildEnvelope(datum);
 
-      envelopeSender.send(datumEnvelope);
+      envelopeSender.send(datumEnvelope, deliveryCallback);
 
       deliverRequestSuccessCounter.inc();
 

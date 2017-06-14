@@ -23,7 +23,12 @@ public class LogFileDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFac
 
       @Override
       public void send(final String data, final String key) throws SilentSenderException {
-        stringLogFileSender.send(data);
+        send(data, key, EmptyCallback.getEmptyCallback());
+      }
+
+      @Override
+      public void send(final String data, final String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
+        stringLogFileSender.send(data, deliveryCallback);
       }
     });
   }

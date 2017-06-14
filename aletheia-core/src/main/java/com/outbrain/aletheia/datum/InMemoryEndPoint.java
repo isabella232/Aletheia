@@ -3,10 +3,14 @@ package com.outbrain.aletheia.datum;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.datum.consumption.DatumKeyAwareFetchEndPoint;
 import com.outbrain.aletheia.datum.consumption.FetchConsumptionEndPoint;
+import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
+import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -23,6 +27,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream} consumes data off of it.
  * This type of endpoint is useful for in-memory experiments and tests, and can simulate a
  * quasi-synchronous, blocking produce/consume model if it's created with size = 1.
+ *
+ * Deliver with callback api is not suppoted in this implementation, callbacks will be ignored.
  */
 public class InMemoryEndPoint
         implements ProductionEndPoint,
@@ -31,6 +37,8 @@ public class InMemoryEndPoint
         NamedSender<byte[]>,
         DatumKeyAwareFetchEndPoint<byte[]>,
         Serializable {
+
+  private static final Logger logger = LoggerFactory.getLogger(InMemoryEndPoint.class);
 
   private final static class KeyedData implements Serializable {
     private byte[] data;
@@ -77,6 +85,8 @@ public class InMemoryEndPoint
   public InMemoryEndPoint(final String endPointName, final int size) {
     this.endPointName = endPointName;
     this.size = size;
+
+    logger.warn("*** Please note deliver with callback API is not supported for in memory endpoints ***");
   }
 
   public InMemoryEndPoint(final String endPointName, final List<byte[]> data) {
@@ -116,6 +126,11 @@ public class InMemoryEndPoint
 
   @Override
   public void send(final byte[] data, final String key) throws SilentSenderException {
+    send(data, key, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void send(byte[] data, String key, DeliveryCallback deliveryCallback) throws SilentSenderException {
 
     final String validKey = key != null ? key : DEFAULT_DATUM_KEY;
 
@@ -132,6 +147,11 @@ public class InMemoryEndPoint
   @Override
   public void send(final byte[] data) throws SilentSenderException {
     send(data, DEFAULT_DATUM_KEY);
+  }
+
+  @Override
+  public void send(byte[] data, DeliveryCallback deliveryCallback) throws SilentSenderException {
+    send(data, DEFAULT_DATUM_KEY, deliveryCallback);
   }
 
   @Override

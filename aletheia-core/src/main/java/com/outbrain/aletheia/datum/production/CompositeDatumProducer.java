@@ -23,8 +23,13 @@ public class CompositeDatumProducer<TDomainClass> implements DatumProducer<TDoma
 
   @Override
   public void deliver(final TDomainClass datum) {
+    deliver(datum, EmptyCallback.getEmptyCallback());
+  }
+
+  @Override
+  public void deliver(final TDomainClass datum, final DeliveryCallback deliveryCallback) {
     for (final DatumProducer<TDomainClass> datumProducer : datumProducers) {
-      datumProducer.deliver(datum);
+      datumProducer.deliver(datum, deliveryCallback);
     }
   }
 }
