@@ -24,7 +24,7 @@ import java.util.UUID;
 
 /**
  * A {@link DatumKeyAwareNamedSender} implementation that sends binary data to Kafka.
- * Deliver with callback api is not suppoted in this implementation, callbacks will be ignored.
+ * Deliver with callback api is only supported in Kafka 0.9 and above, callbacks in Kafka 0.8 will be ignored.
  */
 @Deprecated
 public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
