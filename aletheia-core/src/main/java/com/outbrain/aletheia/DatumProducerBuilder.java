@@ -76,7 +76,7 @@ public class DatumProducerBuilder<TDomainClass>
                                        productionEndPointInfo.getDatumSerDe(),
                                        datumKeySelector != null ? datumKeySelector : DatumKeySelector.NULL,
                                        datumProducerConfig.getIncarnation(),
-                                       datumProducerConfig.getHostname()
+                                       datumProducerConfig.getSource()
             );
 
 

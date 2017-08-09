@@ -9,14 +9,14 @@ import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import org.joda.time.Instant;
 
 /**
- * Builds an enclosing {@link DatumEnvelope}s for a datum, serializing it using
- * the specified {@link DatumSerDe}.
+ * Builds an enclosing {@link DatumEnvelope}s for a datum, serializing it using the specified {@link
+ * DatumSerDe}.
  *
  * @param <TDomainClass> The type of datum to build a {@link DatumEnvelope} for.
  */
 public class DatumEnvelopeBuilder<TDomainClass> {
 
-  private final String hostname;
+  private final String source;
   private final int incarnation;
   private final String datumTypeId;
   private final DatumSerDe<TDomainClass> datumSerDe;
@@ -27,10 +27,10 @@ public class DatumEnvelopeBuilder<TDomainClass> {
                               final DatumSerDe<TDomainClass> datumSerDe,
                               final DatumKeySelector<TDomainClass> datumKeySelector,
                               final int incarnation,
-                              final String hostname) {
+                              final String source) {
 
     this.datumSerDe = datumSerDe;
-    this.hostname = hostname;
+    this.source = source;
     this.incarnation = incarnation;
 
     this.datumKeySelector = datumKeySelector;
@@ -45,13 +45,13 @@ public class DatumEnvelopeBuilder<TDomainClass> {
     final SerializedDatum serializedDatum = datumSerDe.serializeDatum(domainObject);
 
     return new DatumEnvelope(datumTypeId,
-                             serializedDatum.getDatumTypeVersion().getVersion(),
-                             logicalTimestamp,
-                             incarnation,
-                             hostname,
-                             Instant.now().getMillis(),
-                             serializedDatum.getPayload(),
-                             datumSerDe.getClass().getSimpleName(),
-                             datumKey);
+        serializedDatum.getDatumTypeVersion().getVersion(),
+        logicalTimestamp,
+        incarnation,
+        source,
+        Instant.now().getMillis(),
+        serializedDatum.getPayload(),
+        datumSerDe.getClass().getSimpleName(),
+        datumKey);
   }
 }

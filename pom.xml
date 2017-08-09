@@ -64,10 +64,11 @@
 
   <modules>
     <module>aletheia-core</module>
-    <module>aletheia-kafka0.8</module>
     <module>aletheia-kafka0.9</module>
+    <module>aletheia-kafka0.10</module>
     <module>aletheia-log4j</module>
     <module>HelloDatum</module>
+    <module>HelloStreams</module>
   </modules>
 
   <properties>
@@ -237,12 +238,12 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>aletheia-kafka0.8</artifactId>
+        <artifactId>aletheia-kafka0.9</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>aletheia-kafka0.9</artifactId>
+        <artifactId>aletheia-kafka0.10</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

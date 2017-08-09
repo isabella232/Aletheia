@@ -10,25 +10,26 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class DatumProducerConfig {
 
   private final int incarnation;
-  private final String hostname;
+  private final String source;
 
   /**
-   * @param incarnation incarnation provides means to further control data filtering, e.g., discarding all data
-   *                    below a certain incarnation.
-   * @param hostname    the hostname this {@link DatumProducer} instance is running from.
+   * @param incarnation incarnation provides means to further control data filtering, e.g.,
+   *                    discarding all data below a certain incarnation.
+   * @param source      the source of this {@link DatumProducer} (e.g. the hostname or service name
+   *                    it's running from)
    */
-  public DatumProducerConfig(final int incarnation, final String hostname) {
+  public DatumProducerConfig(final int incarnation, final String source) {
 
     this.incarnation = incarnation;
-    this.hostname = hostname;
+    this.source = source;
   }
 
   public int getIncarnation() {
     return incarnation;
   }
 
-  public String getHostname() {
-    return hostname;
+  public String getSource() {
+    return source;
   }
 
   @Override
