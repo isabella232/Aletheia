@@ -26,6 +26,8 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
   private final Counter futureLogicalMessagesCount;
 
+  private final int LOG_FUTURE_MESSAGES_LAG_THRESHOLD_IN_MILLIS = 5000;
+
   public DatumEnvelopeOpener(final BreadcrumbDispatcher<TDomainClass> datumAuditor,
                              final DatumSerDe<TDomainClass> datumSerDe,
                              final MetricsFactory metricFactory) {
@@ -37,29 +39,36 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     futureLogicalMessagesCount = metricFactory.createCounter("Timestamp.Logical", "FromTheFuture");
     logicalTimestampDelayHistogram = metricFactory.createHistogram("Timestamp.Logical",
-                                                                   "DelayHistogramInSeconds",
-                                                                   true);
+            "DelayHistogramInSeconds",
+            true);
     metricFactory.createGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
   }
 
   private void updateLagMetrics(final DatumEnvelope envelope) {
+    final DateTime datumTime = new DateTime(envelope.getLogicalTimestamp());
     final DateTime now = DateTime.now();
-    try {
-      final long logicalSecondsBehind =
-              new Interval(new DateTime(envelope.getLogicalTimestamp()), now).toDuration().getStandardSeconds();
-      logicalDelayAverager.addSample((int) logicalSecondsBehind);
-      logicalTimestampDelayHistogram.update(logicalSecondsBehind);
-    } catch (final IllegalArgumentException e) {
-      logger.warn(String.format("A message with a future logical timestamp has arrived from %s. " +
-                                "Arriving timestamp is: %d, now reference is %d, delta is: %d, skipping lag metrics update.",
-                                envelope.getSourceHost(),
-                                envelope.getLogicalTimestamp(),
-                                now.getMillis(),
-                                envelope.getLogicalTimestamp() - now.getMillis()));
+
+    if (datumTime.isBefore(now)) {
+      try {
+        final long logicalSecondsBehind = new Interval(datumTime, now).toDuration().getStandardSeconds();
+        logicalDelayAverager.addSample((int) logicalSecondsBehind);
+        logicalTimestampDelayHistogram.update(logicalSecondsBehind);
+      } catch (final Exception e) {
+        logger.error("Error while updating lag metric", e);
+      }
+    } else {
+      // Message from the future
+      final long logicalTimeAheadInMillis = new Interval(now, now.plusMillis(1)).toDuration().getMillis();
       futureLogicalMessagesCount.inc();
-    } catch (final Exception e) {
-      logger.error("Error while updating lag metric", e);
-      futureLogicalMessagesCount.inc();
+
+      if (logicalTimeAheadInMillis > LOG_FUTURE_MESSAGES_LAG_THRESHOLD_IN_MILLIS) {
+        logger.warn(String.format("A message with a future logical timestamp has arrived from %s. " +
+                        "Arriving timestamp is: %d, now reference is %d, delta is: %d, skipping lag metrics update.",
+                envelope.getSourceHost(),
+                envelope.getLogicalTimestamp(),
+                now.getMillis(),
+                envelope.getLogicalTimestamp() - now.getMillis()));
+      }
     }
   }
 
@@ -69,9 +78,9 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     final TDomainClass datum =
             datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(),
-                                                            new DatumTypeVersion(
-                                                                    datumEnvelope.getDatumTypeId().toString(),
-                                                                    datumEnvelope.getDatumSchemaVersion())));
+                    new DatumTypeVersion(
+                            datumEnvelope.getDatumTypeId().toString(),
+                            datumEnvelope.getDatumSchemaVersion())));
     datumAuditor.report(datum);
 
     return datum;
