@@ -10,6 +10,7 @@ import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.TimeWindowAverager;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ public class DatumEnvelopeOpener<TDomainClass> {
   private final DatumSerDe<TDomainClass> datumSerDe;
 
   private final TimeWindowAverager logicalDelayAverager;
+  private final TimeWindowAverager logicalDelayInMillisAverager;
   private final Histogram logicalTimestampDelayHistogram;
 
   private final Counter futureLogicalMessagesCount;
@@ -36,12 +38,14 @@ public class DatumEnvelopeOpener<TDomainClass> {
     this.datumSerDe = datumSerDe;
 
     logicalDelayAverager = new TimeWindowAverager(60.0, 15, -1.0);
+    logicalDelayInMillisAverager = new TimeWindowAverager(60.0, 15, -1.0);
 
     futureLogicalMessagesCount = metricFactory.createCounter("Timestamp.Logical", "FromTheFuture");
     logicalTimestampDelayHistogram = metricFactory.createHistogram("Timestamp.Logical",
             "DelayHistogramInSeconds",
             true);
     metricFactory.createGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
+    metricFactory.createGauge("Timestamp.Logical", "DelayAverageInMillis", logicalDelayInMillisAverager);
   }
 
   private void updateLagMetrics(final DatumEnvelope envelope) {
@@ -50,8 +54,14 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
     if (datumTime.isBefore(now)) {
       try {
-        final long logicalSecondsBehind = new Interval(datumTime, now).toDuration().getStandardSeconds();
+        final Duration lag = new Interval(datumTime, now).toDuration();
+
+        final long logicalSecondsBehind = lag.getStandardSeconds();
         logicalDelayAverager.addSample((int) logicalSecondsBehind);
+
+        final long logicalMillisBehind = lag.getMillis();
+        logicalDelayInMillisAverager.addSample((int) logicalMillisBehind);
+
         logicalTimestampDelayHistogram.update(logicalSecondsBehind);
       } catch (final Exception e) {
         logger.error("Error while updating lag metric", e);
