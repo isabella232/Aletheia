@@ -20,9 +20,16 @@ public class AletheiaKafkaDeserializer<TDomainClass> implements Deserializer<TDo
 
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
   private final DatumSerDe<TDomainClass> datumSerDe;
+  private final SerDeListener<TDomainClass> listener;
 
   public AletheiaKafkaDeserializer(final DatumSerDe<TDomainClass> datumSerDe) {
+    this(datumSerDe, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  public AletheiaKafkaDeserializer(DatumSerDe<TDomainClass> datumSerDe, SerDeListener<TDomainClass> listener) {
     this.datumSerDe = datumSerDe;
+    this.listener = (listener != null) ? listener : SerDeListener.EMPTY;
   }
 
   @Override
@@ -34,7 +41,9 @@ public class AletheiaKafkaDeserializer<TDomainClass> implements Deserializer<TDo
   public TDomainClass deserialize(String topic, byte[] data) {
     final DatumEnvelope datumEnvelope = avroDatumEnvelopeSerDe.deserializeDatumEnvelope(ByteBuffer.wrap(data));
     final DatumTypeVersion datumTypeVersion = new DatumTypeVersion(datumEnvelope.getDatumTypeId().toString(), datumEnvelope.getDatumSchemaVersion());
-    return datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(), datumTypeVersion));
+    final TDomainClass datum = datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(), datumTypeVersion));
+    listener.onDeserialize(topic, datum, datumEnvelope, data.length);
+    return datum;
   }
 
   @Override

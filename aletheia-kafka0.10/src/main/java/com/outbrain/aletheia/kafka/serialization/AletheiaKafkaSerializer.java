@@ -24,6 +24,7 @@ public class AletheiaKafkaSerializer<TDomainClass> implements Serializer<TDomain
   private final Class<TDomainClass> datumClass;
   private final DatumSerDe<TDomainClass> datumSerDe;
   private final DatumKeySelector<TDomainClass> keySelector;
+  private final SerDeListener<TDomainClass> listener;
 
   private DatumEnvelopeBuilder<TDomainClass> envelopeBuilder;
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
@@ -31,23 +32,34 @@ public class AletheiaKafkaSerializer<TDomainClass> implements Serializer<TDomain
   public AletheiaKafkaSerializer(final Class<TDomainClass> datumClass,
                                  final DatumSerDe<TDomainClass> datumSerDe,
                                  final DatumKeySelector<TDomainClass> keySelector) {
+    this(datumClass, datumSerDe, keySelector, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  public AletheiaKafkaSerializer(final Class<TDomainClass> datumClass,
+                                 final DatumSerDe<TDomainClass> datumSerDe,
+                                 final DatumKeySelector<TDomainClass> keySelector,
+                                 final SerDeListener<TDomainClass> listener) {
     this.datumClass = datumClass;
     this.datumSerDe = datumSerDe;
     this.keySelector = keySelector;
+    this.listener = (listener != null) ? listener : SerDeListener.EMPTY;
   }
 
   @Override
-  public void configure(Map<String, ?> configs, boolean isKey) {
+  public void configure(final Map<String, ?> configs, final boolean isKey) {
     final Integer incarnation = (Integer) configs.get(ALETHEIA_PRODUCER_INCARNATION);
     final String source = String.valueOf(configs.get(ALETHEIA_PRODUCER_SOURCE));
     envelopeBuilder = new DatumEnvelopeBuilder<>(datumClass, datumSerDe, keySelector, incarnation, source);
   }
 
   @Override
-  public byte[] serialize(String topic, TDomainClass data) {
+  public byte[] serialize(final String topic, final TDomainClass data) {
     final DatumEnvelope datumEnvelope = envelopeBuilder.buildEnvelope(data);
     final ByteBuffer serializedDatumEnvelope = avroDatumEnvelopeSerDe.serializeDatumEnvelope(datumEnvelope);
-    return serializedDatumEnvelope.array();
+    final byte[] array = serializedDatumEnvelope.array();
+    listener.onSerialize(topic, data, datumEnvelope, array.length);
+    return array;
   }
 
   @Override

@@ -1,9 +1,12 @@
 package com.outbrain.aletheia.kafka.streams;
 
+import com.google.common.base.Preconditions;
+
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.configuration.kafka.KafkaTopicEndPointTemplate;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoint;
 import com.outbrain.aletheia.kafka.serialization.AletheiaSerdes;
+import com.outbrain.aletheia.kafka.serialization.SerDeListener;
 
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -38,10 +41,19 @@ public class AletheiaStreams {
                                                              final Class<TDomainClass> domainClass,
                                                              final String consumeFromEndPointId,
                                                              final String datumSerDeId) {
+    return stream(config, domainClass, consumeFromEndPointId, datumSerDeId, null);
+  }
+
+  public <TDomainClass> KStream<String, TDomainClass> stream(final AletheiaConfig config,
+                                                             final Class<TDomainClass> domainClass,
+                                                             final String consumeFromEndPointId,
+                                                             final String datumSerDeId,
+                                                             final SerDeListener<TDomainClass> serDeListener) {
     final KafkaTopicConsumptionEndPoint consumptionEndPoint = (KafkaTopicConsumptionEndPoint) config.getConsumptionEndPoint(consumeFromEndPointId);
+    Preconditions.checkNotNull(consumptionEndPoint, "Could not resolve consumption endpoint id: \"%s\"", consumeFromEndPointId);
     bootstrapServers.add(consumptionEndPoint.getBrokers());
 
-    final Serde<TDomainClass> valueSerDe = AletheiaSerdes.serdeFrom(domainClass, datumSerDeId, config);
+    final Serde<TDomainClass> valueSerDe = AletheiaSerdes.serdeFrom(domainClass, datumSerDeId, config, serDeListener);
     return kstreamBuilder.stream(Serdes.String(), valueSerDe, consumptionEndPoint.getTopicName());
   }
 

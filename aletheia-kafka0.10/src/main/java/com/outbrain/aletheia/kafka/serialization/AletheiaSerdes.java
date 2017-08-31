@@ -21,19 +21,26 @@ public class AletheiaSerdes {
   public static final String ALETHEIA_PRODUCER_INCARNATION = "aletheia.producer.incarnation";
   public static final String ALETHEIA_PRODUCER_SOURCE = "aletheia.producer.source";
 
-  static public <T> Serde<T> serdeFrom(final Class<T> domainClass, final String serDeId, final AletheiaConfig config) {
+  static public <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass, final String serDeId, final AletheiaConfig config) {
+    return serdeFrom(domainClass, serDeId, config, null);
+  }
+
+  static public <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass,
+                                                             final String serDeId,
+                                                             final AletheiaConfig config,
+                                                             final SerDeListener<TDomainClass> listener) {
     final DatumProducerConfig producerConfig = config.getDatumProducerConfig();
     final Map<String, Object> serDeConfig = new HashMap<>();
     serDeConfig.put(ALETHEIA_PRODUCER_INCARNATION, producerConfig.getIncarnation());
     serDeConfig.put(ALETHEIA_PRODUCER_SOURCE, producerConfig.getSource());
 
-    final DatumSerDe<T> datumSerDe = config.serDe(serDeId);
+    final DatumSerDe<TDomainClass> datumSerDe = config.serDe(serDeId);
     final String datumTypeId = DatumUtils.getDatumTypeId(domainClass);
     final RoutingInfo routing = config.getRouting(datumTypeId);
 
-    final Serializer<T> serializer = new AletheiaKafkaSerializer<>(domainClass, datumSerDe, routing.getDatumKeySelector());
-    final Deserializer<T> deserializer = new AletheiaKafkaDeserializer<>(datumSerDe);
-    final Serde<T> serDe = Serdes.serdeFrom(serializer, deserializer);
+    final Serializer<TDomainClass> serializer = new AletheiaKafkaSerializer<>(domainClass, datumSerDe, routing.getDatumKeySelector(), listener);
+    final Deserializer<TDomainClass> deserializer = new AletheiaKafkaDeserializer<>(datumSerDe, listener);
+    final Serde<TDomainClass> serDe = Serdes.serdeFrom(serializer, deserializer);
     serDe.configure(serDeConfig, false);
 
     return serDe;

@@ -6,7 +6,7 @@ package com.outbrain.aletheia.datum.consumption;
 public enum OffsetCommitMode {
   // Offset of consumed records will be committed automatically with frequency controlled by the config auto.commit.interval.ms
   AT_LEAST_ONCE,
-  // Offset will be committed immedaitelly after poll
+  // Offset will be committed immediately after poll
   AT_MOST_ONCE,
   // Offset will be controlled by the user using the DatumEnvelopeFetcher.commitConsumedOffsets method
   MANUAL
