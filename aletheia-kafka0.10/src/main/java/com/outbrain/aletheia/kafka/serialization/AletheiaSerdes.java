@@ -4,6 +4,7 @@ import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.DatumProducerConfig;
 import com.outbrain.aletheia.configuration.routing.RoutingInfo;
 import com.outbrain.aletheia.datum.DatumUtils;
+import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 
 import org.apache.kafka.common.serialization.Deserializer;
@@ -44,5 +45,9 @@ public class AletheiaSerdes {
     serDe.configure(serDeConfig, false);
 
     return serDe;
+  }
+
+  public static Serde<DatumEnvelope> envelopeSerde() {
+    return Serdes.serdeFrom(new AletheiaKafkaEnvelopeSerializer(), new AletheiaKafkaEnvelopeDeserializer());
   }
 }

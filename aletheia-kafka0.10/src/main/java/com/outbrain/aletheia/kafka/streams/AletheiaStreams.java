@@ -1,13 +1,12 @@
 package com.outbrain.aletheia.kafka.streams;
 
 import com.google.common.base.Preconditions;
-
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.configuration.kafka.KafkaTopicEndPointTemplate;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoint;
+import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.kafka.serialization.AletheiaSerdes;
 import com.outbrain.aletheia.kafka.serialization.SerDeListener;
-
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -15,9 +14,11 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,12 +50,20 @@ public class AletheiaStreams {
                                                              final String consumeFromEndPointId,
                                                              final String datumSerDeId,
                                                              final SerDeListener<TDomainClass> serDeListener) {
-    final KafkaTopicConsumptionEndPoint consumptionEndPoint = (KafkaTopicConsumptionEndPoint) config.getConsumptionEndPoint(consumeFromEndPointId);
-    Preconditions.checkNotNull(consumptionEndPoint, "Could not resolve consumption endpoint id: \"%s\"", consumeFromEndPointId);
-    bootstrapServers.add(consumptionEndPoint.getBrokers());
+
+    final KafkaTopicConsumptionEndPoint consumptionEndPoint = getKafkaTopicConsumptionEndPoint(config, consumeFromEndPointId);
 
     final Serde<TDomainClass> valueSerDe = AletheiaSerdes.serdeFrom(domainClass, datumSerDeId, config, serDeListener);
     return kstreamBuilder.stream(Serdes.String(), valueSerDe, consumptionEndPoint.getTopicName());
+  }
+
+  public KStream<String, DatumEnvelope> envelopeStream(final AletheiaConfig config,
+                                                       final String consumeFromEndPointId) {
+
+    final KafkaTopicConsumptionEndPoint endPoint = getKafkaTopicConsumptionEndPoint(config, consumeFromEndPointId);
+
+    final Serde<DatumEnvelope> envelopeSerde = AletheiaSerdes.envelopeSerde();
+    return kstreamBuilder.stream(Serdes.String(), envelopeSerde, endPoint.getTopicName());
   }
 
   public KafkaStreams constructStreamsInstance() {
@@ -90,5 +99,13 @@ public class AletheiaStreams {
 
     return bootstrapServers.iterator().next();
   }
+
+  private KafkaTopicConsumptionEndPoint getKafkaTopicConsumptionEndPoint(final AletheiaConfig config, final String consumeFromEndPointId) {
+    final KafkaTopicConsumptionEndPoint consumptionEndPoint = (KafkaTopicConsumptionEndPoint) config.getConsumptionEndPoint(consumeFromEndPointId);
+    Preconditions.checkNotNull(consumptionEndPoint, "Could not resolve consumption endpoint id: \"%s\"", consumeFromEndPointId);
+    bootstrapServers.add(consumptionEndPoint.getBrokers());
+    return consumptionEndPoint;
+  }
+
 
 }
