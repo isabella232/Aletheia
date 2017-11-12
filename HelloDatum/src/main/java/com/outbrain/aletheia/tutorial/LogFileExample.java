@@ -10,6 +10,7 @@ import com.outbrain.aletheia.datum.production.logFile.LogFileProductionEndPoint;
 
 import org.joda.time.Instant;
 
+import java.io.IOException;
 import java.util.Properties;
 
 public class LogFileExample {
@@ -25,7 +26,7 @@ public class LogFileExample {
     return properties;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
     System.out.println("Welcome to Aletheia 101 - Log file production");
 
@@ -47,7 +48,7 @@ public class LogFileExample {
 
     AletheiaConfig.registerEndPointTemplate(LogFileEndPointTemplate.TYPE, LogFileEndPointTemplate.class);
 
-    final DatumProducer<MyDatum> datumProducer =
+    try (final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder
                     .withConfig(MyDatum.class,
                                 new AletheiaConfig(PropertyUtils.override(properties)
@@ -55,13 +56,14 @@ public class LogFileExample {
                                                                 .all()))
                     .registerProductionEndPointType(LogFileProductionEndPoint.class,
                                                     new LogFileDatumEnvelopeSenderFactory())
-                    .build();
+                    .build()) {
 
-    final String myInfo = "myInfo";
+      final String myInfo = "myInfo";
 
-    System.out.println("Delivering a datum with info field = " + myInfo);
+      System.out.println("Delivering a datum with info field = " + myInfo);
 
-    datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+      datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+    }
 
     System.out.println("Done.");
   }

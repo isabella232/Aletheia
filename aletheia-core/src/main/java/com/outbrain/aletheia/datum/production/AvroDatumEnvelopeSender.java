@@ -3,6 +3,7 @@ package com.outbrain.aletheia.datum.production;
 import com.outbrain.aletheia.datum.envelope.AvroDatumEnvelopeSerDe;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -15,6 +16,11 @@ public class AvroDatumEnvelopeSender implements NamedSender<DatumEnvelope> {
   private final AvroDatumEnvelopeSerDe datumEnvelopeSerializer = new AvroDatumEnvelopeSerDe();
 
   private final DatumKeyAwareNamedSender<byte[]> binarySender;
+
+  @Override
+  public void close() throws IOException {
+    binarySender.close();
+  }
 
   public AvroDatumEnvelopeSender(final DatumKeyAwareNamedSender<byte[]> binarySender) {
     this.binarySender = binarySender;

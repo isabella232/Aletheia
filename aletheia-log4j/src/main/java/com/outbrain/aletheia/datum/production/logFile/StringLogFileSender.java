@@ -72,6 +72,10 @@ public class StringLogFileSender implements NamedSender<String> {
   }
 
   @Override
+  public void close() {
+  }
+
+  @Override
   public String getName() {
     return logFileDeliveryEndPoint.getName();
   }

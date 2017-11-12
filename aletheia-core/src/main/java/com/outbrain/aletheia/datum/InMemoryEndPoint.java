@@ -40,6 +40,10 @@ public class InMemoryEndPoint
 
   private static final Logger logger = LoggerFactory.getLogger(InMemoryEndPoint.class);
 
+  @Override
+  public void close() {
+  }
+
   private final static class KeyedData implements Serializable {
     private byte[] data;
     private String key;

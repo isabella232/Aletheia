@@ -25,6 +25,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,6 +47,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private KafkaProducer<String, byte[]> producer;
   private boolean connected = false;
   private final boolean isSync;
+  private ScheduledExecutorService metricsReporterScheduledExecutorService;
 
   private Counter sendCount;
   private Counter failureDueToUnconnected;
@@ -86,14 +88,14 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     messageSizeHistogram = metricFactory.createHistogram("Message", "Size", false);
     failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failures", "UnableToConnect");
 
-    KafkaMetrics.reportTo(metricFactory,
-                          customConfiguration.getProperty("client.id"),
-                          Duration.standardSeconds(
-                                  Long.parseLong(
-                                          kafkaTopicDeliveryEndPoint.getProperties()
-                                                                    .getProperty(
-                                                                            "kafka.client.metrics.periodic.sync.intervalInSec",
-                                                                            "30"))));
+    metricsReporterScheduledExecutorService = KafkaMetrics.reportTo(metricFactory,
+            customConfiguration.getProperty("client.id"),
+            Duration.standardSeconds(
+                    Long.parseLong(
+                            kafkaTopicDeliveryEndPoint.getProperties()
+                                    .getProperty(
+                                            "kafka.client.metrics.periodic.sync.intervalInSec",
+                                            "30"))));
   }
 
   private boolean singleConnect(final Properties config) {
@@ -197,7 +199,14 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     return kafkaTopicDeliveryEndPoint.getName();
   }
 
+  @Override
   public void close() {
+    if (metricsReporterScheduledExecutorService != null) {
+      metricsReporterScheduledExecutorService.shutdown();
+    }
+    if (connectionTimer != null) {
+      connectionTimer.cancel();
+    }
     if (connected) {
       if (producer != null) {
         try {

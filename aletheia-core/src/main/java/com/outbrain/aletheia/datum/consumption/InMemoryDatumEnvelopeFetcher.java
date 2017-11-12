@@ -73,4 +73,8 @@ public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   public void commitConsumedOffsets() {
     // Empty implementation for in memory fetcher
   }
+
+  @Override
+  public void close() {
+  }
 }

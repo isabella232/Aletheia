@@ -1,12 +1,14 @@
 package com.outbrain.aletheia.datum.consumption;
 
+import java.io.Closeable;
+
 /**
  * The base interface for a {@link DatumConsumerStream}, capable of providing clients with datum instances consumed
  * from a data source.
  *
  * @param <TDomainClass> The type of the datum to be consumed by this {@link DatumConsumerStream}.
  */
-public interface DatumConsumerStream<TDomainClass> {
+public interface DatumConsumerStream<TDomainClass> extends Closeable {
 
   /**
    * Returns an iterable data from some datum source, one at a time, and blocking if none is available.

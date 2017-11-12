@@ -2,10 +2,12 @@ package com.outbrain.aletheia.datum.consumption;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 
+import java.io.Closeable;
+
 /**
  * The base interface for fetchers capable of fetching {@link DatumEnvelope}s from a data source.
  */
-public interface DatumEnvelopeFetcher {
+public interface DatumEnvelopeFetcher extends Closeable {
 
   /**
    * Returns an iterable of {@link DatumEnvelope}s from some source, one at a time, and blocking if none is available.

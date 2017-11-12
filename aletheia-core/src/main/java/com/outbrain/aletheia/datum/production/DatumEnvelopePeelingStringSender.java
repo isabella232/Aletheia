@@ -42,6 +42,10 @@ public class DatumEnvelopePeelingStringSender implements NamedSender<DatumEnvelo
   }
 
   @Override
+  public void close() {
+  }
+
+  @Override
   public String getName() {
     return stringSender.getName();
   }

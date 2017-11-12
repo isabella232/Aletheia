@@ -10,6 +10,7 @@ import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import org.joda.time.Instant;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -26,7 +27,7 @@ public class InMemoryExample {
     return properties;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
     System.out.println("Welcome to Aletheia 101 - In memory production & consumption.");
 
@@ -46,19 +47,20 @@ public class InMemoryExample {
     properties.setProperty("aletheia.consumer.source", "myHostName");
     properties.setProperty("aletheia.producer.source", "myHostName");
 
-    final DatumProducer<MyDatum> datumProducer =
+    try (final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder
                     .withConfig(MyDatum.class,
                                 new AletheiaConfig(PropertyUtils.override(properties)
                                                                 .with(getBreadcrumbsProps("producer"))
                                                                 .all()))
-                    .build();
+                    .build()) {
 
-    final String myInfo = "myInfo";
+      final String myInfo = "myInfo";
 
-    System.out.println("Delivering a datum with info field = " + myInfo);
+      System.out.println("Delivering a datum with info field = " + myInfo);
 
-    datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+      datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+    }
 
     final List<DatumConsumerStream<MyDatum>> datumConsumerStreams =
             DatumConsumerStreamsBuilder
@@ -75,6 +77,10 @@ public class InMemoryExample {
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block
       break;
+    }
+
+    for (DatumConsumerStream<MyDatum> datumConsumerStream : datumConsumerStreams) {
+      datumConsumerStream.close();
     }
 
     System.out.println("Done.");

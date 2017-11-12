@@ -62,6 +62,11 @@ public class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDispatcher<
     bucketId2hitsPerInterval = initBucketId2hitCountsMap(preAllocatedInterval);
   }
 
+  @Override
+  public void close() {
+
+  }
+
   private ConcurrentMap<Long, HitsPerInterval> initBucketId2hitCountsMap(final Duration preAllocatedInterval) {
 
     final long millisInOneHour = preAllocatedInterval.getMillis();

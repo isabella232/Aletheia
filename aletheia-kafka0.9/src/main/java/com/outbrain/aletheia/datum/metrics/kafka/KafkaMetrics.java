@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,19 +29,21 @@ public class KafkaMetrics implements MetricsReporter {
 
   private static Logger log = LoggerFactory.getLogger(KafkaMetrics.class);
   private static final ConcurrentMap<MetricName, KafkaMetric> kafkaMetrics = new ConcurrentHashMap<>();
+  private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-  public static void reportTo(final MetricsFactory metricsFactory,
-                              final String kafkaClientId,
-                              final Duration syncInterval) {
-    reportTo(metricsFactory, kafkaClientId, syncInterval, Predicates.<String>alwaysTrue());
+  public static ScheduledExecutorService reportTo(final MetricsFactory metricsFactory,
+                                                  final String kafkaClientId,
+                                                  final Duration syncInterval) {
+    return reportTo(metricsFactory, kafkaClientId, syncInterval, Predicates.<String>alwaysTrue());
   }
 
-  public static void reportTo(final MetricsFactory metricsFactory,
-                              final String kafkaClientId,
-                              final Duration syncInterval,
-                              final Predicate<String> metricFilter) {
-    Executors
-            .newSingleThreadScheduledExecutor()
+  public static ScheduledExecutorService reportTo(final MetricsFactory metricsFactory,
+                                                  final String kafkaClientId,
+                                                  final Duration syncInterval,
+                                                  final Predicate<String> metricFilter) {
+    final ScheduledExecutorService scheduledExecutorService = Executors
+            .newSingleThreadScheduledExecutor();
+    scheduledExecutorService
             .scheduleWithFixedDelay(
                     new Runnable() {
 
@@ -82,7 +85,7 @@ public class KafkaMetrics implements MetricsReporter {
                     0,
                     syncInterval.getStandardSeconds(),
                     TimeUnit.SECONDS);
-
+    return scheduledExecutorService;
   }
 
     @Override

@@ -17,6 +17,7 @@ import com.outbrain.aletheia.datum.production.kafka.KafkaTopicProductionEndPoint
 
 import org.joda.time.Instant;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,7 +34,7 @@ public class KafkaExample {
     return properties;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
     System.out.println("Welcome to Aletheia 101 - Kafka production & consumption.");
 
@@ -55,7 +56,7 @@ public class KafkaExample {
 
     AletheiaConfig.registerEndPointTemplate(KafkaTopicEndPointTemplate.TYPE, KafkaTopicEndPointTemplate.class);
 
-    final DatumProducer<MyDatum> datumProducer =
+    try (final DatumProducer<MyDatum> datumProducer =
             DatumProducerBuilder
                     .withConfig(MyDatum.class,
                                 new AletheiaConfig(PropertyUtils.override(properties)
@@ -63,13 +64,14 @@ public class KafkaExample {
                                                                 .all()))
                     .registerProductionEndPointType(KafkaTopicProductionEndPoint.class,
                                                     new KafkaDatumEnvelopeSenderFactory())
-                    .build();
+                    .build()) {
 
-    final String myInfo = "myInfo";
+      final String myInfo = "myInfo";
 
-    System.out.println("Delivering a datum with info field = " + myInfo);
+      System.out.println("Delivering a datum with info field = " + myInfo);
 
-    datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+      datumProducer.deliver(new MyDatum(Instant.now(), myInfo));
+    }
 
     final List<DatumConsumerStream<MyDatum>> datumConsumerStreams =
             DatumConsumerStreamsBuilder
@@ -89,6 +91,10 @@ public class KafkaExample {
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block
       break;
+    }
+
+    for (final DatumConsumerStream<MyDatum> datumConsumerStream : datumConsumerStreams) {
+      datumConsumerStream.close();
     }
 
     System.out.println("Done.");

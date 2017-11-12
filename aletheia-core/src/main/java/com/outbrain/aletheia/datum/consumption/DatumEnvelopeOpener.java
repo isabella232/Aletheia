@@ -15,6 +15,8 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class DatumEnvelopeOpener<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopeOpener.class);
@@ -46,6 +48,10 @@ public class DatumEnvelopeOpener<TDomainClass> {
             true);
     metricFactory.createGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
     metricFactory.createGauge("Timestamp.Logical", "DelayAverageInMillis", logicalDelayInMillisAverager);
+  }
+
+  public void close() throws IOException {
+    datumAuditor.close();
   }
 
   private void updateLagMetrics(final DatumEnvelope envelope) {

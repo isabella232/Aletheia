@@ -55,7 +55,9 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
   private final Counter autoCommitFail;
   private final OffsetCommitMode offsetCommitMode;
   private final String offsetResetStrategy;
-  private boolean isAtMostOnceOffsetCommitMode;
+  private final boolean isAtMostOnceOffsetCommitMode;
+  private boolean closed = false;
+
 
   public KafkaStreamDatumEnvelopeFetcher(final KafkaConsumer<String, byte[]> consumer,
                                          final KafkaTopicConsumptionEndPoint consumptionEndPoint,
@@ -86,12 +88,12 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
     startAutoCommitExecutorIfNeeded(autoCommitInterval);
 
     // Handle consumer cleanup
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-      @Override
-      public void run() {
-        shutdown();
-      }
-    }));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
+  }
+
+  @Override
+  public void close() {
+    shutdown();
   }
 
   @Override
@@ -186,7 +188,10 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
     } else {
       logger.info("Shutting down consumer for endpoint: " + consumptionEndPoint.getName());
       synchronized (kafkaConsumer) {
-        kafkaConsumer.close();
+        if (!closed) {
+          kafkaConsumer.close();
+          closed = true;
+        }
       }
     }
   }

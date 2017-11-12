@@ -12,6 +12,8 @@ import com.outbrain.aletheia.metrics.common.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 
 /**
  * A {@link com.outbrain.aletheia.breadcrumbs.Breadcrumb} generating, {@link DatumEnvelope} transportation based
@@ -97,5 +99,11 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     } finally {
       timerContext.stop();
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    envelopeSender.close();
+    datumAuditor.close();
   }
 }

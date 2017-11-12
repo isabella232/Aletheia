@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +23,7 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
   private final ScheduledExecutorService scheduledExecutorService;
   private final Duration durationBetweenFlushes;
   private final Runnable flushCommand;
+  private ScheduledFuture<?> future;
 
   public DatumAuditor(final Duration bucketDuration,
                       final DatumType.TimestampSelector<TDomainClass> timestampSelector,
@@ -50,22 +52,27 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
     this.scheduledExecutorService = scheduledExecutorService;
     this.durationBetweenFlushes = durationBetweenFlushes;
 
-    flushCommand = new Runnable() {
-      @Override
-      public void run() {
-        try {
-          periodicFlush();
-        } catch (final Exception e) {
-          logger.error("Periodic flash has failed.", e);
-        }
+    flushCommand = () -> {
+      try {
+        periodicFlush();
+      } catch (final Exception e) {
+        logger.error("Periodic flash has failed.", e);
       }
     };
 
     periodicFlush();
   }
 
+  @Override
+  public void close() {
+    if (future != null) {
+      future.cancel(false);
+    }
+    scheduledExecutorService.shutdown();
+  }
+
   private void periodicFlush() {
     dispatchBreadcrumbs();
-    scheduledExecutorService.schedule(flushCommand, durationBetweenFlushes.getMillis(), TimeUnit.MILLISECONDS);
+    future = scheduledExecutorService.schedule(flushCommand, durationBetweenFlushes.getMillis(), TimeUnit.MILLISECONDS);
   }
 }

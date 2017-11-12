@@ -30,6 +30,11 @@ public class LogFileDatumEnvelopeSenderFactory implements DatumEnvelopeSenderFac
       public void send(final String data, final String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
         stringLogFileSender.send(data, deliveryCallback);
       }
+
+      @Override
+      public void close() {
+        stringLogFileSender.close();
+      }
     });
   }
 }
