@@ -3,6 +3,7 @@ package com.outbrain.aletheia.datum.production.logFile.writer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.EnhancedPatternLayout;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.rolling.RollingFileAppender;
 import org.apache.log4j.rolling.TimeBasedRollingPolicy;
 
@@ -16,10 +17,12 @@ public class ExtrasRollingAppenderFactory {
 
   private final String suffixPattern;
   private final String layout;
+  private final boolean immediateFlush;
 
-  public ExtrasRollingAppenderFactory(final String suffixPattern, final String layout) {
+  public ExtrasRollingAppenderFactory(final String suffixPattern, final String layout, final boolean immediateFlush) {
     this.suffixPattern = suffixPattern;
     this.layout = layout;
+    this.immediateFlush = immediateFlush;
   }
 
   private TimeBasedRollingPolicy getTimeBasedRollingPolicy(final String fileNamePattern) {
@@ -37,6 +40,10 @@ public class ExtrasRollingAppenderFactory {
 
     final RollingFileAppender rollingFileAppender = new RollingFileAppender();
     rollingFileAppender.setName(appenderName);
+    rollingFileAppender.setImmediateFlush(immediateFlush);
+
+    Runtime.getRuntime().addShutdownHook(new Thread(LogManager::shutdown));
+
     rollingFileAppender.setLayout(new EnhancedPatternLayout(layout));
 
     final TimeBasedRollingPolicy timeBasedRollingPolicy = getTimeBasedRollingPolicy(fileNamePattern);

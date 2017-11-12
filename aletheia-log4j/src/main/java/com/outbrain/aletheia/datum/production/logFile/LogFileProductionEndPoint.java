@@ -18,15 +18,18 @@ public class LogFileProductionEndPoint implements ProductionEndPoint {
   protected final String folderFullName;
   protected final String datePatternForExtras;
   protected final String layout;
+  protected final boolean immediateFlush;
 
   public LogFileProductionEndPoint(final String shortFileName,
                                    final String folderFullName,
                                    final String datePatternForExtras,
-                                   final String layout) {
+                                   final String layout,
+                                   final boolean immediateFlush) {
     this.shortFileName = shortFileName;
     this.folderFullName = folderFullName;
     this.datePatternForExtras = datePatternForExtras;
     this.layout = layout;
+    this.immediateFlush = immediateFlush;
   }
 
   public String getDatePatternForExtras() {
@@ -43,6 +46,10 @@ public class LogFileProductionEndPoint implements ProductionEndPoint {
 
   public String getShortFileName() {
     return shortFileName;
+  }
+
+  public boolean getImmediateFlush() {
+    return immediateFlush;
   }
 
   @Override

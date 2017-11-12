@@ -44,7 +44,8 @@ public class StringLogFileSender implements NamedSender<String> {
                     logFileDeliveryEndPoint.getFolderFullName(),
                     new ExtrasRollingAppenderFactory(
                             logFileDeliveryEndPoint.getDatePatternForExtras(),
-                            logFileDeliveryEndPoint.getLayout()));
+                            logFileDeliveryEndPoint.getLayout(),
+                            logFileDeliveryEndPoint.getImmediateFlush()));
 
     return dataFileWriterFactory.createLogger(logFileDeliveryEndPoint.getShortFileName());
   }

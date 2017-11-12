@@ -19,16 +19,19 @@ public class LogFileEndPointTemplate implements EndPointTemplate {
 
   private final String folder;
   private final String filename;
+  private final boolean immediateFlush;
 
   public LogFileEndPointTemplate(@JsonProperty(value = "folder", required = true) final String folder,
-                                 @JsonProperty(value = "filename", required = true) final String filename) {
+                                 @JsonProperty(value = "filename", required = true) final String filename,
+                                 @JsonProperty(value = "immediateFlush") final Boolean immediateFlush) {
     this.folder = folder;
     this.filename = filename;
+    this.immediateFlush = immediateFlush != null ? immediateFlush : true;
   }
 
   @Override
   public ProductionEndPoint getProductionEndPoint(final String endPointName) {
-    return new LogFileProductionEndPoint(filename, folder, datePattern, layout);
+    return new LogFileProductionEndPoint(filename, folder, datePattern, layout, immediateFlush);
   }
 
   @Override
