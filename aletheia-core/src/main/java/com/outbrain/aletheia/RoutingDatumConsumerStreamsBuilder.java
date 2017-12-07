@@ -6,6 +6,8 @@ import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
+import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
+import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +55,13 @@ public class RoutingDatumConsumerStreamsBuilder<TDomainClass>
           final Class<TConsumptionEndPoint> consumptionEndPointType,
           final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
     saveBuilder(getBuilder().registerConsumptionEndPointType(consumptionEndPointType, datumEnvelopeFetcherFactory));
+    return This();
+  }
+
+  public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> RoutingDatumConsumerStreamsBuilder<TDomainClass> registerBreadcrumbsProducerEndPointType(
+          final Class<TProductionEndPoint> productionEndPointType,
+          final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
+    saveBuilder(getBuilder().registerProductionEndPointType(productionEndPointType, datumEnvelopeSenderFactory));
     return This();
   }
 
