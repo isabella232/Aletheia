@@ -1,12 +1,5 @@
 package com.outbrain.aletheia;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
@@ -17,6 +10,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.outbrain.aletheia.configuration.ClassPathConfigReader;
+import com.outbrain.aletheia.configuration.ConfigReader;
 import com.outbrain.aletheia.configuration.endpoint.EndPointTemplate;
 import com.outbrain.aletheia.configuration.endpoint.InMemoryEndPointTemplate;
 import com.outbrain.aletheia.configuration.routing.ExtendedRoutingInfo;
@@ -25,6 +28,7 @@ import com.outbrain.aletheia.configuration.routing.RoutingInfo;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
@@ -34,6 +38,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -82,6 +88,9 @@ public class AletheiaConfig {
 
   private static final ObjectReader objectReader = new ObjectMapper().reader();
   private static final Map<String, Class<? extends EndPointTemplate>> customEndPointTemplates = new HashMap<>();
+  private static final Map<String, ConfigReader> customConfigReaders = new HashMap<>();
+  private static final ConfigReader defaultConfigReader = new ClassPathConfigReader(AletheiaConfig.class.getClassLoader());
+
 
 
   public AletheiaConfig(final Properties properties) {
@@ -225,9 +234,12 @@ public class AletheiaConfig {
 
     for (final String resourcePath : configPaths) {
       if (!Strings.isNullOrEmpty(resourcePath)) {
-        logger.info("Loading Aletheia config from " + resourcePath);
         try {
-          final InputStream resourceAsStream = AletheiaConfig.class.getClassLoader().getResourceAsStream(resourcePath);
+          final URI configUri = new URI(resourcePath);
+          final ConfigReader configReader = getReaderForResource(configUri);
+          logger.info("Loading Aletheia config from {} using {}", resourcePath, configReader.getClass().getSimpleName());
+
+          final InputStream resourceAsStream = configReader.read(configUri);
           final JsonNode json = objectReader.readTree(resourceAsStream);
 
           final Iterator<Map.Entry<String, JsonNode>> fieldsIterator = json.fields();
@@ -241,10 +253,29 @@ public class AletheiaConfig {
           }
         } catch (final IOException e) {
           logger.error("Failed to read config from " + resourcePath, e);
+        } catch (URISyntaxException e) {
+          logger.error("Invalid resource path " + resourcePath, e);
         }
       }
     }
     return mergedConfig.toString();
+  }
+
+  private static ConfigReader getReaderForResource(final URI uri) {
+    // Get scheme from URI
+    final String scheme = uri.getScheme();
+    if (Strings.isNullOrEmpty(scheme) || scheme.equals("classpath")) {
+      return defaultConfigReader;
+    }
+
+    // Get reader instance for scheme
+    final ConfigReader reader = customConfigReaders.get(scheme);
+    if (reader == null) {
+      logger.error("No config reader registered for scheme '{}'", scheme);
+      throw new RuntimeException("No config reader registered for scheme " + scheme);
+    }
+
+    return reader;
   }
 
   private <T> T readSingleConfigKey(final String config,
@@ -296,9 +327,9 @@ public class AletheiaConfig {
                             @Override
                             public List<Route> apply(final String routeGroupId) {
                               return readSingleConfigKey(endPointGroupsConfig,
-                                                         routeGroupId,
-                                                         properties,
-                                                         new TypeReference<List<Route>>() {
+            routeGroupId,
+            properties,
+            new TypeReference<List<Route>>() {
                                                          });
                             }
                           })
@@ -392,6 +423,11 @@ public class AletheiaConfig {
   public static void registerEndPointTemplate(final String type,
                                               final Class<? extends EndPointTemplate> endPointTemplateClass) {
     customEndPointTemplates.put(type, endPointTemplateClass);
+  }
+
+  public static void registerConfigReader(final String scheme,
+                                          final ConfigReader configReader) {
+    customConfigReaders.put(scheme, configReader);
   }
 
 }
