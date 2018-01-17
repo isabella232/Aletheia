@@ -1,10 +1,7 @@
-package com.outbrain.aletheia.datum.consumption;
+package com.outbrain.aletheia.datum.consumption.openers;
 
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
-import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -17,12 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class DatumEnvelopeOpener<TDomainClass> {
+abstract public class BaseEnvelopeOpener<TDomainClass> {
 
-  private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopeOpener.class);
+  private static final Logger logger = LoggerFactory.getLogger(BaseEnvelopeOpener.class);
 
-  private final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-  private final DatumSerDe<TDomainClass> datumSerDe;
+  protected final BreadcrumbDispatcher<TDomainClass> datumAuditor;
 
   private final TimeWindowAverager logicalDelayAverager;
   private final TimeWindowAverager logicalDelayInMillisAverager;
@@ -32,12 +28,10 @@ public class DatumEnvelopeOpener<TDomainClass> {
 
   private final int LOG_FUTURE_MESSAGES_LAG_THRESHOLD_IN_MILLIS = 5000;
 
-  public DatumEnvelopeOpener(final BreadcrumbDispatcher<TDomainClass> datumAuditor,
-                             final DatumSerDe<TDomainClass> datumSerDe,
-                             final MetricsFactory metricFactory) {
+  public BaseEnvelopeOpener(final BreadcrumbDispatcher<TDomainClass> datumAuditor,
+                            final MetricsFactory metricFactory) {
 
     this.datumAuditor = datumAuditor;
-    this.datumSerDe = datumSerDe;
 
     logicalDelayAverager = new TimeWindowAverager(60.0, 15, -1.0);
     logicalDelayInMillisAverager = new TimeWindowAverager(60.0, 15, -1.0);
@@ -88,18 +82,11 @@ public class DatumEnvelopeOpener<TDomainClass> {
     }
   }
 
-  public TDomainClass open(final DatumEnvelope datumEnvelope) {
-
+  public TDomainClass open(final DatumEnvelope datumEnvelope){
     updateLagMetrics(datumEnvelope);
-
-    final TDomainClass datum =
-            datumSerDe.deserializeDatum(new SerializedDatum(datumEnvelope.getDatumBytes(),
-                    new DatumTypeVersion(
-                            datumEnvelope.getDatumTypeId().toString(),
-                            datumEnvelope.getDatumSchemaVersion())));
-    datumAuditor.report(datum);
-
-    return datum;
+    return openEnvelope(datumEnvelope);
   }
-}
 
+  protected abstract TDomainClass openEnvelope(final DatumEnvelope datumEnvelope);
+
+}

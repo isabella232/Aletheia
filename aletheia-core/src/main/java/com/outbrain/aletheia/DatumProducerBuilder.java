@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.DatumKeySelector;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.*;
@@ -50,17 +51,17 @@ public class DatumProducerBuilder<TDomainClass>
     final MetricFactoryProvider metricFactoryProvider;
 
     if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass, DATUM_PRODUCER, metricFactory);
+      metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, metricFactory);
 
       if (isBreadcrumbProductionDefined()) {
-        datumAuditor = getDatumAuditor(datumProducerConfig,
+        datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
                                        productionEndPointInfo.getProductionEndPoint(),
                                        metricFactoryProvider);
       } else {
         datumAuditor = BreadcrumbDispatcher.NULL;
       }
     } else {
-      metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(domainClass,
+      metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
                                                                                   DATUM_PRODUCER,
                                                                                   metricFactory);
       datumAuditor = BreadcrumbDispatcher.NULL;

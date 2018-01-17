@@ -56,7 +56,7 @@ public class DatumAuditor<TDomainClass> extends BucketBasedBreadcrumbDispatcher<
       try {
         periodicFlush();
       } catch (final Exception e) {
-        logger.error("Periodic flash has failed.", e);
+        logger.error("Periodic flush has failed.", e);
       }
     };
 

@@ -8,8 +8,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
-import com.outbrain.aletheia.datum.consumption.*;
+import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
+import com.outbrain.aletheia.datum.consumption.AuditingDatumConsumerStream;
+import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
+import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
+import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
+import com.outbrain.aletheia.datum.consumption.InMemoryDatumEnvelopeFetcherFactory;
+import com.outbrain.aletheia.datum.consumption.openers.DatumEnvelopeOpener;
+import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -77,55 +85,50 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
                                                                             final ConsumptionEndPointInfo<TDomainClass> consumptionEndPointInfo) {
 
     logger.info("Creating a datum stream for end point: {} with config: {}",
-                consumptionEndPointInfo.getConsumptionEndPoint(),
-                datumConsumerStreamConfig);
+            consumptionEndPointInfo.getConsumptionEndPoint(),
+            datumConsumerStreamConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(domainClass,
-                                                                                         DATUM_STREAM,
-                                                                                         metricFactory);
+    final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
+            DATUM_STREAM,
+            metricFactory);
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
     } else {
-      datumAuditor = getDatumAuditor(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
-                                                             datumConsumerStreamConfig.getHostname()),
-                                     consumptionEndPointInfo.getConsumptionEndPoint(),
-                                     metricFactoryProvider);
+      datumAuditor = getTypedBreadcrumbsDispatcher(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
+                      datumConsumerStreamConfig.getHostname()),
+              consumptionEndPointInfo.getConsumptionEndPoint(),
+              metricFactoryProvider);
     }
 
     final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener =
             new DatumEnvelopeOpener<>(datumAuditor,
-                                      consumptionEndPointInfo.getDatumSerDe(),
-                                      metricFactoryProvider.forDatumEnvelopeMeta(
-                                              consumptionEndPointInfo.getConsumptionEndPoint()));
+                    consumptionEndPointInfo.getDatumSerDe(),
+                    metricFactoryProvider.forDatumEnvelopeMeta(
+                            consumptionEndPointInfo.getConsumptionEndPoint()));
 
-    final DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory =
+    final DatumEnvelopeFetcherFactory<ConsumptionEndPoint> datumEnvelopeFetcherFactory =
             endpoint2datumEnvelopeFetcherFactory.get(consumptionEndPointInfo.getConsumptionEndPoint().getClass());
 
     Preconditions.checkState(datumEnvelopeFetcherFactory != null,
-                             String.format(
-                                     "No datum envelope fetcher factory for consumption end point of type [%s] was provided.",
-                                     consumptionEndPointInfo.getConsumptionEndPoint().getClass().getSimpleName()));
+            String.format(
+                    "No datum envelope fetcher factory for consumption end point of type [%s] was provided.",
+                    consumptionEndPointInfo.getConsumptionEndPoint().getClass().getSimpleName()));
 
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
             datumEnvelopeFetcherFactory
                     .buildDatumEnvelopeFetcher(consumptionEndPointInfo.getConsumptionEndPoint(),
-                                               metricFactoryProvider
-                                                       .forDatumEnvelopeFetcher(
-                                                               consumptionEndPointInfo.getConsumptionEndPoint()));
+                            metricFactoryProvider
+                                    .forDatumEnvelopeFetcher(
+                                            consumptionEndPointInfo.getConsumptionEndPoint()));
 
     final Function<DatumEnvelopeFetcher, DatumConsumerStream<TDomainClass>> toDatumConsumerStreams =
-            new Function<DatumEnvelopeFetcher, DatumConsumerStream<TDomainClass>>() {
-              @Override
-              public AuditingDatumConsumerStream<TDomainClass> apply(final DatumEnvelopeFetcher datumEnvelopeFetcher) {
-                return new AuditingDatumConsumerStream<>(datumEnvelopeFetcher,
-                                                         datumEnvelopeOpener,
-                                                         consumptionEndPointInfo.getFilter(),
-                                                         metricFactoryProvider
-                                                                 .forAuditingDatumStreamConsumer(
-                                                                         consumptionEndPointInfo.getConsumptionEndPoint()));
-              }
-            };
+            datumEnvelopeFetcher -> new AuditingDatumConsumerStream<>(datumEnvelopeFetcher,
+                    datumEnvelopeOpener,
+                    consumptionEndPointInfo.getFilter(),
+                    metricFactoryProvider
+                            .forAuditingDatumStreamConsumer(
+                                    consumptionEndPointInfo.getConsumptionEndPoint()));
 
     return Lists.transform(datumEnvelopeFetchers, toDatumConsumerStreams);
   }

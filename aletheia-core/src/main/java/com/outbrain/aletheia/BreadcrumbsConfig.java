@@ -3,6 +3,7 @@ package com.outbrain.aletheia;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.Duration;
+import java.util.Properties;
 
 /**
  * Holds the configuration details for breadcrumbs emitted by the {@link com.outbrain.aletheia.datum.production.DatumProducer}.
@@ -41,6 +42,15 @@ public class BreadcrumbsConfig {
     this.source = source;
     this.tier = tier;
     this.datacenter = datacenter;
+  }
+
+  public BreadcrumbsConfig(Properties properties) {
+    this(Duration.standardSeconds(Integer.parseInt(properties.getProperty("aletheia.breadcrumbs.bucketDurationSec"))),
+            Duration.standardSeconds(Integer.parseInt(properties.getProperty("aletheia.breadcrumbs.flushIntervalSec"))),
+            properties.getProperty("aletheia.breadcrumbs.fields.application"),
+            properties.getProperty("aletheia.breadcrumbs.fields.source"),
+            properties.getProperty("aletheia.breadcrumbs.fields.tier"),
+            properties.getProperty("aletheia.breadcrumbs.fields.datacenter"));
   }
 
   public Duration getBreadcrumbBucketDuration() {

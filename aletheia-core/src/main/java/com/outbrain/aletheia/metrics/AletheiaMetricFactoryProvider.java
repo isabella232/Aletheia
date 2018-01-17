@@ -1,6 +1,5 @@
 package com.outbrain.aletheia.metrics;
 
-import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
 /**
@@ -16,19 +15,19 @@ public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProv
   protected static final String Tx = "Tx";
   protected static final String Rx = "Rx";
 
-  private final Class domainClass;
+  protected final String datumTypeId;
   protected final String componentName;
   protected final MetricsFactory metricsFactory;
 
-  public AletheiaMetricFactoryProvider(final Class domainClass,
+  public AletheiaMetricFactoryProvider(final String datumTypeId,
                                        final String componentName,
                                        final MetricsFactory metricsFactory) {
-    this.domainClass = domainClass;
+    this.datumTypeId = datumTypeId;
     this.componentName = componentName;
     this.metricsFactory = metricsFactory;
   }
 
   public String datumTypeId() {
-    return DatumUtils.getDatumTypeId(domainClass);
+    return datumTypeId;
   }
 }

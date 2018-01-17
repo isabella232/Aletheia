@@ -11,10 +11,10 @@ public class DefaultMetricFactoryProvider extends AletheiaMetricFactoryProvider 
 
   private static final String META = "Meta";
 
-  public DefaultMetricFactoryProvider(final Class domainClass,
+  public DefaultMetricFactoryProvider(final String datumTypeId,
                                       final String componentName,
                                       final MetricsFactory metricsFactory) {
-    super(domainClass, componentName, metricsFactory);
+    super(datumTypeId, componentName, metricsFactory);
   }
 
   @Override

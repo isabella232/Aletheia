@@ -21,11 +21,14 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 
 /**
@@ -43,7 +46,6 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
 
   private final KafkaConsumer<String, byte[]> kafkaConsumer;
   private Iterator<ConsumerRecord<String, byte[]>> consumerRecordIterator = Collections.emptyIterator();
-  private final KafkaTopicConsumptionEndPoint consumptionEndPoint;
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
 
   private volatile boolean isWaitingForPoll = false;
@@ -58,12 +60,10 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
   private final boolean isAtMostOnceOffsetCommitMode;
   private boolean closed = false;
 
-
   public KafkaStreamDatumEnvelopeFetcher(final KafkaConsumer<String, byte[]> consumer,
                                          final KafkaTopicConsumptionEndPoint consumptionEndPoint,
                                          final MetricsFactory metricFactory) {
     this.kafkaConsumer = consumer;
-    this.consumptionEndPoint = consumptionEndPoint;
 
     this.autoCommitAttempt = metricFactory.createCounter(AUTO_COMMIT, "Attempts");
     this.autoCommitSuccess = metricFactory.createCounter(AUTO_COMMIT, "Success");
@@ -74,13 +74,20 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
       offsetCommitMode = OffsetCommitMode.valueOf(consumptionEndPoint.getProperties()
               .getProperty("offset.commit.mode", OffsetCommitMode.AT_LEAST_ONCE.name()));
     } catch (final IllegalArgumentException e) {
-      throw new IllegalArgumentException("Illegal offset commit mode value. See com.outbrain.aletheia.datum.consumption.OffsetCommitMode for supported modes.");
+      throw new IllegalArgumentException("Illegal offset commit mode value. See com.outbrain.aletheia.datum.consumption.OffsetCommitMode for supported modes.", e);
     }
 
     isAtMostOnceOffsetCommitMode = OffsetCommitMode.AT_MOST_ONCE.equals(offsetCommitMode);
 
-    // Subscribe to topic with consumer rebalance listener
-    consumer.subscribe(Collections.singletonList(consumptionEndPoint.getTopicName()), this);
+    try {
+      final Pattern topicsPattern = Pattern.compile(consumptionEndPoint.getTopicName());
+      // Subscribe to topic with consumer rebalance listener
+      kafkaConsumer.subscribe(topicsPattern, this);
+
+    } catch (final PatternSyntaxException ex) {
+      logger.error(String.format("topics pattern '%s' for endpoint id '%s' is not a valid regex", consumptionEndPoint.getTopicName(), consumptionEndPoint.getName()));
+      throw new IllegalArgumentException(String.format("topics pattern '%s' for endpoint id '%s' is not a valid regex", consumptionEndPoint.getTopicName(), consumptionEndPoint.getName()), ex);
+    }
 
     final long autoCommitInterval =
             Long.parseLong(consumptionEndPoint.getProperties()
@@ -116,31 +123,25 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
     }
   }
 
-  private final Iterable<DatumEnvelope> datumEnvelopeIterable = new Iterable<DatumEnvelope>() {
+  private final Iterable<DatumEnvelope> datumEnvelopeIterable = () -> new Iterator<DatumEnvelope>() {
+    @Override
+    public boolean hasNext() {
+      return getConsumerRecords().hasNext();
+    }
 
     @Override
-    public Iterator<DatumEnvelope> iterator() {
-      return new Iterator<DatumEnvelope>() {
-        @Override
-        public boolean hasNext() {
-          return getConsumerRecords().hasNext();
-        }
+    public DatumEnvelope next() {
+      // Obtain next record
+      final ConsumerRecord<String, byte[]> record = getConsumerRecords().next();
+      updateConsumedRecord(record);
 
-        @Override
-        public DatumEnvelope next() {
-          // Obtain next record
-          final ConsumerRecord<String, byte[]> record = getConsumerRecords().next();
-          updateConsumedRecord(record);
+      // Return deserialized envelope
+      return avroDatumEnvelopeSerDe.deserializeDatumEnvelope(ByteBuffer.wrap(record.value()));
+    }
 
-          // Return deserialized envelope
-          return avroDatumEnvelopeSerDe.deserializeDatumEnvelope(ByteBuffer.wrap(record.value()));
-        }
+    @Override
+    public void remove() {
 
-        @Override
-        public void remove() {
-
-        }
-      };
     }
   };
 
@@ -181,14 +182,14 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
       autoOffsetCommitExecutor.shutdown();
     }
 
-    // This method called twice when
+    // This method called twice; Once when waiting for poll and once from wakeup context itself
     if (isWaitingForPoll) {
-      logger.info("Waking up consumer for endpoint: " + consumptionEndPoint.getName());
+      logger.info("Waking up consumer for topics: " + kafkaConsumer.subscription());
       kafkaConsumer.wakeup();
     } else {
-      logger.info("Shutting down consumer for endpoint: " + consumptionEndPoint.getName());
       synchronized (kafkaConsumer) {
         if (!closed) {
+          logger.info("Shutting down consumer for topics: " + kafkaConsumer.subscription());
           kafkaConsumer.close();
           closed = true;
         }
@@ -210,18 +211,15 @@ class KafkaStreamDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerR
       //  Executor for committing consumer offsets
       //  (Keep similar behavior to Kafka 0.8 High Level Consumer)
       autoOffsetCommitExecutor = Executors.newScheduledThreadPool(1);
-      autoOffsetCommitExecutor.scheduleWithFixedDelay(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            commitOffsetsInternal();
-            autoCommitSuccess.inc();
-          } catch (Exception e) {
-            logger.error("commitSync failed with exception: ", e);
-            autoCommitFail.inc();
-          }
-          autoCommitAttempt.inc();
+      autoOffsetCommitExecutor.scheduleWithFixedDelay(() -> {
+        try {
+          commitOffsetsInternal();
+          autoCommitSuccess.inc();
+        } catch (Exception e) {
+          logger.error("commitSync failed with exception: ", e);
+          autoCommitFail.inc();
         }
+        autoCommitAttempt.inc();
       }, autoCommitInterval, autoCommitInterval, TimeUnit.MILLISECONDS);
     } else {
       autoOffsetCommitExecutor = null;

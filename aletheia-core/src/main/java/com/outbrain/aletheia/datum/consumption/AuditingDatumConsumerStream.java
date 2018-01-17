@@ -3,6 +3,7 @@ package com.outbrain.aletheia.datum.consumption;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.outbrain.aletheia.datum.consumption.openers.BaseEnvelopeOpener;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
@@ -74,7 +75,7 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumConsumerStream.class);
 
-  private final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener;
+  private final BaseEnvelopeOpener<TDomainClass> datumEnvelopeOpener;
   private final Predicate<TDomainClass> datumFilter;
   private final Counter consumedDatumCount;
   private final Counter consumeFailureCount;
@@ -83,7 +84,7 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
   private final DatumEnvelopeFetcher datumEnvelopeFetcher;
 
   public AuditingDatumConsumerStream(final DatumEnvelopeFetcher datumEnvelopeFetcher,
-                                     final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
+                                     final BaseEnvelopeOpener<TDomainClass> datumEnvelopeOpener,
                                      final Predicate<TDomainClass> datumFilter,
                                      final MetricsFactory metricsFactory) {
 

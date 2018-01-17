@@ -4,9 +4,21 @@
       {
         "endpoint": "kafka_endpoint",
         "serDe": "json"
+      },
+      {
+        "endpoint": "kafka_2nd_endpoint",
+        "serDe": "json"
       }
     ],
     "breadcrumbs": "breadcrumbs_endpoint",
     "datum.key.selector.class": "com.outbrain.aletheia.tutorial.MyDatum$MyKeySelector"
+  },
+  "envelope": {
+    "routes": [
+      {
+        "endpoint": "kafka_endpoint",
+        "serDe": ""
+      }
+    ]
   }
 }
