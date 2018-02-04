@@ -10,7 +10,6 @@ import com.outbrain.aletheia.datum.production.logFile.LogFileProductionEndPoint;
 
 import org.joda.time.Instant;
 
-import java.io.IOException;
 import java.util.Properties;
 
 public class LogFileExample {
@@ -26,7 +25,7 @@ public class LogFileExample {
     return properties;
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
 
     System.out.println("Welcome to Aletheia 101 - Log file production");
 

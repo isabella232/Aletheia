@@ -1,35 +1,26 @@
 package com.outbrain.aletheia;
 
 import com.google.common.collect.Maps;
+
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
-import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
-import com.outbrain.aletheia.breadcrumbs.StartTimeWithDurationBreadcrumbBaker;
-import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.DatumType;
-import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.EndPoint;
-import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.DatumProducer;
-import com.outbrain.aletheia.datum.production.InMemoryDatumEnvelopeSenderFactory;
-import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
-import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 
 import java.util.Map;
 import java.util.Properties;
 
-abstract class BaseAletheiaBuilder{
-
-  public static final String ENVELOPE = "breadcrumbs_endpoint";
+abstract class BaseAletheiaBuilder {
 
   /**
    * A special case {@link AletheiaMetricFactoryProvider} used only when reporting metrics from a
@@ -123,6 +114,10 @@ abstract class BaseAletheiaBuilder{
       breadcrumbDatumProducer.deliver(breadcrumb);
     }
 
+    @Override
+    public void close() throws Exception {
+      breadcrumbDatumProducer.close();
+    }
   }
 
   protected final Map<Class, DatumEnvelopeSenderFactory> endpoint2datumEnvelopeSenderFactory = Maps.newHashMap();

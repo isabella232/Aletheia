@@ -1,6 +1,5 @@
 package com.outbrain.aletheia.breadcrumbs;
 
-import java.io.Closeable;
 import java.io.Serializable;
 
 /**
@@ -8,7 +7,7 @@ import java.io.Serializable;
  *
  * @param <TElement> The type of the element this {@link BreadcrumbDispatcher} will be dispatching breadcrumbs for.
  */
-public interface BreadcrumbDispatcher<TElement> extends Serializable, Closeable {
+public interface BreadcrumbDispatcher<TElement> extends Serializable, AutoCloseable {
 
   BreadcrumbDispatcher NULL = new BreadcrumbDispatcher() {
     @Override
@@ -17,7 +16,7 @@ public interface BreadcrumbDispatcher<TElement> extends Serializable, Closeable 
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
 
     }
 

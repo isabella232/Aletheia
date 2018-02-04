@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
+
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.DatumProducerBuilder;
@@ -8,9 +9,9 @@ import com.outbrain.aletheia.configuration.PropertyUtils;
 import com.outbrain.aletheia.configuration.routing.Route;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
 import com.outbrain.aletheia.datum.production.DatumProducer;
+
 import org.joda.time.Instant;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -27,7 +28,7 @@ public class InMemoryExample {
     return properties;
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
 
     System.out.println("Welcome to Aletheia 101 - In memory production & consumption.");
 

@@ -3,14 +3,15 @@ package com.outbrain.aletheia.datum.consumption;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+
 import com.outbrain.aletheia.datum.consumption.openers.BaseEnvelopeOpener;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -106,7 +107,7 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() throws Exception {
     datumEnvelopeFetcher.close();
     datumEnvelopeOpener.close();
   }

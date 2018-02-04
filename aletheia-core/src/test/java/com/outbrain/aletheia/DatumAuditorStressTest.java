@@ -1,11 +1,16 @@
 package com.outbrain.aletheia;
 
+import com.outbrain.aletheia.breadcrumbs.AggregatingBreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
+import com.outbrain.aletheia.breadcrumbs.BreadcrumbKey;
+import com.outbrain.aletheia.breadcrumbs.KeyedBreadcrumbBaker;
+import com.outbrain.aletheia.breadcrumbs.KeyedBreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.StartTimeWithDurationBreadcrumbBaker;
-import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.DatumUtils;
+import com.outbrain.aletheia.datum.PeriodicBreadcrumbDispatcher;
+
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.joda.time.Interval;
@@ -16,8 +21,17 @@ import org.junit.rules.TestName;
 
 import java.io.PrintWriter;
 import java.util.LinkedList;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -33,7 +47,9 @@ public class DatumAuditorStressTest {
 
   private static final String TEST_RESULT_FILE_NAME = "/tmp/breadcrumb_%s.txt";
   private static final int THREAD_COUNT = 500;
+  private static final int NUM_UNIQUE_PRODUCERS = 4000;
 
+  private final Random random = new Random();
   private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
   private final AtomicLong hitCount = new AtomicLong(0);
   private final Duration bucketDuration = Duration.standardSeconds(10);
@@ -45,9 +61,18 @@ public class DatumAuditorStressTest {
     public void handle(final Breadcrumb breadcrumb) {
       hitCount.getAndAdd(breadcrumb.getCount());
     }
+
+    @Override
+    public void close() throws Exception {
+
+    }
   };
 
   private void doBenchmark(final BreadcrumbDispatcher<SampleDomainClass> breadcrumbDispatcher) throws Exception {
+
+    final List<String> idList = IntStream.range(0, NUM_UNIQUE_PRODUCERS)
+                                         .mapToObj(__ -> UUID.randomUUID().toString())
+                                         .collect(Collectors.toList());
 
     final Instant start = Instant.now();
     final AtomicLong[] hitReportCounts = new AtomicLong[THREAD_COUNT];
@@ -60,9 +85,9 @@ public class DatumAuditorStressTest {
       hitReportCounts[j] = atomicLong;
       submits.add(executorService.submit(new Runnable() {
         public void run() {
-          for (final Instant start = Instant.now();
-               new Interval(start, Instant.now()).toDuration().isShorterThan(testDuration); ) {
-            breadcrumbDispatcher.report(new SampleDomainClass(1, 1, "", Instant.now(), true));
+          final Instant end = Instant.now().plus(testDuration);
+          while (Instant.now().isBefore(end)) {
+            breadcrumbDispatcher.report(new SampleDomainClass(1, 1, idList.get(random.nextInt(idList.size())), Instant.now(), true));
             atomicLong.incrementAndGet();
           }
         }
@@ -77,7 +102,7 @@ public class DatumAuditorStressTest {
     executorService.awaitTermination(durationBetweenFlushes.getStandardSeconds() * 2, TimeUnit.SECONDS);
 
     final PrintWriter writer = new PrintWriter(String.format(TEST_RESULT_FILE_NAME, testName.getMethodName()),
-                                               "UTF-8");
+        "UTF-8");
 
     writer.println(String.format("Test time in millis: %d", new Interval(start, Instant.now()).toDurationMillis()));
 
@@ -89,9 +114,9 @@ public class DatumAuditorStressTest {
     }
 
     writer.println(String.format("Total incoming hits: %d, Total outgoing hits: %d, status: %B",
-                                 totalHitReportCount,
-                                 hitCount.get(),
-                                 totalHitReportCount == hitCount.get()));
+        totalHitReportCount,
+        hitCount.get(),
+        totalHitReportCount == hitCount.get()));
     writer.close();
 
     assertThat(hitCount.get(), is(totalHitReportCount));
@@ -100,14 +125,34 @@ public class DatumAuditorStressTest {
   @Test
   public void test_breadcrumbDispatcher_under_load() throws Exception {
 
+    final BreadcrumbDispatcher<SampleDomainClass> aggregatingDispatcher = new AggregatingBreadcrumbDispatcher<>(
+        bucketDuration,
+        DatumUtils.getDatumTimestampExtractor(SampleDomainClass.class),
+        new StartTimeWithDurationBreadcrumbBaker("", "", "", "", "", ""),
+        hitCountUpdater,
+        Duration.standardDays(1));
+
     doBenchmark(
-            new DatumAuditor<>(
-                    bucketDuration,
-                    DatumUtils.getDatumTimestampExtractor(SampleDomainClass.class),
-                    new StartTimeWithDurationBreadcrumbBaker("", "", "", "", "", ""),
-                    hitCountUpdater,
-                    scheduledExecutorService,
-                    durationBetweenFlushes,
-                    Duration.standardDays(1)));
+        new PeriodicBreadcrumbDispatcher<>(aggregatingDispatcher,
+            scheduledExecutorService,
+            durationBetweenFlushes)
+    );
+  }
+
+  @Test
+  public void test_keyedBreadcrumbDispatcher_under_load() throws Exception {
+    final BreadcrumbDispatcher<SampleDomainClass> keyedDispatcher = new KeyedBreadcrumbDispatcher<>(
+        bucketDuration,
+        DatumUtils.getDatumTimestampExtractor(SampleDomainClass.class),
+        new KeyedBreadcrumbBaker("", ""),
+        hitCountUpdater,
+        datum -> new BreadcrumbKey("", datum.getMyString(), "", ""),
+        Duration.standardDays(1));
+
+    doBenchmark(
+        new PeriodicBreadcrumbDispatcher<>(keyedDispatcher,
+            scheduledExecutorService,
+            durationBetweenFlushes)
+    );
   }
 }

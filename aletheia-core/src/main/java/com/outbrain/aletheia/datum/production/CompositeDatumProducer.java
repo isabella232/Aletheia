@@ -2,7 +2,6 @@ package com.outbrain.aletheia.datum.production;
 
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -28,7 +27,7 @@ public class CompositeDatumProducer<TDomainClass> implements DatumProducer<TDoma
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() throws Exception {
     for (DatumProducer<TDomainClass> datumProducer : datumProducers) {
       datumProducer.close();
     }

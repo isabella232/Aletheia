@@ -59,5 +59,14 @@
   "breadcrumbs_endpoint": {
     "type": "inMemory",
     "size": 100
+  },
+  "kafka_breadcrumbs_endpoint": {
+    "type": "kafka",
+    "topic.name": "consumer_breadcrumbs",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "async",
+      "compression.type": "lz4"
+    }
   }
 }

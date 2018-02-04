@@ -1,12 +1,12 @@
 package com.outbrain.aletheia;
 
-import com.google.common.collect.Maps;
+import com.outbrain.aletheia.breadcrumbs.AggregatingBreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.StartTimeWithDurationBreadcrumbBaker;
-import com.outbrain.aletheia.datum.DatumAuditor;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.EndPoint;
 import com.outbrain.aletheia.datum.InMemoryEndPoint;
+import com.outbrain.aletheia.datum.PeriodicBreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.InMemoryDatumEnvelopeSenderFactory;
@@ -16,7 +16,7 @@ import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
-import java.util.Map;
+import org.joda.time.Duration;
 
 /**
  * @param <TDomainClass> The datum type this builder will be building a
@@ -32,7 +32,6 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
    */
 
   protected final Class<TDomainClass> domainClass;
-  protected final Map<Class, DatumEnvelopeSenderFactory> endpoint2datumEnvelopeSenderFactory = Maps.newHashMap();
   protected MetricsFactory metricFactory = MetricsFactory.NULL;
 
   protected AletheiaBuilder(final Class<TDomainClass> domainClass) {
@@ -43,18 +42,21 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
   protected BreadcrumbDispatcher<TDomainClass> getTypedBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
                                                                              final EndPoint endPoint,
                                                                              final MetricFactoryProvider metricFactoryProvider) {
-    return new DatumAuditor<>(
-            breadcrumbsConfig.getBreadcrumbBucketDuration(),
-            DatumUtils.getDatumTimestampExtractor(domainClass),
-            new StartTimeWithDurationBreadcrumbBaker(breadcrumbsConfig.getSource(),
-                    endPoint.getName(),
-                    breadcrumbsConfig.getTier(),
-                    breadcrumbsConfig.getDatacenter(),
-                    breadcrumbsConfig.getApplication(),
-                    DatumUtils.getDatumTypeId(domainClass)),
-            new BreadcrumbProducingHandler(datumProducerConfig,
-                    metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
-            breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
+
+    final BreadcrumbDispatcher<TDomainClass> breadcrumbDispatcher = new AggregatingBreadcrumbDispatcher<>(
+        breadcrumbsConfig.getBreadcrumbBucketDuration(),
+        DatumUtils.getDatumTimestampExtractor(domainClass),
+        new StartTimeWithDurationBreadcrumbBaker(breadcrumbsConfig.getSource(),
+            endPoint.getName(),
+            breadcrumbsConfig.getTier(),
+            breadcrumbsConfig.getDatacenter(),
+            breadcrumbsConfig.getApplication(),
+            DatumUtils.getDatumTypeId(domainClass)),
+        new BreadcrumbProducingHandler(datumProducerConfig,
+            metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
+        Duration.standardDays(1));
+
+    return new PeriodicBreadcrumbDispatcher<>(breadcrumbDispatcher, breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
   }
 
   protected abstract TBuilder This();
@@ -74,8 +76,8 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
    * @return A {@link TBuilder} instance with the custom production endpoint registered.
    */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> TBuilder registerProductionEndPointType(
-          final Class<TProductionEndPoint> endPointType,
-          final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
+      final Class<TProductionEndPoint> endPointType,
+      final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
 
     endpoint2datumEnvelopeSenderFactory.put(endPointType, datumEnvelopeSenderFactory);
 

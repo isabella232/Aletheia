@@ -2,6 +2,7 @@ package com.outbrain.aletheia.datum.production;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
@@ -9,10 +10,9 @@ import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.Timer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 
 /**
@@ -102,7 +102,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() throws Exception {
     envelopeSender.close();
     datumAuditor.close();
   }

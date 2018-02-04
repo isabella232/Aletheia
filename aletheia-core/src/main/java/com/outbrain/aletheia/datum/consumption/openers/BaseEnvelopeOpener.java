@@ -6,15 +6,14 @@ import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.TimeWindowAverager;
+
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
-abstract public class BaseEnvelopeOpener<TDomainClass> {
+abstract public class BaseEnvelopeOpener<TDomainClass> implements AutoCloseable {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseEnvelopeOpener.class);
 
@@ -44,7 +43,8 @@ abstract public class BaseEnvelopeOpener<TDomainClass> {
     metricFactory.createGauge("Timestamp.Logical", "DelayAverageInMillis", logicalDelayInMillisAverager);
   }
 
-  public void close() throws IOException {
+  @Override
+  public void close() throws Exception {
     datumAuditor.close();
   }
 

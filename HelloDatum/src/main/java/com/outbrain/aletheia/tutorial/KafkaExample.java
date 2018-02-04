@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.tutorial;
 
 import com.google.common.collect.Iterables;
+
 import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.DatumConsumerStreamsBuilder;
 import com.outbrain.aletheia.DatumEnvelopeStreamsBuilder;
@@ -15,9 +16,9 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.kafka.KafkaDatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.kafka.KafkaTopicProductionEndPoint;
+
 import org.joda.time.Instant;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,7 +31,9 @@ import java.util.Properties;
 
 public class KafkaExample {
 
-  public static void main(String[] args) throws IOException {
+  private static final int BREADCRUMBS_FLUSH_INTERVAL_SEC = 1;
+
+  public static void main(String[] args) throws Exception {
 
     System.out.println("Welcome to Aletheia 101 - Kafka production & consumption.");
 
@@ -87,7 +90,8 @@ public class KafkaExample {
                     getConfig(properties),
                     "envelopes_endpoint",
                     new KafkaDatumEnvelopeFetcherFactory())
-            .setBreadcrumbsEndpoint("breadcrumbs_endpoint")
+            .registerBreadcrumbsEndpointType(KafkaTopicProductionEndPoint.class, new KafkaDatumEnvelopeSenderFactory())
+            .setBreadcrumbsEndpoint("kafka_breadcrumbs_endpoint")
             .setEnvelopeFilter(envelope -> true)
             .createStreams();
 
@@ -105,8 +109,11 @@ public class KafkaExample {
       }
     }
 
-    for (final DatumConsumerStream<DatumEnvelope> datumConsumerStream : envelopeStreams) {
-      datumConsumerStream.close();
+    System.out.println("Waiting for periodic Breadcrumbs flush");
+    Thread.sleep(BREADCRUMBS_FLUSH_INTERVAL_SEC * 1000 * 2);
+
+    for (final DatumConsumerStream<DatumEnvelope> envelopeConsumerStream : envelopeStreams) {
+      envelopeConsumerStream.close();
     }
 
     System.out.println("Done.");
@@ -139,7 +146,7 @@ public class KafkaExample {
   private static Properties getBreadcrumbsProps(final String source) {
     final Properties properties = new Properties();
     properties.setProperty("aletheia.breadcrumbs.bucketDurationSec", Long.toString(1));
-    properties.setProperty("aletheia.breadcrumbs.flushIntervalSec", Long.toString(1));
+    properties.setProperty("aletheia.breadcrumbs.flushIntervalSec", Long.toString(BREADCRUMBS_FLUSH_INTERVAL_SEC));
     properties.setProperty("aletheia.breadcrumbs.fields.application", "HelloDatum");
     properties.setProperty("aletheia.breadcrumbs.fields.source", source);
     properties.setProperty("aletheia.breadcrumbs.fields.tier", "Tutorials");

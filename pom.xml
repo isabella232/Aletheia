@@ -117,7 +117,7 @@
             <!--trimStackTrace>false</trimStackTrace-->
             <forkedProcessTimeoutInSeconds>1500</forkedProcessTimeoutInSeconds>
             <forkMode>once</forkMode>
-            <argLine>-Xms512m -Xmx2048m -XX:MaxPermSize=1024m</argLine>
+            <argLine>-Xms512m -Xmx4g</argLine>
             <includes>
               <include>**/*Test.java</include>
               <include>**/Test*.java</include>

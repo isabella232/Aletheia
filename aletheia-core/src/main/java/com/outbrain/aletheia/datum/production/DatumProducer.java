@@ -1,13 +1,11 @@
 package com.outbrain.aletheia.datum.production;
 
-import java.io.Closeable;
-
 /**
  * The base interface for a {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream}.
  *
  * @param <TDomainClass> The type of the datum to be consumed by this {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream}.
  */
-public interface DatumProducer<TDomainClass> extends Closeable {
+public interface DatumProducer<TDomainClass> extends AutoCloseable {
   /**
    * Delivers a datum to a destination.
    *
