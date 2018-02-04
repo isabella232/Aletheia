@@ -9,6 +9,7 @@ com.outbrain.aletheia.configuration.routing
 com.outbrain.aletheia.datum
 com.outbrain.aletheia.datum.consumption
 com.outbrain.aletheia.datum.consumption.kafka
+com.outbrain.aletheia.datum.consumption.openers
 com.outbrain.aletheia.datum.envelope
 com.outbrain.aletheia.datum.envelope.avro
 com.outbrain.aletheia.datum.metrics.kafka
