@@ -5,11 +5,12 @@ import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.StartTimeWithDurationBreadcrumbBaker;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.EndPoint;
-import com.outbrain.aletheia.datum.InMemoryEndPoint;
 import com.outbrain.aletheia.datum.PeriodicBreadcrumbDispatcher;
+import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
+import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.DatumProducer;
-import com.outbrain.aletheia.datum.production.InMemoryDatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
@@ -34,14 +35,13 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
   protected final Class<TDomainClass> domainClass;
   protected MetricsFactory metricFactory = MetricsFactory.NULL;
 
-  protected AletheiaBuilder(final Class<TDomainClass> domainClass) {
+  AletheiaBuilder(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
-    registerKnownProductionEndPointsTypes();
   }
 
-  protected BreadcrumbDispatcher<TDomainClass> getTypedBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
-                                                                             final EndPoint endPoint,
-                                                                             final MetricFactoryProvider metricFactoryProvider) {
+  BreadcrumbDispatcher<TDomainClass> getTypedBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
+                                                                   final EndPoint endPoint,
+                                                                   final MetricFactoryProvider metricFactoryProvider) {
 
     final BreadcrumbDispatcher<TDomainClass> breadcrumbDispatcher = new AggregatingBreadcrumbDispatcher<>(
         breadcrumbsConfig.getBreadcrumbBucketDuration(),
@@ -61,11 +61,6 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
 
   protected abstract TBuilder This();
 
-  protected void registerKnownProductionEndPointsTypes() {
-    final InMemoryDatumEnvelopeSenderFactory datumEnvelopeSenderFactory = new InMemoryDatumEnvelopeSenderFactory();
-    this.registerProductionEndPointType(InMemoryEndPoint.class, datumEnvelopeSenderFactory);
-  }
-
   /**
    * Registers a ProductionEndPoint type. After the registration, data can be produced to an instance of this endpoint
    * type.
@@ -79,7 +74,26 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
       final Class<TProductionEndPoint> endPointType,
       final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
 
-    endpoint2datumEnvelopeSenderFactory.put(endPointType, datumEnvelopeSenderFactory);
+    this.<TProductionEndPoint, UProductionEndPoint>registerEnvelopeSenderType(endPointType, datumEnvelopeSenderFactory);
+
+    return This();
+  }
+
+  /**
+   * Registers a ConsumptionEndPoint type. After the registration, data can be consumed from an instance of this
+   * endpoint type.
+   *
+   * @param consumptionEndPointType     the consumption endpoint to add.
+   * @param datumEnvelopeFetcherFactory a {@link DatumEnvelopeFetcherFactory} capable of building
+   *                                    {@link DatumEnvelopeFetcher}s from the specified endpoint type.
+   * @return a {@link TBuilder} instance capable of consuming data from the specified consumption
+   * endpoint type.
+   */
+  public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> TBuilder registerConsumptionEndPointType(
+      final Class<TConsumptionEndPoint> consumptionEndPointType,
+      final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
+
+    this.<TConsumptionEndPoint, UConsumptionEndPoint>registerEnvelopeFetcherType(consumptionEndPointType, datumEnvelopeFetcherFactory);
 
     return This();
   }

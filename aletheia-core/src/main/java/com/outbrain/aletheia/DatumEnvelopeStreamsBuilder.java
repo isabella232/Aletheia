@@ -2,6 +2,7 @@ package com.outbrain.aletheia;
 
 import com.google.common.base.Strings;
 
+import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbKey;
 import com.outbrain.aletheia.breadcrumbs.KeyedBreadcrumbBaker;
@@ -17,6 +18,7 @@ import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.consumption.openers.IdentityEnvelopeOpener;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
+import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
@@ -33,7 +35,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Provides a fluent API for building a {@link DatumConsumerStream}.
+ * Provides a fluent API for building a {@link DatumConsumerStream} for consuming {@link DatumEnvelope}s.
  */
 public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
@@ -42,20 +44,24 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   private final AletheiaConfig config;
   private final DatumConsumerStreamConfig consumerConfig;
   protected MetricsFactory metricFactory = MetricsFactory.NULL;
-  private DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory;
   private String endpointId;
   private Predicate<DatumEnvelope> envelopeFilter = x -> true;
   private String endpointIdToProduceBreadcrumbs = "";
 
-  protected DatumEnvelopeStreamsBuilder(AletheiaConfig config, String endpointId, DatumEnvelopeFetcherFactory datumEnvelopeFetcherFactory) {
+  private DatumEnvelopeStreamsBuilder(final AletheiaConfig config,
+                                      final String endpointId) {
 
     this.config = config;
     this.endpointId = endpointId;
-    this.datumEnvelopeFetcherFactory = datumEnvelopeFetcherFactory;
 
     consumerConfig = config.getDatumConsumerConfig();
   }
 
+  /**
+   * Instantiate the consumer streams for consuming {@link DatumEnvelope}s.
+   *
+   * @return A list of {@link DatumConsumerStream}s
+   */
   public List<DatumConsumerStream<DatumEnvelope>> createStreams() {
 
     final ConsumptionEndPoint consumptionEndPoint = config.getConsumptionEndPoint(endpointId);
@@ -66,7 +72,7 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
     final MetricFactoryProvider metricFactoryProvider = createMetricFactoryProvider();
 
     final BreadcrumbDispatcher<DatumEnvelope> datumAuditor =
-            createAuditor(consumerConfig, consumptionEndPoint, metricFactoryProvider);
+        createAuditor(consumerConfig, consumptionEndPoint, metricFactoryProvider);
 
     final IdentityEnvelopeOpener datumEnvelopeOpener =
         createIdentityEnvelopeOpener(consumptionEndPoint, metricFactoryProvider, datumAuditor);
@@ -77,7 +83,92 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
     return toEnvelopeStream(consumptionEndPoint, metricFactoryProvider, datumEnvelopeOpener, datumEnvelopeFetchers);
   }
 
+  /**
+   * Create an instance of a {@link DatumEnvelopeStreamsBuilder}.
+   * This is the main entry point for working with the {@link DatumEnvelopeStreamsBuilder}.
+   *
+   * @param config     An instance of {@link AletheiaConfig}.
+   * @param endpointId The Id of a {@link ConsumptionEndPoint} to consume {@link DatumEnvelope}s from.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance.
+   */
+  public static DatumEnvelopeStreamsBuilder createBuilder(final AletheiaConfig config,
+                                                          final String endpointId) {
+    return new DatumEnvelopeStreamsBuilder(config, endpointId);
+  }
+
+  /**
+   * Registers a ProductionEndPoint type for producing {@link Breadcrumb}s
+   *
+   * @param endPointType               The type of the custom endpoint to register.
+   * @param datumEnvelopeSenderFactory A {@link DatumEnvelopeSenderFactory} capable of building
+   *                                   {@link NamedSender <com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope>}'s from the specified endpoint type.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance with the custom production endpoint registered.
+   */
+  public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> DatumEnvelopeStreamsBuilder registerBreadcrumbsEndpointType(
+      final Class<TProductionEndPoint> endPointType,
+      final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
+
+    this.<TProductionEndPoint, UProductionEndPoint>registerEnvelopeSenderType(endPointType, datumEnvelopeSenderFactory);
+
+    return this;
+  }
+
+  /**
+   * Registers a ConsumptionEndPoint type. After the registration, data can be consumed from an instance of this
+   * endpoint type.
+   *
+   * @param consumptionEndPointType     The consumption endpoint to add.
+   * @param datumEnvelopeFetcherFactory A {@link DatumEnvelopeFetcherFactory} capable of building
+   *                                    {@link DatumEnvelopeFetcher}s from the specified endpoint type.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance capable of consuming data from the specified consumption
+   * endpoint type.
+   */
+  public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumEnvelopeStreamsBuilder registerConsumptionEndPointType(
+      final Class<TConsumptionEndPoint> consumptionEndPointType,
+      final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
+
+    this.<TConsumptionEndPoint, UConsumptionEndPoint>registerEnvelopeFetcherType(consumptionEndPointType, datumEnvelopeFetcherFactory);
+
+    return this;
+  }
+
+  /**
+   * Set the endpoint to which consumption breadcrumbs will be produced.
+   *
+   * @param endpointIdToProduceBreadcrumbs The Id of a {@link ProductionEndPoint}.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance with a breadcrumbs endpoint configured.
+   */
+  public DatumEnvelopeStreamsBuilder setBreadcrumbsEndpoint(String endpointIdToProduceBreadcrumbs) {
+    this.endpointIdToProduceBreadcrumbs = endpointIdToProduceBreadcrumbs;
+    return this;
+  }
+
+  /**
+   * Set a predicate for filtering consumed envelopes.
+   *
+   * @param envelopeFilter The filtering {@link Predicate}.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance with an envelope filter defined.
+   */
+  public DatumEnvelopeStreamsBuilder setEnvelopeFilter(Predicate<DatumEnvelope> envelopeFilter) {
+    this.envelopeFilter = envelopeFilter;
+    return this;
+  }
+
+  /**
+   * A {@link DatumType.TimestampSelector} which extracts a timestamp from a {@link DatumEnvelope}.
+   */
+  public static class EnvelopeTimestampSelector implements DatumType.TimestampSelector<DatumEnvelope> {
+
+    @Override
+    public DateTime extractDatumDateTime(DatumEnvelope envelope) {
+      return new DateTime(envelope.getLogicalTimestamp());
+    }
+  }
+
   private List<DatumEnvelopeFetcher> getFetchers(ConsumptionEndPoint consumptionEndPoint, MetricFactoryProvider metricFactoryProvider) {
+    final DatumEnvelopeFetcherFactory<ConsumptionEndPoint> datumEnvelopeFetcherFactory =
+        getEnvelopeFetcherFactory(consumptionEndPoint.getClass());
+
     return datumEnvelopeFetcherFactory.buildDatumEnvelopeFetcher(
         consumptionEndPoint,
         metricFactoryProvider.forDatumEnvelopeFetcher(consumptionEndPoint));
@@ -119,32 +210,9 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
     return datumAuditor;
   }
 
-  public static DatumEnvelopeStreamsBuilder createBuilder(AletheiaConfig config, String endpointId, DatumEnvelopeFetcherFactory fetcherFactory) {
-    return new DatumEnvelopeStreamsBuilder(config, endpointId, fetcherFactory);
-  }
-
-  public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> DatumEnvelopeStreamsBuilder registerBreadcrumbsEndpointType(
-      final Class<TProductionEndPoint> endPointType,
-      final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
-
-    endpoint2datumEnvelopeSenderFactory.put(endPointType, datumEnvelopeSenderFactory);
-
-    return this;
-  }
-
-  public DatumEnvelopeStreamsBuilder setBreadcrumbsEndpoint(String endpointIdToProduceBreadcrumbs) {
-    this.endpointIdToProduceBreadcrumbs = endpointIdToProduceBreadcrumbs;
-    return this;
-  }
-
-  public DatumEnvelopeStreamsBuilder setEnvelopeFilter(Predicate<DatumEnvelope> envelopeFilter) {
-    this.envelopeFilter = envelopeFilter;
-    return this;
-  }
-
-  protected BreadcrumbDispatcher<DatumEnvelope> getEnvelopeBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
-                                                                                 final EndPoint endPoint,
-                                                                                 final MetricFactoryProvider metricFactoryProvider) {
+  private BreadcrumbDispatcher<DatumEnvelope> getEnvelopeBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
+                                                                               final EndPoint endPoint,
+                                                                               final MetricFactoryProvider metricFactoryProvider) {
     final Function<DatumEnvelope, BreadcrumbKey> breadcrumbKeyMapper = (envelope) -> {
       return new BreadcrumbKey(envelope.getDatumTypeId().toString(),
           envelope.getSourceHost().toString(),
@@ -163,14 +231,4 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
     return new PeriodicBreadcrumbDispatcher<>(breadcrumbDispatcher, breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
   }
-
-  public class EnvelopeTimestampSelector implements DatumType.TimestampSelector<DatumEnvelope> {
-
-    @Override
-    public DateTime extractDatumDateTime(DatumEnvelope envelope) {
-      return new DateTime(envelope.getLogicalTimestamp());
-    }
-  }
-
-
 }

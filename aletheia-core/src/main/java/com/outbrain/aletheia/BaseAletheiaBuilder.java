@@ -6,9 +6,14 @@ import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
 import com.outbrain.aletheia.datum.DatumType;
 import com.outbrain.aletheia.datum.EndPoint;
+import com.outbrain.aletheia.datum.InMemoryEndPoint;
+import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
+import com.outbrain.aletheia.datum.consumption.InMemoryDatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.DatumProducer;
+import com.outbrain.aletheia.datum.production.InMemoryDatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
@@ -29,9 +34,9 @@ abstract class BaseAletheiaBuilder {
    */
   protected static class InternalBreadcrumbProducerMetricFactoryProvider extends AletheiaMetricFactoryProvider {
 
-    public InternalBreadcrumbProducerMetricFactoryProvider(final String datumTypeId,
-                                                           final String componentName,
-                                                           final MetricsFactory metricsFactory) {
+    InternalBreadcrumbProducerMetricFactoryProvider(final String datumTypeId,
+                                                    final String componentName,
+                                                    final MetricsFactory metricsFactory) {
       super(datumTypeId, componentName, metricsFactory);
     }
 
@@ -78,8 +83,8 @@ abstract class BaseAletheiaBuilder {
 
     private final DatumProducer<Breadcrumb> breadcrumbDatumProducer;
 
-    public BreadcrumbProducingHandler(final DatumProducerConfig datumProducerConfig,
-                                      final MetricsFactory metricsFactory) {
+    BreadcrumbProducingHandler(final DatumProducerConfig datumProducerConfig,
+                               final MetricsFactory metricsFactory) {
 
       final DatumProducerBuilder<Breadcrumb> breadcrumbProducerBuilder =
               configurableBreadcrumbProducerBuilder(metricsFactory);
@@ -98,12 +103,11 @@ abstract class BaseAletheiaBuilder {
 
       DatumProducerBuilder<Breadcrumb> configuredBreadcrumbDatumProducerBuilder = breadcrumbDatumProducerBuilder;
 
-      for (final Class<? extends ProductionEndPoint> productionEndPointType : endpoint2datumEnvelopeSenderFactory.keySet()) {
+      for (final Class<? extends ProductionEndPoint> productionEndPointType : envelopeSenderTypesRegistry.keySet()) {
         configuredBreadcrumbDatumProducerBuilder =
                 breadcrumbDatumProducerBuilder
                         .registerProductionEndPointType(productionEndPointType,
-                                                        endpoint2datumEnvelopeSenderFactory.get(
-                                                                productionEndPointType));
+                                                        getEnvelopeSenderFactory(productionEndPointType));
       }
 
       return configuredBreadcrumbDatumProducerBuilder;
@@ -120,10 +124,16 @@ abstract class BaseAletheiaBuilder {
     }
   }
 
-  protected final Map<Class, DatumEnvelopeSenderFactory> endpoint2datumEnvelopeSenderFactory = Maps.newHashMap();
-  protected ProductionEndPoint breadcrumbsProductionEndPoint;
-  protected BreadcrumbsConfig breadcrumbsConfig;
+  private final Map<Class, DatumEnvelopeSenderFactory> envelopeSenderTypesRegistry = Maps.newHashMap();
+  private final Map<Class, DatumEnvelopeFetcherFactory> envelopeFetcherTypesRegistry = Maps.newHashMap();
+  BreadcrumbsConfig breadcrumbsConfig;
+  private ProductionEndPoint breadcrumbsProductionEndPoint;
   protected MetricsFactory metricFactory = MetricsFactory.NULL;
+
+  BaseAletheiaBuilder() {
+    registerKnownProductionEndPointsTypes();
+    registerKnownConsumptionEndPointTypes();
+  }
 
   public class EnvelopeTimestampSelector implements DatumType.TimestampSelector<DatumEnvelope> {
 
@@ -133,7 +143,7 @@ abstract class BaseAletheiaBuilder {
     }
   }
 
-  protected boolean isBreadcrumbProductionDefined() {
+  boolean isBreadcrumbProductionDefined() {
     return breadcrumbsConfig != null && breadcrumbsProductionEndPoint != null;
   }
 
@@ -171,5 +181,35 @@ abstract class BaseAletheiaBuilder {
               properties.getProperty("aletheia.breadcrumbs.endpoint.id", ""));
     }
     return breadcrumbEnv;
+  }
+
+  private void registerKnownProductionEndPointsTypes() {
+    this.registerEnvelopeSenderType(InMemoryEndPoint.class, new InMemoryDatumEnvelopeSenderFactory());
+  }
+
+  private void registerKnownConsumptionEndPointTypes() {
+    this.registerEnvelopeFetcherType(InMemoryEndPoint.class, new InMemoryDatumEnvelopeFetcherFactory());
+  }
+
+  <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> void registerEnvelopeSenderType(
+      final Class<TProductionEndPoint> endPointType,
+      final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
+
+    envelopeSenderTypesRegistry.put(endPointType, datumEnvelopeSenderFactory);
+  }
+
+  <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> void registerEnvelopeFetcherType(
+      final Class<TConsumptionEndPoint> consumptionEndPointType,
+      final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
+
+    envelopeFetcherTypesRegistry.put(consumptionEndPointType, datumEnvelopeFetcherFactory);
+  }
+
+  DatumEnvelopeSenderFactory getEnvelopeSenderFactory(final Class endPointType) {
+    return envelopeSenderTypesRegistry.get(endPointType);
+  }
+
+  DatumEnvelopeFetcherFactory getEnvelopeFetcherFactory(final Class endPointType) {
+    return envelopeFetcherTypesRegistry.get(endPointType);
   }
 }

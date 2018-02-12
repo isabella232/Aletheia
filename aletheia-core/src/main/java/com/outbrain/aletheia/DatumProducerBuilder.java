@@ -5,17 +5,25 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
+
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.DatumKeySelector;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import com.outbrain.aletheia.datum.production.*;
+import com.outbrain.aletheia.datum.production.AuditingDatumProducer;
+import com.outbrain.aletheia.datum.production.CompositeDatumProducer;
+import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
+import com.outbrain.aletheia.datum.production.DatumProducer;
+import com.outbrain.aletheia.datum.production.NamedSender;
+import com.outbrain.aletheia.datum.production.ProductionEndPoint;
+import com.outbrain.aletheia.datum.production.Sender;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,8 +101,7 @@ public class DatumProducerBuilder<TDomainClass>
   private NamedSender<DatumEnvelope> getSender(final ProductionEndPoint productionEndPoint,
                                                final MetricsFactory aMetricFactory) {
 
-    final DatumEnvelopeSenderFactory datumEnvelopeSenderFactory = endpoint2datumEnvelopeSenderFactory.get(
-            productionEndPoint.getClass());
+    final DatumEnvelopeSenderFactory datumEnvelopeSenderFactory = getEnvelopeSenderFactory(productionEndPoint.getClass());
 
     Preconditions.checkState(datumEnvelopeSenderFactory != null,
                              String.format("No datum sender factory for production end point of type [%s] was provided.",

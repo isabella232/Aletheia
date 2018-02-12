@@ -88,8 +88,8 @@ public class KafkaExample {
     final List<DatumConsumerStream<DatumEnvelope>> envelopeStreams = DatumEnvelopeStreamsBuilder
             .createBuilder(
                     getConfig(properties),
-                    "envelopes_endpoint",
-                    new KafkaDatumEnvelopeFetcherFactory())
+                    "envelopes_endpoint")
+            .registerConsumptionEndPointType(KafkaTopicConsumptionEndPoint.class, new KafkaDatumEnvelopeFetcherFactory())
             .registerBreadcrumbsEndpointType(KafkaTopicProductionEndPoint.class, new KafkaDatumEnvelopeSenderFactory())
             .setBreadcrumbsEndpoint("kafka_breadcrumbs_endpoint")
             .setEnvelopeFilter(envelope -> true)
