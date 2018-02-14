@@ -177,6 +177,8 @@ abstract class BaseAletheiaBuilder {
               properties.getProperty(AletheiaConfig.ENDPOINT_GROUPS_CONFIG_PATH, ""));
       breadcrumbEnv.setProperty(AletheiaConfig.SERDES_CONFIG_PATH,
               properties.getProperty(AletheiaConfig.SERDES_CONFIG_PATH, ""));
+      breadcrumbEnv.setProperty(AletheiaConfig.DEFAULT_ENDPOINT,
+              properties.getProperty(AletheiaConfig.DEFAULT_ENDPOINT, ""));
       breadcrumbEnv.setProperty("aletheia.breadcrumbs.endpoint.id",
               properties.getProperty("aletheia.breadcrumbs.endpoint.id", ""));
     }
