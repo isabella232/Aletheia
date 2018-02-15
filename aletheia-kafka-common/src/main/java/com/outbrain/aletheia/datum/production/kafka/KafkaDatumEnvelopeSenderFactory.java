@@ -1,6 +1,5 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
-import com.outbrain.aletheia.datum.envelope.AvroDatumEnvelopeSerDe;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.AvroDatumEnvelopeSender;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;

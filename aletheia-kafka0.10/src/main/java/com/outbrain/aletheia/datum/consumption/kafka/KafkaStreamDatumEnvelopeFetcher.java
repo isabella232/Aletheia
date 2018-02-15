@@ -5,6 +5,8 @@ import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 
+import java.util.Collections;
+
 
 /**
  * A {@link com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher} implementation capable of fetching
@@ -24,11 +26,11 @@ class KafkaStreamDatumEnvelopeFetcher extends BaseKafkaDatumEnvelopeFetcher {
 
   @Override
   void seekToBeginning(final TopicPartition topicPartition) {
-    kafkaConsumer.seekToBeginning(topicPartition);
+    kafkaConsumer.seekToBeginning(Collections.singletonList(topicPartition));
   }
 
   @Override
   void seekToEnd(final TopicPartition topicPartition) {
-    kafkaConsumer.seekToEnd(topicPartition);
+    kafkaConsumer.seekToEnd(Collections.singletonList(topicPartition));
   }
 }

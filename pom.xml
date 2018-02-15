@@ -64,6 +64,7 @@
 
   <modules>
     <module>aletheia-core</module>
+    <module>aletheia-kafka-common</module>
     <module>aletheia-kafka0.9</module>
     <module>aletheia-kafka0.10</module>
     <module>aletheia-log4j</module>
@@ -242,6 +243,11 @@
         <version>${project.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>aletheia-kafka-common</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>

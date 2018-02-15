@@ -1,8 +1,8 @@
 package com.outbrain.aletheia.datum.production.kafka;
 
 import com.outbrain.aletheia.datum.metrics.kafka.KafkaMetrics;
-import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.DatumKeyAwareNamedSender;
+import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
@@ -72,12 +72,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
     initMetrics(metricFactory, customConfiguration);
 
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-      @Override
-      public void run() {
-        close();
-      }
-    }));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> close()));
 
     connect();
   }
@@ -89,23 +84,23 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     failureDueToUnconnected = metricFactory.createCounter("Send.Attempts.Failures", "UnableToConnect");
 
     metricsReporterScheduledExecutorService = KafkaMetrics.reportTo(metricFactory,
-            customConfiguration.getProperty("client.id"),
-            Duration.standardSeconds(
-                    Long.parseLong(
-                            kafkaTopicDeliveryEndPoint.getProperties()
-                                    .getProperty(
-                                            "kafka.client.metrics.periodic.sync.intervalInSec",
-                                            "30"))));
+        customConfiguration.getProperty("client.id"),
+        Duration.standardSeconds(
+            Long.parseLong(
+                kafkaTopicDeliveryEndPoint.getProperties()
+                                          .getProperty(
+                                              "kafka.client.metrics.periodic.sync.intervalInSec",
+                                              "30"))));
   }
 
   private boolean singleConnect(final Properties config) {
     try {
       producer = new KafkaProducer<>(config);
       connected = true;
-      logger.info("Connected to kafka. for destination " + this.kafkaTopicDeliveryEndPoint.getName());
+      logger.info("Connected to kafka. for destination {}", this.kafkaTopicDeliveryEndPoint.getName());
       return true;
     } catch (final Exception e) {
-      logger.error("Failed to connect to kafka. (topic name : " + kafkaTopicDeliveryEndPoint.getTopicName() + " )", e);
+      logger.error("Failed to connect to kafka. (topic name : {} )", kafkaTopicDeliveryEndPoint.getTopicName(), e);
       return false;
     }
   }
@@ -113,7 +108,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private void connect() {
     connected = singleConnect(customConfiguration);
     if (!connected) {
-      logger.warn("Failed attempting connection to kafka (" + customConfiguration.toString() + ").");
+      logger.warn("Failed attempting connection to kafka ({}).", customConfiguration.toString());
       connectionTimer.schedule(new TimerTask() {
         @Override
         public void run() {
@@ -130,7 +125,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     }
   }
 
-  protected Properties getProducerConfig() {
+  private Properties getProducerConfig() {
 
     final Properties producerProperties = (Properties) kafkaTopicDeliveryEndPoint.getProperties().clone();
 
@@ -160,7 +155,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   }
 
   @Override
-  public void send(byte[] data, String key, DeliveryCallback deliveryCallback) throws SilentSenderException {
+  public void send(final byte[] data, final String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
     if (!connected) {
       failureDueToUnconnected.inc();
       return;
@@ -171,11 +166,11 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     try {
       // Send datum
       final Future<RecordMetadata> sendResult =
-              producer.send(
-                      new ProducerRecord<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data),
-                      isSync ? null : kafkaCallbackTransformer.transform(
-                              deliveryCallback,
-                              kafkaTopicDeliveryEndPoint));
+          producer.send(
+              new ProducerRecord<>(kafkaTopicDeliveryEndPoint.getTopicName(), key, data),
+              isSync ? null : kafkaCallbackTransformer.transform(
+                  deliveryCallback,
+                  kafkaTopicDeliveryEndPoint));
 
       // Wait for result if configured as a sync producer type
       if (isSync) {
@@ -210,7 +205,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     if (connected) {
       if (producer != null) {
         try {
-          logger.info("Closing producer for endpoint: " + getName());
+          logger.info("Closing producer for endpoint: {}", getName());
           producer.close();
         } catch (final Exception e) {
           logger.info("Could not close producer. Continuing", e);

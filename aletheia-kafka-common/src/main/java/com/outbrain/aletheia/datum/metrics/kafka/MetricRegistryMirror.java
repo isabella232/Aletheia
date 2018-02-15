@@ -1,8 +1,5 @@
 package com.outbrain.aletheia.datum.metrics.kafka;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 
 import com.outbrain.aletheia.metrics.common.Gauge;
@@ -15,39 +12,33 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 class MetricRegistryMirror {
 
-  private static Logger log = LoggerFactory.getLogger(MetricRegistryMirror.class);
+  private static final Logger log = LoggerFactory.getLogger(MetricRegistryMirror.class);
 
   private final MetricsFactory metricsFactory;
 
   private MetricRegistryMirror(final MetricsFactory targetMetricsFactory) {
-      metricsFactory = targetMetricsFactory;
-  }
-  private Predicate<MetricName> metricPredicate(final Predicate<String> filter) {
-    return new Predicate<MetricName>() {
-      @Override
-      public boolean apply(final MetricName metricName) {
-        return filter.apply(metricName.toString());
-      }
-    };
+    metricsFactory = targetMetricsFactory;
   }
 
   private ImmutableSet<Map.Entry<MetricName, KafkaMetric>> filter(final ConcurrentMap<MetricName, KafkaMetric> kafkaMetrics,
                                                                   final Predicate<String> metricNameFilter) {
 
-    return FluentIterable.from(kafkaMetrics.entrySet())
-                         .filter(new Predicate<Map.Entry<MetricName, KafkaMetric>>() {
-                           @Override
-                           public boolean apply(final Map.Entry<MetricName, KafkaMetric> entry) {
-                             final MetricName metricName = entry.getKey();
-                             return metricPredicate(metricNameFilter).apply(metricName);
-                           }
-                         })
-                         .toSet();
+    return ImmutableSet.copyOf(kafkaMetrics.entrySet()
+                                           .stream()
+                                           .filter(entry -> {
+                                             return ((Predicate<MetricName>) metricName -> {
+                                               return metricNameFilter.test(metricName.toString());
+                                             }).test(entry.getKey());
+                                           }).collect(Collectors.toSet()));
   }
+
   public static MetricRegistryMirror mirrorTo(final MetricsFactory targetMetricsFactory) {
     return new MetricRegistryMirror(targetMetricsFactory);
   }
