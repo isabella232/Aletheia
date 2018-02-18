@@ -23,4 +23,9 @@ public interface DatumProducer<TDomainClass> extends AutoCloseable {
    *
    */
   void deliver(TDomainClass datum, DeliveryCallback deliveryCallbackPerEndpoint);
+
+  @Override
+  default void close() throws Exception {
+
+  }
 }
