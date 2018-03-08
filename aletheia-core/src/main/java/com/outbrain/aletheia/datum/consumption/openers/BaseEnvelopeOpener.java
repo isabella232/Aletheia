@@ -6,7 +6,6 @@ import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.TimeWindowAverager;
-
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -68,21 +67,20 @@ abstract public class BaseEnvelopeOpener<TDomainClass> implements AutoCloseable 
       }
     } else {
       // Message from the future
-      final long logicalTimeAheadInMillis = new Interval(now, now.plusMillis(1)).toDuration().getMillis();
+      final long logicalTimeAheadInMillis = new Interval(now, datumTime).toDuration().getMillis();
       futureLogicalMessagesCount.inc();
 
       if (logicalTimeAheadInMillis > LOG_FUTURE_MESSAGES_LAG_THRESHOLD_IN_MILLIS) {
-        logger.warn(String.format("A message with a future logical timestamp has arrived from %s. " +
-                        "Arriving timestamp is: %d, now reference is %d, delta is: %d, skipping lag metrics update.",
+        logger.warn("A message with a future logical timestamp has arrived from {}. Arriving timestamp is: {}, now reference is {}, delta is: {}, skipping lag metrics update.",
                 envelope.getSourceHost(),
                 envelope.getLogicalTimestamp(),
                 now.getMillis(),
-                envelope.getLogicalTimestamp() - now.getMillis()));
+                logicalTimeAheadInMillis);
       }
     }
   }
 
-  public TDomainClass open(final DatumEnvelope datumEnvelope){
+  public TDomainClass open(final DatumEnvelope datumEnvelope) {
     updateLagMetrics(datumEnvelope);
     return openEnvelope(datumEnvelope);
   }
