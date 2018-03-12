@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
-
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.DatumUtils;
@@ -18,7 +17,6 @@ import com.outbrain.aletheia.datum.consumption.openers.DatumEnvelopeOpener;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +78,7 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
     final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
             DATUM_STREAM,
-            metricFactory);
+            getMetricsFactory());
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
     } else {

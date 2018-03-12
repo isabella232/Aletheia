@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
-
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.DatumKeySelector;
@@ -23,7 +22,6 @@ import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +57,7 @@ public class DatumProducerBuilder<TDomainClass>
     final MetricFactoryProvider metricFactoryProvider;
 
     if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, metricFactory);
+      metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
 
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
@@ -71,7 +69,7 @@ public class DatumProducerBuilder<TDomainClass>
     } else {
       metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
                                                                                   DATUM_PRODUCER,
-                                                                                  metricFactory);
+                                                                                  getMetricsFactory());
       datumAuditor = BreadcrumbDispatcher.NULL;
     }
 

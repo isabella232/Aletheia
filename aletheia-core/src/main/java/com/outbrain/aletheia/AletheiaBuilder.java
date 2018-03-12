@@ -16,7 +16,6 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.joda.time.Duration;
 
 /**
@@ -33,7 +32,6 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
    */
 
   protected final Class<TDomainClass> domainClass;
-  protected MetricsFactory metricFactory = MetricsFactory.NULL;
 
   AletheiaBuilder(final Class<TDomainClass> domainClass) {
     this.domainClass = domainClass;
@@ -105,7 +103,7 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
    * @return A {@link TBuilder} instance with metrics reporting configured.
    */
   public TBuilder reportMetricsTo(final MetricsFactory metricFactory) {
-    this.metricFactory = metricFactory;
+    setMetricsFactory(metricFactory);
 
     return This();
   }

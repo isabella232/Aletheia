@@ -1,7 +1,6 @@
 package com.outbrain.aletheia;
 
 import com.google.common.base.Strings;
-
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbKey;
@@ -23,7 +22,6 @@ import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -43,7 +41,6 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   private static final String ENVELOPE_CONSUMER_STREAM = "EnvelopeConsumerStream";
   private final AletheiaConfig config;
   private final DatumConsumerStreamConfig consumerConfig;
-  protected MetricsFactory metricFactory = MetricsFactory.NULL;
   private String endpointId;
   private Predicate<DatumEnvelope> envelopeFilter = x -> true;
   private String endpointIdToProduceBreadcrumbs = "";
@@ -155,6 +152,18 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   }
 
   /**
+   * Configures metrics reporting.
+   *
+   * @param metricFactory A MetricsFactory instance to report metrics to.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance with an envelope filter defined.
+   */
+  public DatumEnvelopeStreamsBuilder reportMetricsTo(final MetricsFactory metricFactory) {
+    setMetricsFactory(metricFactory);
+
+    return this;
+  }
+
+  /**
    * A {@link DatumType.TimestampSelector} which extracts a timestamp from a {@link DatumEnvelope}.
    */
   public static class EnvelopeTimestampSelector implements DatumType.TimestampSelector<DatumEnvelope> {
@@ -185,7 +194,7 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   private DefaultMetricFactoryProvider createMetricFactoryProvider() {
     return new DefaultMetricFactoryProvider(DatumEnvelope.class.getSimpleName(),
         ENVELOPE_CONSUMER_STREAM,
-        metricFactory);
+        getMetricsFactory());
   }
 
   private IdentityEnvelopeOpener createIdentityEnvelopeOpener(ConsumptionEndPoint consumptionEndPoint, MetricFactoryProvider metricFactoryProvider, BreadcrumbDispatcher<DatumEnvelope> datumAuditor) {

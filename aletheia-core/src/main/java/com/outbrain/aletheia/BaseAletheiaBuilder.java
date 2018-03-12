@@ -1,7 +1,6 @@
 package com.outbrain.aletheia;
 
 import com.google.common.collect.Maps;
-
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbHandler;
 import com.outbrain.aletheia.datum.DatumType;
@@ -19,7 +18,6 @@ import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryPrefixer;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.joda.time.DateTime;
 
 import java.util.Map;
@@ -128,7 +126,7 @@ abstract class BaseAletheiaBuilder {
   private final Map<Class, DatumEnvelopeFetcherFactory> envelopeFetcherTypesRegistry = Maps.newHashMap();
   BreadcrumbsConfig breadcrumbsConfig;
   private ProductionEndPoint breadcrumbsProductionEndPoint;
-  protected MetricsFactory metricFactory = MetricsFactory.NULL;
+  private MetricsFactory metricFactory = MetricsFactory.NULL;
 
   BaseAletheiaBuilder() {
     registerKnownProductionEndPointsTypes();
@@ -213,5 +211,18 @@ abstract class BaseAletheiaBuilder {
 
   DatumEnvelopeFetcherFactory getEnvelopeFetcherFactory(final Class endPointType) {
     return envelopeFetcherTypesRegistry.get(endPointType);
+  }
+
+  /**
+   * Configures metrics reporting.
+   *
+   * @param metricFactory A MetricsFactory instance to report metrics to.
+   */
+  public void setMetricsFactory(final MetricsFactory metricFactory) {
+    this.metricFactory = metricFactory;
+  }
+
+  public MetricsFactory getMetricsFactory() {
+    return metricFactory;
   }
 }
