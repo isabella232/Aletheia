@@ -1,9 +1,7 @@
 package com.outbrain.aletheia.breadcrumbs;
 
 import com.google.common.base.Preconditions;
-
 import com.outbrain.aletheia.datum.DatumType;
-
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
@@ -61,6 +59,14 @@ public abstract class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDi
   public void close() throws Exception {
     breadcrumbHandler.close();
   }
+
+  @Override
+  synchronized public void dispatchBreadcrumbs() {
+    final long totalHitCount = dispatchBreadcrumbsInternal();
+    logger.info("Dispatched breadcrumbs. totalHitCount = {}", totalHitCount);
+  }
+
+  abstract long dispatchBreadcrumbsInternal();
 
   long getBucketCount(Duration preAllocatedInterval) {
     final long millisInInterval = preAllocatedInterval.getMillis();

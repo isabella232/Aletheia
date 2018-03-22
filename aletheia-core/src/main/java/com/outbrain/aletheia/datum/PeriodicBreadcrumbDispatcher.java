@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class PeriodicBreadcrumbDispatcher<TDomainClass> implements BreadcrumbDispatcher<TDomainClass> {
 
   private static final Logger logger = LoggerFactory.getLogger(PeriodicBreadcrumbDispatcher.class);
+  private static final int EXECUTOR_TERMINATION_TIMEOUT = 5000;
 
   private final BreadcrumbDispatcher<TDomainClass> delegateDispatcher;
   private final ScheduledExecutorService scheduledExecutorService;
@@ -52,11 +53,17 @@ public class PeriodicBreadcrumbDispatcher<TDomainClass> implements BreadcrumbDis
 
   @Override
   public void close() throws Exception {
-    delegateDispatcher.close();
     if (future != null) {
       future.cancel(false);
     }
     scheduledExecutorService.shutdown();
+    scheduledExecutorService.awaitTermination(EXECUTOR_TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS);
+
+    // Last dispatch before closing
+    dispatchBreadcrumbs();
+
+    delegateDispatcher.close();
+
   }
 
   private void periodicFlush() {

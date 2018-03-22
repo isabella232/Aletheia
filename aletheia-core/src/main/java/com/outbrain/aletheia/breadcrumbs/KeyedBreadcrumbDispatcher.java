@@ -1,7 +1,6 @@
 package com.outbrain.aletheia.breadcrumbs;
 
 import com.outbrain.aletheia.datum.DatumType;
-
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
@@ -85,8 +84,8 @@ public class KeyedBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDispatche
   }
 
   @Override
-  public void dispatchBreadcrumbs() {
-
+  long dispatchBreadcrumbsInternal() {
+    long totalHitCount = 0;
     for (final long bucketId : bucketId2hitsPerInterval.keySet()) {
       final ConcurrentMap<BreadcrumbKey, HitsPerInterval> hitsMap = bucketId2hitsPerInterval.get(bucketId);
       final Set<BreadcrumbKey> keySet = hitsMap.keySet();
@@ -96,7 +95,7 @@ public class KeyedBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDispatche
         if (hitsPerInterval.isEmpty()) continue;
 
         final long hitCount = hitsPerInterval.hitCount.getAndSet(-1);
-
+        totalHitCount += hitCount;
         final Breadcrumb breadcrumb = breadcrumbBaker.bakeBreadcrumb(
             new KeyedBucket(bucketDuration, hitsPerInterval.bucketStart, breadcrumbKey),
             Instant.now(),
@@ -114,6 +113,6 @@ public class KeyedBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDispatche
         }
       }
     }
+    return totalHitCount;
   }
-
 }
