@@ -10,7 +10,7 @@
         "serDe": "json"
       }
     ],
-    "breadcrumbs": "breadcrumbs_endpoint",
+    "breadcrumbs": "${aletheia.breadcrumbs.my_datum.endpoint.id}",
     "datum.key.selector.class": "com.outbrain.aletheia.tutorial.MyDatum$MyKeySelector"
   },
   "envelope": {

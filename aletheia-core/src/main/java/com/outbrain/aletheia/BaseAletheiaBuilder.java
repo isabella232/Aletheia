@@ -146,7 +146,7 @@ abstract class BaseAletheiaBuilder {
   }
 
   public void setBreadcrumbsEndpoint(final ProductionEndPoint breadcrumbProductionEndPoint,
-                                       final BreadcrumbsConfig breadcrumbsConfig) {
+                                     final BreadcrumbsConfig breadcrumbsConfig) {
 
     this.breadcrumbsProductionEndPoint = breadcrumbProductionEndPoint;
     this.breadcrumbsConfig = breadcrumbsConfig;
@@ -157,6 +157,12 @@ abstract class BaseAletheiaBuilder {
     final Properties breadcrumbEnv = new Properties();
 
     if (properties != null) {
+      for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+        if (String.valueOf(entry.getKey()).startsWith("aletheia.breadcrumbs.")) {
+          breadcrumbEnv.setProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+      }
+
       breadcrumbEnv.setProperty(AletheiaConfig.MULTIPLE_CONFIGURATIONS_PATH,
               properties.getProperty(AletheiaConfig.MULTIPLE_CONFIGURATIONS_PATH, ""));
       breadcrumbEnv.setProperty(AletheiaConfig.ENDPOINT_GROUPS_EXTENSION,
@@ -177,8 +183,6 @@ abstract class BaseAletheiaBuilder {
               properties.getProperty(AletheiaConfig.SERDES_CONFIG_PATH, ""));
       breadcrumbEnv.setProperty(AletheiaConfig.DEFAULT_ENDPOINT,
               properties.getProperty(AletheiaConfig.DEFAULT_ENDPOINT, ""));
-      breadcrumbEnv.setProperty("aletheia.breadcrumbs.endpoint.id",
-              properties.getProperty("aletheia.breadcrumbs.endpoint.id", ""));
     }
     return breadcrumbEnv;
   }

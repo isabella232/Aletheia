@@ -140,6 +140,8 @@ public class KafkaExample {
     properties.setProperty("aletheia.consumer.incarnation", "1");
     properties.setProperty("aletheia.consumer.source", "myHostName");
     properties.setProperty("aletheia.producer.source", "myHostName");
+    properties.setProperty("aletheia.breadcrumbs.my_datum.endpoint.id", "breadcrumbs_endpoint");
+    properties.setProperty("aletheia.breadcrumbs.compression.type", "lz4");
     return properties;
   }
 
