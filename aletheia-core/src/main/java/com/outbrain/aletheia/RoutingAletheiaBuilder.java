@@ -1,5 +1,6 @@
 package com.outbrain.aletheia;
 
+import com.google.common.base.Strings;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.production.DatumProducer;
@@ -22,6 +23,7 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
   protected AletheiaBuilder<TDomainClass, ?> builder;
   protected final Class<TDomainClass> domainClass;
   protected final Properties properties;
+  private ProductionEndPoint breadcrumbsProductionEndPoint;
 
   protected RoutingAletheiaBuilder(final Class<TDomainClass> domainClass, final AletheiaConfig config) {
     this.domainClass = domainClass;
@@ -33,18 +35,23 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
   }
 
   protected void configureBreadcrumbProduction() {
-    if (!domainClass.equals(Breadcrumb.class)) {
-      final String datumTypeId = DatumUtils.getDatumTypeId(domainClass);
-      final ProductionEndPoint breadcrumbsProductionEndPoint =
-              new AletheiaConfig(builder.getBreadcrumbEnvironment(properties)).getBreadcrumbsProductionEndPoint(datumTypeId);
+    if (domainClass.equals(Breadcrumb.class)) {
+      return;
+    }
 
-      if (breadcrumbsProductionEndPoint != null) {
-        builder.setBreadcrumbsEndpoint(breadcrumbsProductionEndPoint, new BreadcrumbsConfig(properties));
-        logger.warn("Breadcrumbs endpoint {} has been added to pipeline.", breadcrumbsProductionEndPoint);
-      } else {
-        logger.warn("Breadcrumbs endpoint was null or illegal. Breadcrumbs will NOT be produced for \"{}\".",
-                datumTypeId);
-      }
+    final String datumTypeId = DatumUtils.getDatumTypeId(domainClass);
+
+    // If breadcrumbs endpoint is uninitialized - initialize it from the datum's routing config
+    if (breadcrumbsProductionEndPoint == null) {
+      breadcrumbsProductionEndPoint = new AletheiaConfig(builder.getBreadcrumbEnvironment(properties)).getBreadcrumbsProductionEndPoint(datumTypeId);
+    }
+
+    // If breadcrumbs endpoint is not disabled - enable breadcrumbs production
+    if (breadcrumbsProductionEndPoint != null && breadcrumbsProductionEndPoint != ProductionEndPoint.NULL) {
+      builder.setBreadcrumbsEndpoint(breadcrumbsProductionEndPoint, new BreadcrumbsConfig(properties));
+      logger.warn("Breadcrumbs endpoint {} has been added to pipeline.", breadcrumbsProductionEndPoint);
+    } else {
+      logger.warn("Breadcrumbs endpoint was null or illegal. Breadcrumbs will NOT be produced for \"{}\".", datumTypeId);
     }
   }
 
@@ -58,6 +65,11 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
    */
   public TBuilder reportMetricsTo(final MetricsFactory metricFactory) {
     builder.reportMetricsTo(metricFactory);
+    return This();
+  }
+
+  public TBuilder deliverBreadcrumbsTo(final String breadcrumbsEndpointId) {
+    this.breadcrumbsProductionEndPoint = Strings.isNullOrEmpty(breadcrumbsEndpointId) ? ProductionEndPoint.NULL : new AletheiaConfig(builder.getBreadcrumbEnvironment(properties)).getProductionEndPoint(breadcrumbsEndpointId);
     return This();
   }
 }
