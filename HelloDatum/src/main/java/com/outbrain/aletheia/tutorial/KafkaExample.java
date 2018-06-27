@@ -101,7 +101,11 @@ public class KafkaExample {
     // For that reason we expect to have two events here, one from each topics.
     int numberOfMessagesConsumed = 0;
     for (final DatumEnvelope envelope : Iterables.getFirst(envelopeStreams, null).datums()) {
-      System.out.println(String.format("Received an envelope: '%s %s'", envelope.getCreationTime(), envelope.getDatumTypeId()));
+      System.out.println(String.format("Received an envelope 'time:%s, datumType: %s, datumKey: %s, datumUniqueId: %s'",
+              envelope.getCreationTime(),
+              envelope.getDatumTypeId(),
+              envelope.getDatumKey(),
+              envelope.getDatumUniqueId()));
       numberOfMessagesConsumed++;
       if (numberOfMessagesConsumed == 2) {
         // We break forcibly here after receiving all datums we sent since further iteration(s) will block.

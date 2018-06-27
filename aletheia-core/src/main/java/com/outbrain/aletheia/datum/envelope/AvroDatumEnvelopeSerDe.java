@@ -1,8 +1,11 @@
 package com.outbrain.aletheia.datum.envelope;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
-import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope_old;
-import org.apache.avro.io.*;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.util.ByteBufferInputStream;
@@ -37,8 +40,7 @@ public class AvroDatumEnvelopeSerDe {
   public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
     try (final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer))) {
       // hack alert: using old envelope to reconcile version diffs
-      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(DatumEnvelope_old.getClassSchema(),
-                                                                               DatumEnvelope.getClassSchema());
+      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(DatumEnvelope.getClassSchema());
       final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
       return datumReader.read(null, decoder);
     } catch (final Exception e) {
