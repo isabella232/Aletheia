@@ -101,11 +101,7 @@ public class KafkaExample {
     // For that reason we expect to have two events here, one from each topics.
     int numberOfMessagesConsumed = 0;
     for (final DatumEnvelope envelope : Iterables.getFirst(envelopeStreams, null).datums()) {
-      System.out.println(String.format("Received an envelope 'time:%s, datumType: %s, datumKey: %s, datumUniqueId: %s'",
-              envelope.getCreationTime(),
-              envelope.getDatumTypeId(),
-              envelope.getDatumKey(),
-              envelope.getDatumUniqueId()));
+      System.out.println(envelope.toString());
       numberOfMessagesConsumed++;
       if (numberOfMessagesConsumed == 2) {
         // We break forcibly here after receiving all datums we sent since further iteration(s) will block.
@@ -123,14 +119,14 @@ public class KafkaExample {
     System.out.println("Done.");
   }
 
-  private static AletheiaConfig getConfig(Properties properties) {
+  static AletheiaConfig getConfig(Properties properties) {
     return new AletheiaConfig(PropertyUtils
             .override(properties)
             .with(getBreadcrumbsProps("consumer"))
             .all());
   }
 
-  private static Properties getProperties() {
+  static Properties getProperties() {
     final Properties properties = new Properties();
     properties.setProperty(AletheiaConfig.ROUTING_CONFIG_PATH,
             "com/outbrain/aletheia/configuration/routing.withKafka.json");
@@ -149,7 +145,7 @@ public class KafkaExample {
     return properties;
   }
 
-  private static Properties getBreadcrumbsProps(final String source) {
+  static Properties getBreadcrumbsProps(final String source) {
     final Properties properties = new Properties();
     properties.setProperty("aletheia.breadcrumbs.bucketDurationSec", Long.toString(1));
     properties.setProperty("aletheia.breadcrumbs.flushIntervalSec", Long.toString(BREADCRUMBS_FLUSH_INTERVAL_SEC));
