@@ -50,6 +50,11 @@
             "default": null
         },
         {
+            "name": "envelope_version",
+            "type": "int",
+            "default": 1
+        },
+        {
             "name": "datum_unique_id",
             "type": "string",
             "logicalType": "uuid",

@@ -72,7 +72,7 @@ public class KafkaExample {
     System.out.println("Iterating over received data...");
 
     for (final MyDatum myDatum : Iterables.getFirst(datumConsumerStreams, null).datums()) {
-      System.out.println(String.format("Received a datum: '%s %s'", myDatum.getTimestamp(), myDatum.getInfo()));
+      System.out.println(String.format("Received a datum: '%s'", myDatum.toString()));
       // we break forcibly here after receiving one datum since we only sent a single datum
       // and further iteration(s) will block
       break;

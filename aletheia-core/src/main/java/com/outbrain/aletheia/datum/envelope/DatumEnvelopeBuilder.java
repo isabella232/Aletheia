@@ -55,6 +55,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
                 serializedDatum.getPayload(),
                 datumSerDe.getClass().getSimpleName(),
                 datumKey,
+                2,
                 UUID.randomUUID().toString());
     }
 }
