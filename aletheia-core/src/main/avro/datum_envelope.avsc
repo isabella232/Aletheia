@@ -48,12 +48,6 @@
                 "string"
             ],
             "default": null
-        },
-        {
-            "name": "datum_unique_id",
-            "type": "string",
-            "logicalType": "uuid",
-            "default": "00000000-0000-0000-0000-000000000000"
         }
     ]
 }
