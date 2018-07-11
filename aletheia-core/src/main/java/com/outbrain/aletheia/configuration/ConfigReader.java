@@ -9,9 +9,8 @@ import java.net.URI;
  */
 public interface ConfigReader {
   /**
-   *
    * @param configUri configuration location
-   * @return stream of the configuration. i.e json file.
+   * @return stream of the configuration. i.e. json file.
    * @throws IOException
    */
   InputStream read(final URI configUri) throws IOException;
