@@ -54,7 +54,7 @@ public class AletheiaStreamsTest {
         assertEquals(TEST_TOPIC, topic);
         assertEquals(expectedTestData, datum.getData());
         assertEquals(PRODUCER_SOURCE, datumEnvelope.getSourceHost().toString());
-        assertEquals(128, dataSizeBytes);
+        assertEquals(165, dataSizeBytes);
       }
     };
 

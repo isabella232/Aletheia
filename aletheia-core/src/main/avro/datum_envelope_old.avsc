@@ -40,6 +40,14 @@
         "string"
       ],
       "default": null
+    },
+    {
+     "name": "datumKey",
+     "type": [
+         "null",
+         "string"
+     ],
+     "default": null
     }
   ]
 }

@@ -8,6 +8,8 @@ import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
 import org.joda.time.Instant;
 
+import java.util.UUID;
+
 /**
  * Builds an enclosing {@link DatumEnvelope}s for a datum, serializing it using the specified {@link
  * DatumSerDe}.
@@ -52,6 +54,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
             Instant.now().getMillis(),
             serializedDatum.getPayload(),
             datumSerDe.getClass().getSimpleName(),
-            datumKey);
+            datumKey,
+            UUID.randomUUID().toString());
   }
 }
