@@ -18,6 +18,7 @@ import java.util.HashMap;
 import static com.outbrain.aletheia.MockAletheiaConfig.PRODUCER_SOURCE;
 import static com.outbrain.aletheia.MockAletheiaConfig.getTestProperties;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AletheiaStreamsTest {
 
@@ -54,7 +55,7 @@ public class AletheiaStreamsTest {
         assertEquals(TEST_TOPIC, topic);
         assertEquals(expectedTestData, datum.getData());
         assertEquals(PRODUCER_SOURCE, datumEnvelope.getSourceHost().toString());
-        assertEquals(165, dataSizeBytes);
+        assertTrue(dataSizeBytes > 0);
       }
     };
 
