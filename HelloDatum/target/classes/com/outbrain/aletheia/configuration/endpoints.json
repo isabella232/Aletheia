@@ -1,0 +1,72 @@
+{
+  "kafka_endpoint": {
+    "type": "kafka",
+    "topic.name": "myDatum",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "sync",
+      "compression.type": "gzip"
+    },
+    "consume": {
+      "bootstrap.servers": "localhost:9092",
+      "group.id": "helloDatum",
+      "concurrency.level": "1",
+      "auto.commit.interval.ms": "1000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "kafka_2nd_endpoint": {
+    "type": "kafka",
+    "topic.name": "my2ndDatum",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "sync",
+      "compression.type": "gzip"
+    },
+    "consume": {
+      "bootstrap.servers": "localhost:9092",
+      "group.id": "helloDatum",
+      "concurrency.level": "1",
+      "auto.commit.interval.ms": "1000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "envelopes_endpoint": {
+    "type": "kafka",
+    "topic.name": "my.*",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "sync",
+      "compression.type": "gzip"
+    },
+    "consume": {
+      "bootstrap.servers": "localhost:9092",
+      "group.id": "envelope",
+      "concurrency.level": "1",
+      "auto.commit.interval.ms": "1000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "logFile_endpoint": {
+    "type": "logFile",
+    "folder": "./",
+    "filename": "myDatumsFile"
+  },
+  "inMemory_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "breadcrumbs_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "kafka_breadcrumbs_endpoint": {
+    "type": "kafka",
+    "topic.name": "consumer_breadcrumbs",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "async",
+      "compression.type": "${aletheia.breadcrumbs.compression.type}"
+    }
+  }
+}

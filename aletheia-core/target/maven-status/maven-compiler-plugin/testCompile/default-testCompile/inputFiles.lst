@@ -1,0 +1,12 @@
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/MockAletheiaConfig.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/configuration/InMemoryEndPointTemplateTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/configuration/AletheiaConfigTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/AletheiaIntegrationTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/SampleDomainClass.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/SampleDomainClassDatumTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/configuration/RestConfigReaderTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/metrics/RecordingMetricFactory.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/configuration/PropertyUtilsTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/MyDatum.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/src/test/java/com/outbrain/aletheia/DatumAuditorStressTest.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-core/target/generated-test-sources/avro/com/outbrain/aletheia/datum/avro/sample_domain_class.java

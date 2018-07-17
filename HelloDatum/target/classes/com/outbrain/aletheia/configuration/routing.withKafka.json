@@ -1,0 +1,24 @@
+{
+  "my_datum_id": {
+    "routes": [
+      {
+        "endpoint": "kafka_endpoint",
+        "serDe": "json"
+      },
+      {
+        "endpoint": "kafka_2nd_endpoint",
+        "serDe": "json"
+      }
+    ],
+    "breadcrumbs": "${aletheia.breadcrumbs.my_datum.endpoint.id}",
+    "datum.key.selector.class": "com.outbrain.aletheia.tutorial.MyDatum$MyKeySelector"
+  },
+  "envelope": {
+    "routes": [
+      {
+        "endpoint": "kafka_endpoint",
+        "serDe": ""
+      }
+    ]
+  }
+}

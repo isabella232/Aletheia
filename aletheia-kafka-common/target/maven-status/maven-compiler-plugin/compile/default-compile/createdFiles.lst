@@ -1,0 +1,14 @@
+com/outbrain/aletheia/datum/consumption/kafka/KafkaDatumEnvelopeFetcherFactoryBase.class
+com/outbrain/aletheia/datum/metrics/kafka/KafkaMetrics.class
+com/outbrain/aletheia/datum/metrics/kafka/MetricRegistryMirror$1.class
+com/outbrain/aletheia/configuration/kafka/KafkaTopicEndPointTemplate.class
+com/outbrain/aletheia/datum/consumption/kafka/BaseKafkaDatumEnvelopeFetcher.class
+com/outbrain/aletheia/datum/production/kafka/KafkaCallbackTransformer$1.class
+com/outbrain/aletheia/datum/metrics/kafka/MetricRegistryMirror.class
+com/outbrain/aletheia/datum/consumption/kafka/KafkaTopicConsumptionEndPoint.class
+com/outbrain/aletheia/datum/production/kafka/KafkaBinarySender.class
+com/outbrain/aletheia/datum/production/kafka/KafkaTopicProductionEndPoint.class
+com/outbrain/aletheia/datum/production/kafka/KafkaDatumEnvelopeSenderFactory.class
+com/outbrain/aletheia/datum/consumption/kafka/BaseKafkaDatumEnvelopeFetcher$1.class
+com/outbrain/aletheia/datum/production/kafka/KafkaCallbackTransformer.class
+com/outbrain/aletheia/datum/production/kafka/KafkaBinarySender$1.class

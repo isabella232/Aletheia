@@ -1,0 +1,7 @@
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/datum/production/logFile/LogFileProductionEndPoint.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/configuration/logFile/LogFileEndPointTemplate.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/datum/production/logFile/LogFileDatumEnvelopeSenderFactory.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/datum/production/logFile/StringLogFileSender.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/datum/production/logFile/writer/ExtrasRollingAppenderFactory.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/configuration/hive/HiveTableEndPointTemplate.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-log4j/src/main/java/com/outbrain/aletheia/datum/production/logFile/writer/DataFileWriterFactory.java

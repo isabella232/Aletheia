@@ -1,0 +1,9 @@
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/datum/consumption/kafka/KafkaStreamDatumEnvelopeFetcher.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/streams/AletheiaStreams.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/AletheiaKafkaSerializer.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/AletheiaKafkaEnvelopeDeserializer.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/datum/consumption/kafka/KafkaDatumEnvelopeFetcherFactory.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/AletheiaKafkaDeserializer.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/AletheiaKafkaEnvelopeSerializer.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/SerDeListener.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka0.10/src/main/java/com/outbrain/aletheia/kafka/serialization/AletheiaSerdes.java

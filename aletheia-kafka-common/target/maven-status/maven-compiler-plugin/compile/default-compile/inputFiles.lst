@@ -1,0 +1,10 @@
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/production/kafka/KafkaCallbackTransformer.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/metrics/kafka/MetricRegistryMirror.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/production/kafka/KafkaTopicProductionEndPoint.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/metrics/kafka/KafkaMetrics.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/configuration/kafka/KafkaTopicEndPointTemplate.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/production/kafka/KafkaBinarySender.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/production/kafka/KafkaDatumEnvelopeSenderFactory.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/consumption/kafka/BaseKafkaDatumEnvelopeFetcher.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/consumption/kafka/KafkaTopicConsumptionEndPoint.java
+/Users/averman/dev/outbrain/github/aletheia_gh-pages/aletheia-kafka-common/src/main/java/com/outbrain/aletheia/datum/consumption/kafka/KafkaDatumEnvelopeFetcherFactoryBase.java

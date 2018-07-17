@@ -1,0 +1,15 @@
+{
+  "sample_domain_class": {
+    "routes": [
+      {
+        "endpoint": "my_endpoint_1",
+        "serDe": "json"
+      }
+    ],
+    "routeGroups": [
+      "my_routeGroup"
+    ],
+    "datum.key.selector.class": "myDatumKeySelectorClass",
+    "breadcrumbs": "myBreadcrumbsEndpointId"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "test_endpoint_1": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "test_endpoint_2": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "test_breadcrumbs": {
+    "type": "inMemory",
+    "size": 100
+  }
+
+}

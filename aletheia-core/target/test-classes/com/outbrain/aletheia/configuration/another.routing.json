@@ -1,0 +1,9 @@
+{
+  "test.datum": {
+    "routeGroups": [
+      "test_endpoints"
+    ],
+    "datum.key.selector.class": "myDatumKeySelectorClass",
+    "breadcrumbs": "myBreadcrumbsEndpointId"
+  }
+}

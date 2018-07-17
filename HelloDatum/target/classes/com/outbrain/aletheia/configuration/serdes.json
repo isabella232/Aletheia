@@ -1,0 +1,6 @@
+{
+  "json": {
+    "@class": "com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe",
+    "datum.class": "com.outbrain.aletheia.tutorial.MyDatum"
+  }
+}

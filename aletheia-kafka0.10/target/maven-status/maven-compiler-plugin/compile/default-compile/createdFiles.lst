@@ -1,0 +1,10 @@
+com/outbrain/aletheia/datum/consumption/kafka/KafkaStreamDatumEnvelopeFetcher.class
+com/outbrain/aletheia/kafka/streams/AletheiaStreams.class
+com/outbrain/aletheia/kafka/serialization/AletheiaKafkaEnvelopeSerializer.class
+com/outbrain/aletheia/datum/consumption/kafka/KafkaDatumEnvelopeFetcherFactory.class
+com/outbrain/aletheia/kafka/serialization/AletheiaKafkaEnvelopeDeserializer.class
+com/outbrain/aletheia/kafka/serialization/SerDeListener.class
+com/outbrain/aletheia/kafka/serialization/SerDeListener$1.class
+com/outbrain/aletheia/kafka/serialization/AletheiaKafkaDeserializer.class
+com/outbrain/aletheia/kafka/serialization/AletheiaSerdes.class
+com/outbrain/aletheia/kafka/serialization/AletheiaKafkaSerializer.class

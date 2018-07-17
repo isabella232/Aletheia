@@ -1,0 +1,6 @@
+com/outbrain/aletheia/tutorial/KafkaExample.class
+com/outbrain/aletheia/tutorial/InMemoryExample.class
+com/outbrain/aletheia/tutorial/MyDatum$MyKeySelector.class
+com/outbrain/aletheia/tutorial/MyDatum$TimeSelector.class
+com/outbrain/aletheia/tutorial/LogFileExample.class
+com/outbrain/aletheia/tutorial/MyDatum.class

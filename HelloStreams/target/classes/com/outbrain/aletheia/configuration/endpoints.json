@@ -1,0 +1,31 @@
+{
+  "kafka_endpoint": {
+    "type": "kafka",
+    "topic.name": "myDatum",
+    "produce": {
+      "bootstrap.servers": "localhost:9092",
+      "producer.type": "sync",
+      "compression.type": "gzip"
+    },
+    "consume": {
+      "bootstrap.servers": "localhost:9092",
+      "group.id": "helloDatum",
+      "concurrency.level": "1",
+      "auto.commit.interval.ms": "1000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "logFile_endpoint": {
+    "type": "logFile",
+    "folder": "./",
+    "filename": "myDatumsFile"
+  },
+  "inMemory_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  },
+  "breadcrumbs_endpoint": {
+    "type": "inMemory",
+    "size": 100
+  }
+}

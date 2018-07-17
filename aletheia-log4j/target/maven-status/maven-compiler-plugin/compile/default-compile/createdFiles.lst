@@ -1,0 +1,8 @@
+com/outbrain/aletheia/datum/production/logFile/LogFileDatumEnvelopeSenderFactory.class
+com/outbrain/aletheia/datum/production/logFile/writer/DataFileWriterFactory.class
+com/outbrain/aletheia/datum/production/logFile/writer/ExtrasRollingAppenderFactory.class
+com/outbrain/aletheia/configuration/logFile/LogFileEndPointTemplate.class
+com/outbrain/aletheia/configuration/hive/HiveTableEndPointTemplate.class
+com/outbrain/aletheia/datum/production/logFile/LogFileDatumEnvelopeSenderFactory$1.class
+com/outbrain/aletheia/datum/production/logFile/StringLogFileSender.class
+com/outbrain/aletheia/datum/production/logFile/LogFileProductionEndPoint.class

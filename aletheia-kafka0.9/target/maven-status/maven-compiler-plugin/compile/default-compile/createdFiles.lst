@@ -1,0 +1,2 @@
+com/outbrain/aletheia/datum/consumption/kafka/KafkaStreamDatumEnvelopeFetcher.class
+com/outbrain/aletheia/datum/consumption/kafka/KafkaDatumEnvelopeFetcherFactory.class
