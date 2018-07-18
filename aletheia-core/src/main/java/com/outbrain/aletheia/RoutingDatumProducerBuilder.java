@@ -1,20 +1,21 @@
 package com.outbrain.aletheia;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
-import com.outbrain.aletheia.configuration.routing.Route;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimaps;
 import com.outbrain.aletheia.configuration.routing.RoutingInfo;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.DatumProducer;
+import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by slevin on 6/28/15.
@@ -38,28 +39,22 @@ public class RoutingDatumProducerBuilder<TDomainClass>
 
     validateProductionRoutingInfo(routingInfo);
 
-    final ImmutableList<ProductionEndPointInfo> productionEndPointInfos =
-            FluentIterable
-                    .from(routingInfo.getRoutes())
-                    .transform(new Function<Route, ProductionEndPointInfo>() {
-                      @Override
-                      public ProductionEndPointInfo apply(final Route route) {
+    final List<ProductionEndPointInfo> productionEndPointInfos =
+            routingInfo.getRoutes().stream().map(route -> {
 
-                        final ProductionEndPoint productionEndPoint =
-                                config.getProductionEndPoint(route.getEndPointId());
-                        Preconditions.checkNotNull(productionEndPoint,
-                                                   "Could not resolve production endpoint id: \"%s\"",
-                                                   route.getEndPointId());
+              final ProductionEndPoint productionEndPoint =
+                      config.getProductionEndPoint(route.getEndPointId());
+              Preconditions.checkNotNull(productionEndPoint,
+                      "Could not resolve production endpoint id: \"%s\"",
+                      route.getEndPointId());
 
-                        final DatumSerDe<TDomainClass> datumSerDe = config.serDe(route.getSerDeId());
-                        Preconditions.checkNotNull(datumSerDe,
-                                                   "Could not resolve serDe id: \"%s\"",
-                                                   route.getSerDeId());
+              final DatumSerDe<TDomainClass> datumSerDe = config.serDe(route.getSerDeId());
+              Preconditions.checkNotNull(datumSerDe,
+                      "Could not resolve serDe id: \"%s\"",
+                      route.getSerDeId());
 
-                        return new ProductionEndPointInfo<>(productionEndPoint, datumSerDe, null);
-                      }
-                    })
-                    .toList();
+              return new ProductionEndPointInfo<>(productionEndPoint, datumSerDe, null);
+            }).collect(Collectors.toList());
 
     for (final ProductionEndPointInfo productionEndPointInfo : distinctEndPoints(productionEndPointInfos)) {
       saveBuilder(getBuilder().deliverDataTo(productionEndPointInfo.getProductionEndPoint(),
@@ -73,22 +68,12 @@ public class RoutingDatumProducerBuilder<TDomainClass>
 
   private List<ProductionEndPointInfo> distinctEndPoints(final List<ProductionEndPointInfo> productionEndPointInfos) {
     final ImmutableListMultimap<Integer, ProductionEndPointInfo> groupedProductionEndPointInfos =
-            Multimaps.index(productionEndPointInfos, new Function<ProductionEndPointInfo, Integer>() {
-              @Override
-              public Integer apply(final ProductionEndPointInfo productionEndPointInfo) {
-                return productionEndPointInfo.getProductionEndPoint().hashCode();
-              }
-            });
+            Multimaps.index(productionEndPointInfos, productionEndPointInfo -> productionEndPointInfo.getProductionEndPoint().hashCode());
 
-    return FluentIterable
-            .from(groupedProductionEndPointInfos.asMap().values())
-            .transform(new Function<Collection<ProductionEndPointInfo>, ProductionEndPointInfo>() {
-              @Override
-              public ProductionEndPointInfo apply(final Collection<ProductionEndPointInfo> equivalent) {
-                return Iterables.getFirst(equivalent, null);
-              }
-            })
-            .toList();
+    return groupedProductionEndPointInfos.asMap()
+            .values()
+            .stream()
+            .map(equivalent -> Iterables.getFirst(equivalent, null)).collect(Collectors.toList());
   }
 
   private void validateProductionRoutingInfo(final RoutingInfo routingInfo) {
@@ -116,7 +101,7 @@ public class RoutingDatumProducerBuilder<TDomainClass>
    *
    * @param endPointType               the type of the custom endpoint to register.
    * @param datumEnvelopeSenderFactory a {@link DatumEnvelopeSenderFactory} capable of building
-   *                                   {@link com.outbrain.aletheia.datum.production.NamedSender<com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope>}'s from the specified endpoint type.
+   *                                   {@link NamedSender<com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope >}'s from the specified endpoint type.
    * @return A {@link RoutingDatumProducerBuilder} instance with the custom production endpoint registered.
    */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> RoutingDatumProducerBuilder<TDomainClass> registerProductionEndPointType(
