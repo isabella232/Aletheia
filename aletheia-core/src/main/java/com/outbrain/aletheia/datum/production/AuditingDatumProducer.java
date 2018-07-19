@@ -2,7 +2,6 @@ package com.outbrain.aletheia.datum.production;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
@@ -10,7 +9,6 @@ import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.Timer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +48,9 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     this.filter = filter;
     this.metricFactory = metricFactory;
 
-    deliverDurationTimer = metricFactory.createTimer("Deliver.Requests", "Duration");
-    filteredCounter = metricFactory.createCounter("Deliver.Requests", "Filtered");
-    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver.Requests.Attempts", "Success");
+    deliverDurationTimer = metricFactory.createTimer("Deliver_Requests_Duration", "");
+    filteredCounter = metricFactory.createCounter("Deliver_Requests_Filtered", "");
+    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver_Requests_Attempts_Success", "");
 
     // Create counter for QueueFullExceptions
     metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,

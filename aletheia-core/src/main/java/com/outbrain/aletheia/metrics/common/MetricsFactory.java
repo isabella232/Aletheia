@@ -7,7 +7,7 @@ public interface MetricsFactory {
 
   MetricsFactory NULL = new MetricsFactory() {
     @Override
-    public Timer createTimer(final String component, final String methodName) {
+    public Timer createTimer(final String component, final String methodName, String... labelNames) {
       return new Timer() {
         @Override
         public void update(final long duration, final TimeUnit unit) {
@@ -32,7 +32,7 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Counter createCounter(final String component, final String methodName) {
+    public Counter createCounter(final String component, final String methodName, String... labelNames) {
       return new Counter() {
         @Override
         public void inc() {
@@ -62,7 +62,7 @@ public interface MetricsFactory {
     }
 
     @Override
-    public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric) {
+    public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric, String... labelNames) {
       return metric != null ? metric : new Gauge<T>() {
         @Override
         public T getValue() {
@@ -72,7 +72,7 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Meter createMeter(final String component, final String methodName, final String eventType) {
+    public Meter createMeter(final String component, final String methodName, final String eventType, String... labelNames) {
       return new Meter() {
         @Override
         public void mark() {
@@ -87,7 +87,7 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Histogram createHistogram(final String component, final String methodName, final boolean biased) {
+    public Histogram createHistogram(final String component, final String methodName, final boolean biased, String... labelNames) {
       return new Histogram() {
         @Override
         public void update(final int value) {
@@ -101,16 +101,24 @@ public interface MetricsFactory {
       };
     }
 
+    @Override
+    public Summary createSummary(String name, String help, String... labelNames) {
+      return null;
+    }
+
   };
 
-  Timer createTimer(final String component, final String methodName);
+  Timer createTimer(final String name, final String help, String... labelNames);
 
-  Counter createCounter(final String component, final String methodName);
+  Counter createCounter(final String name, final String help, String... labelNames);
 
-  <T> Gauge<T> createGauge(String component, String methodName, Gauge<T> metric);
+  <T> Gauge<T> createGauge(String component, String methodName, Gauge<T> metric, String... labelNames);
 
-  Meter createMeter(String component, String methodName, String eventType);
+  Meter createMeter(String component, String methodName, String eventType, String... labelNames);
 
-  Histogram createHistogram(String component, String methodName, boolean biased);
+  Histogram createHistogram(String component, String methodName, boolean biased, String... labelNames);
+
+  Summary createSummary(final String name, final String help, String... labelNames);
+
 
 }

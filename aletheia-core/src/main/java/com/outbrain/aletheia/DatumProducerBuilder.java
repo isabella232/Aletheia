@@ -1,6 +1,5 @@
 package com.outbrain.aletheia;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -19,13 +18,14 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.Sender;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
+import com.outbrain.aletheia.metrics.PrometheiousMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Provides a fluent API for building a {@link DatumProducer}.
@@ -57,7 +57,7 @@ public class DatumProducerBuilder<TDomainClass>
     final MetricFactoryProvider metricFactoryProvider;
 
     if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
+      metricFactoryProvider = new PrometheiousMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
 
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
@@ -168,14 +168,9 @@ public class DatumProducerBuilder<TDomainClass>
   public DatumProducer<TDomainClass> build(final DatumProducerConfig datumProducerConfig) {
 
     final Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>> toDatumProducer =
-            new Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>>() {
-              @Override
-              public DatumProducer<TDomainClass> apply(final ProductionEndPointInfo<TDomainClass> configuredProductionEndPoint) {
-                return createDatumProducer(datumProducerConfig, configuredProductionEndPoint);
-              }
-            };
+            configuredProductionEndPoint -> createDatumProducer(datumProducerConfig, configuredProductionEndPoint);
 
-    final List<DatumProducer<TDomainClass>> datumProducers = Lists.transform(productionEndPointInfos, toDatumProducer);
+    final List<DatumProducer<TDomainClass>> datumProducers = Lists.transform(productionEndPointInfos, toDatumProducer::apply);
 
     return new CompositeDatumProducer<>(Lists.newArrayList(datumProducers));
   }

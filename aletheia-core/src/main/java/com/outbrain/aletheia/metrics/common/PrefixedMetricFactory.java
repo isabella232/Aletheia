@@ -24,7 +24,7 @@ public class PrefixedMetricFactory implements MetricsFactory {
   }
 
   @Override
-  public Timer createTimer(final String component, final String methodName) {
+  public Timer createTimer(final String component, final String methodName, String... labelNames) {
     return decoratedMetricFactory.createTimer(getComponentWithPrefix(component), methodName);
   }
 
@@ -42,23 +42,28 @@ public class PrefixedMetricFactory implements MetricsFactory {
   }
 
   @Override
-  public Counter createCounter(final String component, final String methodName) {
+  public Counter createCounter(final String component, final String methodName, String... labelNames) {
     return decoratedMetricFactory.createCounter(getComponentWithPrefix(component), methodName);
   }
 
   @Override
-  public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric) {
+  public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric, String... labelNames) {
     return decoratedMetricFactory.createGauge(getComponentWithPrefix(component), methodName, metric);
   }
 
   @Override
-  public Meter createMeter(final String component, final String methodName, final String eventType) {
+  public Meter createMeter(final String component, final String methodName, final String eventType, String... labelNames) {
     return decoratedMetricFactory.createMeter(getComponentWithPrefix(component), methodName, eventType);
   }
 
   @Override
-  public Histogram createHistogram(final String component, final String methodName, final boolean biased) {
+  public Histogram createHistogram(final String component, final String methodName, final boolean biased, String... labelNames) {
     return decoratedMetricFactory.createHistogram(getComponentWithPrefix(component), methodName, biased);
+  }
+
+  @Override
+  public Summary createSummary(String name, String help, String... labelNames) {
+    return null;
   }
 
 }

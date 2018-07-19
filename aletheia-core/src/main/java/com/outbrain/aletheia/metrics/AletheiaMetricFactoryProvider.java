@@ -1,6 +1,7 @@
 package com.outbrain.aletheia.metrics;
 
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+import com.outbrain.swinfra.metrics.MetricRegistry;
 
 /**
  * An abstract class for Aletheia specific metrics with pre-defined component names.
@@ -18,6 +19,7 @@ public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProv
   protected final String datumTypeId;
   protected final String componentName;
   protected final MetricsFactory metricsFactory;
+  protected final MetricRegistry metricRegistry = new MetricRegistry();
 
   public AletheiaMetricFactoryProvider(final String datumTypeId,
                                        final String componentName,

@@ -1,8 +1,14 @@
 package com.outbrain.aletheia.metrics.codahale3;
 
 import com.codahale.metrics.MetricRegistry;
+import com.outbrain.aletheia.metrics.common.Summary;
 
 public class Codahale3MetricsFactory implements com.outbrain.aletheia.metrics.common.MetricsFactory {
+
+  @Override
+  public Summary createSummary(String name, String help, String... labelNames) {
+    return null;
+  }
 
   private static class GaugeContainer<T> implements com.codahale.metrics.Gauge<T> {
 
@@ -43,13 +49,13 @@ public class Codahale3MetricsFactory implements com.outbrain.aletheia.metrics.co
   }
 
   @Override
-  public com.outbrain.aletheia.metrics.common.Timer createTimer(final String component, final String methodName) {
+  public com.outbrain.aletheia.metrics.common.Timer createTimer(final String component, final String methodName, String... labelNames) {
     final com.codahale.metrics.Timer timer = registry.timer(MetricRegistry.name(component, methodName));
     return new Timer(timer);
   }
 
   @Override
-  public com.outbrain.aletheia.metrics.common.Counter createCounter(final String component, final String methodName) {
+  public com.outbrain.aletheia.metrics.common.Counter createCounter(final String component, final String methodName, String... labelNames) {
     final com.codahale.metrics.Counter counter = registry.counter(MetricRegistry.name(component, methodName));
     return new Counter(counter);
   }
@@ -57,18 +63,18 @@ public class Codahale3MetricsFactory implements com.outbrain.aletheia.metrics.co
   @Override
   public <T> com.outbrain.aletheia.metrics.common.Gauge<T> createGauge(final String component,
                                                                        final String methodName,
-                                                                       final com.outbrain.aletheia.metrics.common.Gauge<T> metric) {
+                                                                       final com.outbrain.aletheia.metrics.common.Gauge<T> metric, String... labelNames) {
     return registerGauge(component, methodName, metric);
   }
 
   @Override
-  public Meter createMeter(final String component, final String methodName, final String eventType) {
+  public Meter createMeter(final String component, final String methodName, final String eventType, String... labelNames) {
     final com.codahale.metrics.Meter meter = registry.meter(MetricRegistry.name(component, methodName));
     return new Meter(meter);
   }
 
   @Override
-  public Histogram createHistogram(final String component, final String methodName, final boolean biased) {
+  public Histogram createHistogram(final String component, final String methodName, final boolean biased, String... labelNames) {
     final com.codahale.metrics.Histogram histogram = registry.histogram(MetricRegistry.name(component, methodName));
     return new Histogram(histogram);
   }

@@ -21,6 +21,7 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
+import com.outbrain.aletheia.metrics.PrometheiousMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -67,9 +68,13 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         consumerConfig);
 
     final MetricFactoryProvider metricFactoryProvider = createMetricFactoryProvider();
+    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheiousMetricFactoryProvider(
+            DatumEnvelope.class.getSimpleName(),
+            ENVELOPE_CONSUMER_STREAM,
+            MetricsFactory.NULL);
 
     final BreadcrumbDispatcher<DatumEnvelope> datumAuditor =
-        createAuditor(consumerConfig, consumptionEndPoint, metricFactoryProvider);
+            createAuditor(consumerConfig, consumptionEndPoint, prometheiousMetricFactoryProvider);
 
     final IdentityEnvelopeOpener datumEnvelopeOpener =
         createIdentityEnvelopeOpener(consumptionEndPoint, metricFactoryProvider, datumAuditor);
@@ -222,12 +227,10 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   private BreadcrumbDispatcher<DatumEnvelope> getEnvelopeBreadcrumbsDispatcher(final DatumProducerConfig datumProducerConfig,
                                                                                final EndPoint endPoint,
                                                                                final MetricFactoryProvider metricFactoryProvider) {
-    final Function<DatumEnvelope, BreadcrumbKey> breadcrumbKeyMapper = (envelope) -> {
-      return new BreadcrumbKey(envelope.getDatumTypeId().toString(),
-          envelope.getSourceHost().toString(),
-          endPoint.getName(),
-          breadcrumbsConfig.getApplication());
-    };
+    final Function<DatumEnvelope, BreadcrumbKey> breadcrumbKeyMapper = (envelope) -> new BreadcrumbKey(envelope.getDatumTypeId().toString(),
+            envelope.getSourceHost().toString(),
+            endPoint.getName(),
+            breadcrumbsConfig.getApplication());
 
     final BreadcrumbDispatcher<DatumEnvelope> breadcrumbDispatcher = new KeyedBreadcrumbDispatcher<>(
         breadcrumbsConfig.getBreadcrumbBucketDuration(),
