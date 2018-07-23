@@ -54,7 +54,7 @@ public class RestConfigReaderTest {
   public void readSuccessfully() throws URISyntaxException, IOException {
 
     String configuration = "something to do";
-    URI uri = new URI("http://localHost:8080");
+    URI uri = new URI("http://localHost:18121");
 
     try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(configuration.getBytes())) {
       Mockito.when(httpEntityMock.getContent()).thenReturn(byteArrayInputStream);
@@ -71,7 +71,7 @@ public class RestConfigReaderTest {
   public void readPassOnSecondTry() throws URISyntaxException, IOException {
 
     String configuration = "something to eat";
-    URI uri = new URI("http://localHost:8080");
+    URI uri = new URI("http://localHost:18121");
     try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(configuration.getBytes())) {
 
       Mockito.when(httpEntityMock.getContent())
@@ -92,7 +92,7 @@ public class RestConfigReaderTest {
 
   @Test()
   public void readFailAfterAllRetries() throws URISyntaxException, IOException {
-    URI uri = new URI("http://localHost:8080/some/impossible/address/to/throw/exception");
+    URI uri = new URI("http://localHost:18121/some/impossible/address/to/throw/exception");
     RestConfigReader restConfigReaderSpy = Mockito.spy(new RestConfigReader(retryPolicy, HttpClients.createDefault(), 1, 1));
 
 
