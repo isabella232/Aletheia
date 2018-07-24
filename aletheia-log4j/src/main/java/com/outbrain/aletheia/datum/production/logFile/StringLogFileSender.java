@@ -30,9 +30,9 @@ public class StringLogFileSender implements NamedSender<String> {
 
     this.logFileDeliveryEndPoint = logFileDeliveryEndPoint;
     this.dataLogFileWriter = getLogFileWriter(logFileDeliveryEndPoint);
-    logWriteSuccessCount = metricFactory.createCounter("Send.Attempts", "Success");
-    sendDuration = metricFactory.createCounter("Send.Attempts", "Duration");
-    logWriteFailureCount = metricFactory.createCounter("Send.Attempts", "Failure");
+    logWriteSuccessCount = metricFactory.createCounter("Send_Attempts_Success", "Counts successful attempts to send line");
+    sendDuration = metricFactory.createCounter("Send_Attempts_Duration", "Accumulated duration of the send attempts");
+    logWriteFailureCount = metricFactory.createCounter("Send_Attempts_Failure", "Counts failed attempts to send line");
 
     logger.warn("*** Please note deliver with callback API is not supported for Log Files ***");
   }

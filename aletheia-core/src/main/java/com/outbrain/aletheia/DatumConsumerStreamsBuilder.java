@@ -15,8 +15,8 @@ import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.consumption.openers.DatumEnvelopeOpener;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
+import com.outbrain.aletheia.metrics.PrometheusMetricFactoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
             datumConsumerStreamConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    final MetricFactoryProvider metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
+    final MetricFactoryProvider metricFactoryProvider = new PrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
             DATUM_STREAM,
             getMetricsFactory());
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {

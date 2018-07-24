@@ -34,12 +34,15 @@ abstract public class BaseEnvelopeOpener<TDomainClass> implements AutoCloseable 
     logicalDelayAverager = new TimeWindowAverager(60.0, 15, -1.0);
     logicalDelayInMillisAverager = new TimeWindowAverager(60.0, 15, -1.0);
 
-    futureLogicalMessagesCount = metricFactory.createCounter("Timestamp.Logical", "FromTheFuture");
-    logicalTimestampDelayHistogram = metricFactory.createHistogram("Timestamp.Logical",
-            "DelayHistogramInSeconds",
-            true);
-    metricFactory.createGauge("Timestamp.Logical", "DelayAverageInSeconds", logicalDelayAverager);
-    metricFactory.createGauge("Timestamp.Logical", "DelayAverageInMillis", logicalDelayInMillisAverager);
+    futureLogicalMessagesCount = metricFactory.createCounter("Timestamp_Logical_FromTheFuture", "future logical message count");
+    logicalTimestampDelayHistogram = metricFactory.createHistogram(
+            "Timestamp_Logical_DelayHistogramInSeconds",
+            "delay in seconds",
+            new double[]{.001, .005, .01, .05, 0.1, 0.5, 1, 5, 10});
+
+    //TODO: [av] find solution
+    metricFactory.createGauge("Timestamp_Logical_DelayAverageInSeconds", "Breadcrumbs dispatcher average delay in seconds", logicalDelayAverager);
+    metricFactory.createGauge("Timestamp_Logical_DelayAverageInMillis", "Breadcrumbs dispatcher average delay in millis", logicalDelayInMillisAverager);
   }
 
   @Override

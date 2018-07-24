@@ -3,12 +3,10 @@ package com.outbrain.aletheia.datum.consumption;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-
 import com.outbrain.aletheia.datum.consumption.openers.BaseEnvelopeOpener;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +87,9 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
                                      final Predicate<TDomainClass> datumFilter,
                                      final MetricsFactory metricsFactory) {
 
-    consumedDatumCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Success");
-    consumeFailureCount = metricsFactory.createCounter("Consume.Requests.Attempts", "Failures");
-    filteredCounter = metricsFactory.createCounter("Consume.Requests", "Filtered");
+    consumedDatumCount = metricsFactory.createCounter("Consume_Requests_Attempts_Success", "Consumer requests successful attempts");
+    consumeFailureCount = metricsFactory.createCounter("Consume_Requests_Attempts_Failures", "Consumer requests failed attempts");
+    filteredCounter = metricsFactory.createCounter("Consume_Requests_Filtered", "Consumer requests filtered attempts");
 
     this.datumEnvelopeOpener = datumEnvelopeOpener;
     this.datumFilter = datumFilter;

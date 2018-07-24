@@ -8,7 +8,8 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-import com.outbrain.aletheia.metrics.common.Timer;
+import com.outbrain.aletheia.metrics.common.Summary;
+import com.outbrain.swinfra.metrics.timing.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +22,13 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);
 
-  private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver.Requests.Attempts.Failures";
+  private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver_Requests_Attempts_Failures";
   private static final long LOG_SUPPRESS_INTERVAL_MS = 60 * 1000;
 
-  private final Timer deliverDurationTimer;
+  private final Summary deliverDurationSummary;
   private final Counter deliverRequestSuccessCounter;
   private final Counter filteredCounter;
+  private final Counter deliverRequestFailureCounter;
 
   private final BreadcrumbDispatcher<TDomainClass> datumAuditor;
   private final Sender<DatumEnvelope> envelopeSender;
@@ -48,13 +50,15 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     this.filter = filter;
     this.metricFactory = metricFactory;
 
-    deliverDurationTimer = metricFactory.createTimer("Deliver_Requests_Duration", "");
-    filteredCounter = metricFactory.createCounter("Deliver_Requests_Filtered", "");
-    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver_Requests_Attempts_Success", "");
+    deliverDurationSummary = metricFactory.createSummary("Deliver_Requests_Duration", "Duration of the requests");
+    filteredCounter = metricFactory.createCounter("Deliver_Requests_Filtered", "Number of the filtered requests");
+    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver_Requests_Attempts_Success", "Number of the successful requests");
 
     // Create counter for QueueFullExceptions
-    metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
-            SilentSenderException.class.getSimpleName()), "QueueFullException");
+    deliverRequestFailureCounter = metricFactory.createCounter(
+            DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+            "Number of failed deliver requests attempts", "root_exception", "non_root_exception"
+    );
   }
 
   public void deliver(final TDomainClass datum) {
@@ -63,7 +67,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
   @Override
   public void deliver(final TDomainClass datum, final DeliveryCallback deliveryCallback) {
-    final Timer.Context timerContext = deliverDurationTimer.time();
+    final Timer timer = deliverDurationSummary.startTimer();
 
     try {
 
@@ -85,6 +89,8 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
               SilentSenderException.class.getSimpleName()),
               MoreExceptionUtils.getType(e)).inc();
 
+      deliverRequestFailureCounter.inc(SilentSenderException.class.getSimpleName(), MoreExceptionUtils.getType(e));
+
       // Log with suppression
       final long nowTime = System.currentTimeMillis();
       if (lastExceptionLoggedTime + LOG_SUPPRESS_INTERVAL_MS < nowTime) {
@@ -92,10 +98,10 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
         logger.error("Datum send failed with exception:", e);
       }
     } catch (final Exception e) {
-      metricFactory.createCounter(DELIVER_REQUESTS_ATTEMPTS_FAILURES, MoreExceptionUtils.getType(e)).inc();
+      deliverRequestFailureCounter.inc(e.getClass().getSimpleName(), MoreExceptionUtils.getType(e));
       logger.error("Could not deliver datum." + datum, e);
     } finally {
-      timerContext.stop();
+      timer.stop();
     }
   }
 

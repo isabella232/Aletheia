@@ -1,10 +1,7 @@
 package com.outbrain.aletheia.datum.metrics.kafka;
 
 import com.google.common.collect.ImmutableSet;
-
-import com.outbrain.aletheia.metrics.common.Gauge;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.metrics.KafkaMetric;
 import org.slf4j.Logger;
@@ -31,12 +28,12 @@ class MetricRegistryMirror {
                                                                   final Predicate<String> metricNameFilter) {
 
     return ImmutableSet.copyOf(kafkaMetrics.entrySet()
-                                           .stream()
-                                           .filter(entry -> {
-                                             return ((Predicate<MetricName>) metricName -> {
-                                               return metricNameFilter.test(metricName.toString());
-                                             }).test(entry.getKey());
-                                           }).collect(Collectors.toSet()));
+            .stream()
+            .filter(entry -> {
+              return ((Predicate<MetricName>) metricName -> {
+                return metricNameFilter.test(metricName.toString());
+              }).test(entry.getKey());
+            }).collect(Collectors.toSet()));
   }
 
   public static MetricRegistryMirror mirrorTo(final MetricsFactory targetMetricsFactory) {
@@ -51,12 +48,9 @@ class MetricRegistryMirror {
       try {
         final MetricName metricName = entry.getKey();
         final String realMetricName = metricNameAdjuster.apply(metricName);
-        metricsFactory.createGauge(metricName.group(), realMetricName, new Gauge<Double>() {
-          @Override
-          public Double getValue() {
-            return entry.getValue().value();
-          }
-        });
+        metricsFactory.createSettableGauge(
+                (metricName.group() + "_" + realMetricName).replaceAll("(-|\\.)", "_"),
+                metricName.description());
       } catch (final Exception e) {
         log.error("Could not process metrics", e);
       }

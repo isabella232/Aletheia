@@ -7,13 +7,13 @@ public interface Histogram {
    *
    * @param value the length of the value
    */
-  void update(int value);
+  void update(final int value, final String... labelValues);
 
   /**
    * Adds a recorded value.
    *
    * @param value the length of the value
    */
-  void update(long value);
+  void update(final long value, final String... labelValues);
 
 }

@@ -7,5 +7,8 @@ public interface Gauge<T> {
    *
    * @return the metric's current value
    */
-  T getValue();
+
+  T getValue(final String... labelValues);
+
+  void set(final T value, final String... labelValues);
 }

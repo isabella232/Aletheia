@@ -8,13 +8,17 @@ import com.outbrain.swinfra.metrics.MetricRegistry;
  */
 public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProvider {
 
-  protected static final String ALETHEIA = "Aletheia";
-  protected static final String DATUM_TYPES = "DatumTypes";
-  protected static final String DATA = "Data";
+  protected static final String COMPONENT = "component";
+  protected static final String DATUM_TYPE_ID = "datum_type_id";
+  protected static final String DIRECTION = "direction";
+  protected static final String ENDPOINT_CLASS = "endpoint_class";
+  protected static final String ENDPOINT_NAME = "endpoint_name";
+
+
   protected static final String PRODUCTION = "Production";
   protected static final String CONSUMPTION = "Consumption";
-  protected static final String Tx = "Tx";
-  protected static final String Rx = "Rx";
+  protected static final String Tx = "Production";
+  protected static final String Rx = "Consumption";
 
   protected final String datumTypeId;
   protected final String componentName;

@@ -19,9 +19,8 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
-import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-import com.outbrain.aletheia.metrics.PrometheiousMetricFactoryProvider;
+import com.outbrain.aletheia.metrics.PrometheusMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -67,8 +66,7 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         consumptionEndPoint,
         consumerConfig);
 
-    final MetricFactoryProvider metricFactoryProvider = createMetricFactoryProvider();
-    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheiousMetricFactoryProvider(
+    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheusMetricFactoryProvider(
             DatumEnvelope.class.getSimpleName(),
             ENVELOPE_CONSUMER_STREAM,
             MetricsFactory.NULL);
@@ -77,12 +75,12 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
             createAuditor(consumerConfig, consumptionEndPoint, prometheiousMetricFactoryProvider);
 
     final IdentityEnvelopeOpener datumEnvelopeOpener =
-        createIdentityEnvelopeOpener(consumptionEndPoint, metricFactoryProvider, datumAuditor);
+            createIdentityEnvelopeOpener(consumptionEndPoint, prometheiousMetricFactoryProvider, datumAuditor);
 
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
-        getFetchers(consumptionEndPoint, metricFactoryProvider);
+            getFetchers(consumptionEndPoint, prometheiousMetricFactoryProvider);
 
-    return toEnvelopeStream(consumptionEndPoint, metricFactoryProvider, datumEnvelopeOpener, datumEnvelopeFetchers);
+    return toEnvelopeStream(consumptionEndPoint, prometheiousMetricFactoryProvider, datumEnvelopeOpener, datumEnvelopeFetchers);
   }
 
   /**
@@ -196,11 +194,6 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         metricFactoryProvider.forAuditingDatumStreamConsumer(consumptionEndPoint))).collect(Collectors.toList());
   }
 
-  private DefaultMetricFactoryProvider createMetricFactoryProvider() {
-    return new DefaultMetricFactoryProvider(DatumEnvelope.class.getSimpleName(),
-        ENVELOPE_CONSUMER_STREAM,
-        getMetricsFactory());
-  }
 
   private IdentityEnvelopeOpener createIdentityEnvelopeOpener(ConsumptionEndPoint consumptionEndPoint, MetricFactoryProvider metricFactoryProvider, BreadcrumbDispatcher<DatumEnvelope> datumAuditor) {
     return new IdentityEnvelopeOpener(datumAuditor, metricFactoryProvider.forDatumEnvelopeMeta(consumptionEndPoint));

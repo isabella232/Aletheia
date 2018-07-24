@@ -18,8 +18,9 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.Sender;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
+import com.outbrain.aletheia.metrics.InternalPrometheusMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-import com.outbrain.aletheia.metrics.PrometheiousMetricFactoryProvider;
+import com.outbrain.aletheia.metrics.PrometheusMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,7 @@ public class DatumProducerBuilder<TDomainClass>
     final MetricFactoryProvider metricFactoryProvider;
 
     if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new PrometheiousMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
+      metricFactoryProvider = new PrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
 
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
@@ -67,7 +68,7 @@ public class DatumProducerBuilder<TDomainClass>
         datumAuditor = BreadcrumbDispatcher.NULL;
       }
     } else {
-      metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
+      metricFactoryProvider = new InternalPrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
                                                                                   DATUM_PRODUCER,
                                                                                   getMetricsFactory());
       datumAuditor = BreadcrumbDispatcher.NULL;
