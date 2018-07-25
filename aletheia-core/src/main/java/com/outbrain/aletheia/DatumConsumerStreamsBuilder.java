@@ -7,7 +7,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
-import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.consumption.AuditingDatumConsumerStream;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
 import com.outbrain.aletheia.datum.consumption.DatumConsumerStream;
@@ -15,8 +14,6 @@ import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.datum.consumption.openers.DatumEnvelopeOpener;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-import com.outbrain.aletheia.metrics.PrometheusMetricFactoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +27,9 @@ import java.util.List;
 public class DatumConsumerStreamsBuilder<TDomainClass>
         extends AletheiaBuilder<TDomainClass, DatumConsumerStreamsBuilder<TDomainClass>> {
 
+  public static final String DATUM_STREAM = "DatumConsumerStream";
   private static final Logger logger = LoggerFactory.getLogger(DatumConsumerStreamsBuilder.class);
 
-  private static final String DATUM_STREAM = "DatumConsumerStream";
 
   private static class ConsumptionEndPointInfo<TDomainClass> {
 
@@ -76,22 +73,20 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
             datumConsumerStreamConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    final MetricFactoryProvider metricFactoryProvider = new PrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
-            DATUM_STREAM,
-            getMetricsFactory());
+
     if (domainClass.equals(Breadcrumb.class) || !isBreadcrumbProductionDefined()) {
       datumAuditor = BreadcrumbDispatcher.NULL;
     } else {
       datumAuditor = getTypedBreadcrumbsDispatcher(new DatumProducerConfig(datumConsumerStreamConfig.getIncarnation(),
                       datumConsumerStreamConfig.getHostname()),
               consumptionEndPointInfo.getConsumptionEndPoint(),
-              metricFactoryProvider);
+              getMetricsFactoryProvider());
     }
 
     final DatumEnvelopeOpener<TDomainClass> datumEnvelopeOpener =
             new DatumEnvelopeOpener<>(datumAuditor,
                     consumptionEndPointInfo.getDatumSerDe(),
-                    metricFactoryProvider.forDatumEnvelopeMeta(
+                    getMetricsFactoryProvider().forDatumEnvelopeMeta(
                             consumptionEndPointInfo.getConsumptionEndPoint()));
 
     final DatumEnvelopeFetcherFactory<ConsumptionEndPoint> datumEnvelopeFetcherFactory =
@@ -105,7 +100,7 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
             datumEnvelopeFetcherFactory
                     .buildDatumEnvelopeFetcher(consumptionEndPointInfo.getConsumptionEndPoint(),
-                            metricFactoryProvider
+                            getMetricsFactoryProvider()
                                     .forDatumEnvelopeFetcher(
                                             consumptionEndPointInfo.getConsumptionEndPoint()));
 
@@ -113,7 +108,7 @@ public class DatumConsumerStreamsBuilder<TDomainClass>
             datumEnvelopeFetcher -> new AuditingDatumConsumerStream<>(datumEnvelopeFetcher,
                     datumEnvelopeOpener,
                     consumptionEndPointInfo.getFilter(),
-                    metricFactoryProvider
+                    getMetricsFactoryProvider()
                             .forAuditingDatumStreamConsumer(
                                     consumptionEndPointInfo.getConsumptionEndPoint()));
 

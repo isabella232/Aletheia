@@ -10,7 +10,7 @@ public interface MetricFactoryProvider {
 
   MetricFactoryProvider NULL = new MetricFactoryProvider() {
     @Override
-    public MetricsFactory forAuditingDatumProducer(final EndPoint endPoint) {
+    public MetricsFactory forAuditingDatumProducer(final EndPoint endPoint, boolean isBreadcrambs) {
       return MetricsFactory.NULL;
     }
 
@@ -20,7 +20,7 @@ public interface MetricFactoryProvider {
     }
 
     @Override
-    public MetricsFactory forDatumEnvelopeSender(final EndPoint endPoint) {
+    public MetricsFactory forDatumEnvelopeSender(final EndPoint endPoint, boolean isBreadcrambs) {
       return MetricsFactory.NULL;
     }
 
@@ -40,11 +40,11 @@ public interface MetricFactoryProvider {
     }
   };
 
-  MetricsFactory forAuditingDatumProducer(final EndPoint endPoint);
+  MetricsFactory forAuditingDatumProducer(final EndPoint endPoint, boolean isBreadcrambs);
 
   MetricsFactory forInternalBreadcrumbProducer(final EndPoint endPoint);
 
-  MetricsFactory forDatumEnvelopeSender(final EndPoint endPoint);
+  MetricsFactory forDatumEnvelopeSender(final EndPoint endPoint, boolean isBreadcrambs);
 
   MetricsFactory forDatumEnvelopeFetcher(final EndPoint endPoint);
 

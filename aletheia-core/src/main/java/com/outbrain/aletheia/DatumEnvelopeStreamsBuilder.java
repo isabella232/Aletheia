@@ -20,8 +20,6 @@ import com.outbrain.aletheia.datum.production.DatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-import com.outbrain.aletheia.metrics.PrometheusMetricFactoryProvider;
-import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -37,8 +35,8 @@ import java.util.stream.Collectors;
  */
 public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
+  public static final String ENVELOPE_CONSUMER_STREAM = "EnvelopeConsumerStream";
   private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopeStreamsBuilder.class);
-  private static final String ENVELOPE_CONSUMER_STREAM = "EnvelopeConsumerStream";
   private final AletheiaConfig config;
   private final DatumConsumerStreamConfig consumerConfig;
   private String endpointId;
@@ -66,21 +64,21 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         consumptionEndPoint,
         consumerConfig);
 
-    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheusMetricFactoryProvider(
-            DatumEnvelope.class.getSimpleName(),
-            ENVELOPE_CONSUMER_STREAM,
-            MetricsFactory.NULL);
+//    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheusMetricFactoryProvider(
+//            DatumEnvelope.class.getSimpleName(),
+//            ENVELOPE_CONSUMER_STREAM,
+//            MetricsFactory.NULL);
 
     final BreadcrumbDispatcher<DatumEnvelope> datumAuditor =
-            createAuditor(consumerConfig, consumptionEndPoint, prometheiousMetricFactoryProvider);
+            createAuditor(consumerConfig, consumptionEndPoint, getMetricsFactoryProvider());
 
     final IdentityEnvelopeOpener datumEnvelopeOpener =
-            createIdentityEnvelopeOpener(consumptionEndPoint, prometheiousMetricFactoryProvider, datumAuditor);
+            createIdentityEnvelopeOpener(consumptionEndPoint, getMetricsFactoryProvider(), datumAuditor);
 
     final List<DatumEnvelopeFetcher> datumEnvelopeFetchers =
-            getFetchers(consumptionEndPoint, prometheiousMetricFactoryProvider);
+            getFetchers(consumptionEndPoint, getMetricsFactoryProvider());
 
-    return toEnvelopeStream(consumptionEndPoint, prometheiousMetricFactoryProvider, datumEnvelopeOpener, datumEnvelopeFetchers);
+    return toEnvelopeStream(consumptionEndPoint, getMetricsFactoryProvider(), datumEnvelopeOpener, datumEnvelopeFetchers);
   }
 
   /**
@@ -155,18 +153,6 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
   }
 
   /**
-   * Configures metrics reporting.
-   *
-   * @param metricFactory A MetricsFactory instance to report metrics to.
-   * @return A {@link DatumEnvelopeStreamsBuilder} instance with an envelope filter defined.
-   */
-  public DatumEnvelopeStreamsBuilder reportMetricsTo(final MetricsFactory metricFactory) {
-    setMetricsFactory(metricFactory);
-
-    return this;
-  }
-
-  /**
    * A {@link DatumType.TimestampSelector} which extracts a timestamp from a {@link DatumEnvelope}.
    */
   public static class EnvelopeTimestampSelector implements DatumType.TimestampSelector<DatumEnvelope> {
@@ -229,7 +215,7 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         breadcrumbsConfig.getBreadcrumbBucketDuration(),
         new EnvelopeTimestampSelector(),
         new KeyedBreadcrumbBaker(breadcrumbsConfig.getTier(), breadcrumbsConfig.getDatacenter()),
-        new BreadcrumbProducingHandler(datumProducerConfig, metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
+            new BreadcrumbProducingHandler(datumProducerConfig, metricFactoryProvider /*metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)*/),
         breadcrumbKeyMapper,
         Duration.standardDays(1)
     );

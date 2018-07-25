@@ -14,7 +14,7 @@ import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.InMemoryDatumEnvelopeSenderFactory;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.serialization.Json.JsonDatumSerDe;
-import com.outbrain.aletheia.metrics.common.MetricsFactory;
+import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import org.joda.time.DateTime;
 
 import java.util.Map;
@@ -28,18 +28,18 @@ abstract class BaseAletheiaBuilder {
     private final DatumProducer<Breadcrumb> breadcrumbDatumProducer;
 
     BreadcrumbProducingHandler(final DatumProducerConfig datumProducerConfig,
-                               final MetricsFactory metricsFactory) {
+                               final MetricFactoryProvider metricFactoryProvider) {
 
       final DatumProducerBuilder<Breadcrumb> breadcrumbProducerBuilder =
-              configurableBreadcrumbProducerBuilder(metricsFactory);
+              configurableBreadcrumbProducerBuilder(metricFactoryProvider);
 
       breadcrumbDatumProducer = registerEndPointTypes(breadcrumbProducerBuilder).build(datumProducerConfig);
     }
 
-    private DatumProducerBuilder<Breadcrumb> configurableBreadcrumbProducerBuilder(final MetricsFactory metricsFactory) {
+    private DatumProducerBuilder<Breadcrumb> configurableBreadcrumbProducerBuilder(final MetricFactoryProvider metricFactoryProvider) {
       return DatumProducerBuilder
               .forDomainClass(Breadcrumb.class)
-              .reportMetricsTo(metricsFactory)
+              .reportMetricsTo(metricFactoryProvider)
               .deliverDataTo(breadcrumbsProductionEndPoint, new JsonDatumSerDe<>(Breadcrumb.class));
     }
 
@@ -72,7 +72,7 @@ abstract class BaseAletheiaBuilder {
   private final Map<Class, DatumEnvelopeFetcherFactory> envelopeFetcherTypesRegistry = Maps.newHashMap();
   BreadcrumbsConfig breadcrumbsConfig;
   private ProductionEndPoint breadcrumbsProductionEndPoint;
-  private MetricsFactory metricFactory = MetricsFactory.NULL;
+  private MetricFactoryProvider metricFactoryProvider = MetricFactoryProvider.NULL;
 
   BaseAletheiaBuilder() {
     registerKnownProductionEndPointsTypes();
@@ -166,13 +166,13 @@ abstract class BaseAletheiaBuilder {
   /**
    * Configures metrics reporting.
    *
-   * @param metricFactory A MetricsFactory instance to report metrics to.
+   * @param metricFactoryProvider A MetricsFactory instance to report metrics to.
    */
-  public void setMetricsFactory(final MetricsFactory metricFactory) {
-    this.metricFactory = metricFactory;
+  public void setMetricsFactoryProvider(final MetricFactoryProvider metricFactoryProvider) {
+    this.metricFactoryProvider = metricFactoryProvider;
   }
 
-  public MetricsFactory getMetricsFactory() {
-    return metricFactory;
+  public MetricFactoryProvider getMetricsFactoryProvider() {
+    return metricFactoryProvider;
   }
 }

@@ -1,5 +1,8 @@
 package com.outbrain.aletheia.metrics.common;
 
+import com.outbrain.swinfra.metrics.timing.Clock;
+import com.outbrain.swinfra.metrics.timing.Timer;
+
 import java.util.function.DoubleSupplier;
 
 public interface MetricsFactory {
@@ -77,7 +80,9 @@ public interface MetricsFactory {
 
     @Override
     public Summary createSummary(String name, String help, String... labelNames) {
-      return null;
+      return labelValues -> new Timer(Clock.DEFAULT_CLOCK, value -> {
+
+      });
     }
 
   };

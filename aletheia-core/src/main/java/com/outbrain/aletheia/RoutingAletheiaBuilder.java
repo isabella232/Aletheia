@@ -5,7 +5,7 @@ import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.production.DatumProducer;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
-import com.outbrain.aletheia.metrics.common.MetricsFactory;
+import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
    * @param metricFactory A MetricsFactory instance to report metrics to.
    * @return A {@link TBuilder} instance with metrics reporting configured.
    */
-  public TBuilder reportMetricsTo(final MetricsFactory metricFactory) {
+  public TBuilder reportMetricsTo(final MetricFactoryProvider metricFactory) {
     builder.reportMetricsTo(metricFactory);
     return This();
   }

@@ -18,14 +18,10 @@ import java.util.function.DoubleSupplier;
  */
 public class RecordingMetricFactory implements MetricsFactory {
 
-  @Override
-  public Summary createSummary(String name, String help, String... labelNames) {
-    return null;
-  }
-
   public static class MetricsTree {
 
     private final String nodeName;
+
     private final HashSet<MetricsTree> children = new HashSet<>();
 
     private MetricsTree(final String nodeName) {
@@ -65,8 +61,8 @@ public class RecordingMetricFactory implements MetricsFactory {
     public void prettyPrint() {
       prettyPrint(0);
     }
-  }
 
+  }
   private final MetricsFactory decoratedMetricFactory;
 
   private final Collection<String> createdMetrics = new ConcurrentLinkedQueue<>();
@@ -103,6 +99,12 @@ public class RecordingMetricFactory implements MetricsFactory {
   public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, String... labelNames) {
     createdMetrics.add(component + "." + methodName);
     return decoratedMetricFactory.createGauge(component, methodName, doubleSupplier);
+  }
+
+  @Override
+  public Summary createSummary(String name, String help, String... labelNames) {
+    createdMetrics.add(name + "." + help);
+    return decoratedMetricFactory.createSummary(name, help);
   }
 
   @Override
