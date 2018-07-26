@@ -34,7 +34,6 @@ public class DatumProducerBuilder<TDomainClass>
 
   private static final Logger logger = LoggerFactory.getLogger(DatumProducerBuilder.class);
 
-  private static final String DATUM_PRODUCER = "DatumProducer";
 
   private final List<ProductionEndPointInfo<TDomainClass>> productionEndPointInfos = Lists.newArrayList();
   private DatumKeySelector<TDomainClass> datumKeySelector;

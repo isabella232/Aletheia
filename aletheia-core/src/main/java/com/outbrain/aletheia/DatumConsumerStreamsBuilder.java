@@ -27,7 +27,6 @@ import java.util.List;
 public class DatumConsumerStreamsBuilder<TDomainClass>
         extends AletheiaBuilder<TDomainClass, DatumConsumerStreamsBuilder<TDomainClass>> {
 
-  public static final String DATUM_STREAM = "DatumConsumerStream";
   private static final Logger logger = LoggerFactory.getLogger(DatumConsumerStreamsBuilder.class);
 
 

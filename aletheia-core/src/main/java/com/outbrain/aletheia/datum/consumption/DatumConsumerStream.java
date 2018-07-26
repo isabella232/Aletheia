@@ -8,6 +8,8 @@ package com.outbrain.aletheia.datum.consumption;
  */
 public interface DatumConsumerStream<TDomainClass> extends AutoCloseable {
 
+  static final String COMPONENT = "DatumConsumerStream";
+
   /**
    * Returns an iterable data from some datum source, one at a time, and blocking if none is available.
    *
