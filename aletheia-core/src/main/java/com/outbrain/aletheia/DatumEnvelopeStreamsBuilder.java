@@ -64,11 +64,6 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
         consumptionEndPoint,
         consumerConfig);
 
-//    final MetricFactoryProvider prometheiousMetricFactoryProvider = new PrometheusMetricFactoryProvider(
-//            DatumEnvelope.class.getSimpleName(),
-//            ENVELOPE_CONSUMER_STREAM,
-//            MetricsFactory.NULL);
-
     final BreadcrumbDispatcher<DatumEnvelope> datumAuditor =
             createAuditor(consumerConfig, consumptionEndPoint, getMetricsFactoryProvider());
 
@@ -149,6 +144,18 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
    */
   public DatumEnvelopeStreamsBuilder setEnvelopeFilter(Predicate<DatumEnvelope> envelopeFilter) {
     this.envelopeFilter = envelopeFilter;
+    return this;
+  }
+
+  /**
+   * Configures metrics reporting.
+   *
+   * @param metricFactoryProvider A metricFactoryProvider instance to report metrics to.
+   * @return A {@link DatumEnvelopeStreamsBuilder} instance with an envelope filter defined.
+   */
+  public DatumEnvelopeStreamsBuilder reportMetricsTo(final MetricFactoryProvider metricFactoryProvider) {
+    setMetricsFactoryProvider(metricFactoryProvider);
+
     return this;
   }
 
