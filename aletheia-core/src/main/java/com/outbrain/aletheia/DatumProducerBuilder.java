@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Provides a fluent API for building a {@link DatumProducer}.
@@ -166,12 +166,12 @@ public class DatumProducerBuilder<TDomainClass>
    */
   public DatumProducer<TDomainClass> build(final DatumProducerConfig datumProducerConfig) {
 
-    final Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>> toDatumProducer =
-            configuredProductionEndPoint -> createDatumProducer(datumProducerConfig, configuredProductionEndPoint);
+    final List<DatumProducer<TDomainClass>> datumProducers = productionEndPointInfos
+            .stream()
+            .map(configuredProductionEndPoint -> createDatumProducer(datumProducerConfig, configuredProductionEndPoint))
+            .collect(Collectors.toList());
 
-    final List<DatumProducer<TDomainClass>> datumProducers = Lists.transform(productionEndPointInfos, toDatumProducer::apply);
-
-    return new CompositeDatumProducer<>(Lists.newArrayList(datumProducers));
+    return new CompositeDatumProducer<>(datumProducers);
   }
 
   /**
