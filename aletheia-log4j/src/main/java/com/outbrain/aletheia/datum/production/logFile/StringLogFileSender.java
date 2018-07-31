@@ -7,6 +7,7 @@ import com.outbrain.aletheia.datum.production.logFile.writer.DataFileWriterFacto
 import com.outbrain.aletheia.datum.production.logFile.writer.ExtrasRollingAppenderFactory;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
+import com.outbrain.aletheia.metrics.common.Summary;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class StringLogFileSender implements NamedSender<String> {
   private final org.apache.log4j.Logger dataLogFileWriter;
   private final Counter logWriteSuccessCount;
   private final Counter logWriteFailureCount;
-  private final Counter sendDuration;
+  private final Summary sendDuration;
 
   public StringLogFileSender(final LogFileProductionEndPoint logFileDeliveryEndPoint,
                              final MetricsFactory metricFactory) {
@@ -31,7 +32,7 @@ public class StringLogFileSender implements NamedSender<String> {
     this.logFileDeliveryEndPoint = logFileDeliveryEndPoint;
     this.dataLogFileWriter = getLogFileWriter(logFileDeliveryEndPoint);
     logWriteSuccessCount = metricFactory.createCounter("Send_Attempts_Success", "Counts successful attempts to send line");
-    sendDuration = metricFactory.createCounter("Send_Attempts_Duration", "Accumulated duration of the send attempts");
+    sendDuration = metricFactory.createSummary("Send_Attempts_Duration", "Accumulated duration of the send attempts");
     logWriteFailureCount = metricFactory.createCounter("Send_Attempts_Failure", "Counts failed attempts to send line");
 
     logger.warn("*** Please note deliver with callback API is not supported for Log Files ***");
@@ -57,6 +58,8 @@ public class StringLogFileSender implements NamedSender<String> {
 
   @Override
   public void send(final String line, final DeliveryCallback deliveryCallback) {
+    com.outbrain.swinfra.metrics.timing.Timer timer = sendDuration.startTimer();
+
     try {
       final long startTime = System.currentTimeMillis();
       final String chompedString = StringUtils.chomp(line);
@@ -65,10 +68,11 @@ public class StringLogFileSender implements NamedSender<String> {
       logWriteSuccessCount.inc();
 
       final long duration = System.currentTimeMillis() - startTime;
-      sendDuration.inc(duration);
     } catch (final Exception ex) {
       logger.error("failed to write data to file.", ex);
       logWriteFailureCount.inc();
+    } finally {
+      timer.stop();
     }
   }
 
