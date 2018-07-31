@@ -44,7 +44,6 @@ import java.util.regex.PatternSyntaxException;
 abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerRebalanceListener {
   final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private static final long POLL_TIMEOUT_MS = Long.MAX_VALUE;
   private static final String AUTO_COMMIT = "AutoCommit";
 
   final KafkaConsumer<String, byte[]> kafkaConsumer;
@@ -63,6 +62,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
   private final boolean isAtMostOnceOffsetCommitMode;
   private boolean closed = false;
   private final Set<String> currentSubscription = new HashSet<>();
+  private final long autoCommitInterval;
 
   BaseKafkaDatumEnvelopeFetcher(final KafkaConsumer<String, byte[]> consumer,
                                 final KafkaTopicConsumptionEndPoint consumptionEndPoint,
@@ -93,13 +93,13 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
       throw new IllegalArgumentException(String.format("topics pattern '%s' for endpoint id '%s' is not a valid regex", consumptionEndPoint.getTopicName(), consumptionEndPoint.getName()), ex);
     }
 
-    final long autoCommitInterval =
+    autoCommitInterval =
         Long.parseLong(consumptionEndPoint.getProperties()
                                           .getProperty("auto.commit.interval.ms", "5000"));
     startAutoCommitExecutorIfNeeded(autoCommitInterval);
 
     // Handle consumer cleanup
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
+    Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
   }
 
   @Override
@@ -130,7 +130,11 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
   private final Iterable<DatumEnvelope> datumEnvelopeIterable = () -> new Iterator<DatumEnvelope>() {
     @Override
     public boolean hasNext() {
-      return getConsumerRecords().hasNext();
+      // Resume polling if no record is available
+      while (!consumerRecordIterator.hasNext()) {
+        getConsumerRecords();
+      }
+      return true;
     }
 
     @Override
@@ -169,8 +173,8 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
     try {
       synchronized (kafkaConsumer) {
         isWaitingForPoll = true;
-        consumedRecords = kafkaConsumer.poll(POLL_TIMEOUT_MS);
-        if (isAtMostOnceOffsetCommitMode) {
+        consumedRecords = kafkaConsumer.poll(autoCommitInterval);
+        if (!consumedRecords.isEmpty() && isAtMostOnceOffsetCommitMode) {
           kafkaConsumer.commitSync();
         }
       }
@@ -184,7 +188,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
 
   /**
    * Shutdown consumer.
-   *
+   * <p>
    * This method may be called twice:
    * Once when trying to close a consumer which is waiting for poll()
    * And then when the consumer wakes-up.
