@@ -85,7 +85,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+      metricFactory.createCounter(Joiner.on("_").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
               SilentSenderException.class.getSimpleName()),
               MoreExceptionUtils.getType(e)).inc();
 

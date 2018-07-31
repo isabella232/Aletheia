@@ -63,6 +63,7 @@ public class RecordingMetricFactory implements MetricsFactory {
     }
 
   }
+
   private final MetricsFactory decoratedMetricFactory;
 
   private final Collection<String> createdMetrics = new ConcurrentLinkedQueue<>();
@@ -96,13 +97,13 @@ public class RecordingMetricFactory implements MetricsFactory {
   }
 
   @Override
-  public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, String... labelNames) {
+  public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, final String... labelNames) {
     createdMetrics.add(component + "." + methodName);
     return decoratedMetricFactory.createGauge(component, methodName, doubleSupplier);
   }
 
   @Override
-  public Summary createSummary(String name, String help, String... labelNames) {
+  public Summary createSummary(final String name, final String help, final String... labelNames) {
     createdMetrics.add(name + "." + help);
     return decoratedMetricFactory.createSummary(name, help);
   }
@@ -114,7 +115,7 @@ public class RecordingMetricFactory implements MetricsFactory {
 
 
   @Override
-  public Histogram createHistogram(final String name, final String help, final double[] buckets, String... labelNames) {
+  public Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames) {
     createdMetrics.add(name + "." + help);
     return decoratedMetricFactory.createHistogram(name, help, buckets);
   }

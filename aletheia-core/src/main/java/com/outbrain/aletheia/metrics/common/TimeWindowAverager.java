@@ -3,7 +3,6 @@ package com.outbrain.aletheia.metrics.common;
 
 import java.util.function.DoubleSupplier;
 
-//TODO: [av] adapt to prometheus
 public class TimeWindowAverager implements Gauge<Double>, DoubleSupplier {
 
   private final TimeWindowRatio ratio;
@@ -20,7 +19,7 @@ public class TimeWindowAverager implements Gauge<Double>, DoubleSupplier {
   }
 
   @Override
-  public void set(Double value, String... labelValues) {
+  public void set(final Double value, final String... labelValues) {
 
   }
 

@@ -40,7 +40,6 @@ abstract public class BaseEnvelopeOpener<TDomainClass> implements AutoCloseable 
             "delay in seconds",
             new double[]{.001, .005, .01, .05, 0.1, 0.5, 1, 5, 10});
 
-    //TODO: [av] find solution
     metricFactory.createGauge("Timestamp_Logical_DelayAverageInSeconds", "Breadcrumbs dispatcher average delay in seconds", logicalDelayAverager);
     metricFactory.createGauge("Timestamp_Logical_DelayAverageInMillis", "Breadcrumbs dispatcher average delay in millis", logicalDelayInMillisAverager);
   }

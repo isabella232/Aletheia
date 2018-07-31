@@ -10,11 +10,11 @@ public interface MetricsFactory {
   MetricsFactory NULL = new MetricsFactory() {
 
     @Override
-    public Counter createCounter(final String component, final String methodName, String... labelNames) {
+    public Counter createCounter(final String component, final String methodName, final String... labelNames) {
       return new Counter() {
 
         @Override
-        public void inc(final long n, String... labelValues) {
+        public void inc(final long n, final String... labelValues) {
 
         }
 
@@ -41,7 +41,7 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, String... labelNames) {
+    public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, final String... labelNames) {
       return new Gauge() {
 
 
@@ -58,28 +58,28 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Gauge createSettableGauge(String name, String help, String... labelNames) {
+    public Gauge createSettableGauge(final String name, final String help, final String... labelNames) {
       return null;
     }
 
     @Override
-    public Histogram createHistogram(final String name, final String help, final double[] buckets, String... labelNames) {
+    public Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames) {
       return new Histogram() {
 
         @Override
-        public void update(int value, String... labelValues) {
+        public void update(final int value, final String... labelValues) {
 
         }
 
         @Override
-        public void update(long value, String... labelValues) {
+        public void update(final long value, final String... labelValues) {
 
         }
       };
     }
 
     @Override
-    public Summary createSummary(String name, String help, String... labelNames) {
+    public Summary createSummary(final String name, final String help, final String... labelNames) {
       return labelValues -> new Timer(Clock.DEFAULT_CLOCK, value -> {
 
       });
@@ -87,15 +87,15 @@ public interface MetricsFactory {
 
   };
 
-  Counter createCounter(final String name, final String help, String... labelNames);
+  Counter createCounter(final String name, final String help, final String... labelNames);
 
-  Gauge createGauge(String name, String help, DoubleSupplier metric, String... labelNames);
+  Gauge createGauge(final String name, final String help, final DoubleSupplier metric, final String... labelNames);
 
-  Gauge createSettableGauge(String name, String help, String... labelNames);
+  Gauge createSettableGauge(final String name, final String help, final String... labelNames);
 
-  Histogram createHistogram(String name, String help, double[] buckets, String... labelNames);
+  Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames);
 
-  Summary createSummary(final String name, final String help, String... labelNames);
+  Summary createSummary(final String name, final String help, final String... labelNames);
 
 
 }

@@ -50,11 +50,9 @@ public class DatumProducerBuilder<TDomainClass>
             datumProducerConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    boolean isBreadcrambs = domainClass.equals(Breadcrumb.class);
+    final boolean isBreadcrumbs = domainClass.equals(Breadcrumb.class);
 
     if (!domainClass.equals(Breadcrumb.class)) {
-      //metricFactoryProvider = new PrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
-
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
                 productionEndPointInfo.getProductionEndPoint(),
@@ -63,9 +61,6 @@ public class DatumProducerBuilder<TDomainClass>
         datumAuditor = BreadcrumbDispatcher.NULL;
       }
     } else {
-//      metricFactoryProvider = new InternalPrometheusMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
-//                                                                                  DATUM_PRODUCER,
-//                                                                                  getMetricsFactory());
       datumAuditor = BreadcrumbDispatcher.NULL;
     }
 
@@ -73,7 +68,7 @@ public class DatumProducerBuilder<TDomainClass>
             getSender(productionEndPointInfo.getProductionEndPoint(),
                     getMetricsFactoryProvider()
                             .forDatumEnvelopeSender(
-                                    productionEndPointInfo.getProductionEndPoint(), isBreadcrambs));
+                                    productionEndPointInfo.getProductionEndPoint(), isBreadcrumbs));
 
     final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder =
             new DatumEnvelopeBuilder<>(domainClass,
@@ -91,7 +86,7 @@ public class DatumProducerBuilder<TDomainClass>
             getMetricsFactoryProvider()
                     .forAuditingDatumProducer(
                             productionEndPointInfo.getProductionEndPoint(),
-                            isBreadcrambs));
+                            isBreadcrumbs));
   }
 
   private NamedSender<DatumEnvelope> getSender(final ProductionEndPoint productionEndPoint,

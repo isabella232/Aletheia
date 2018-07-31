@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  */
 public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
+  @SuppressWarnings("unused")
   public static final String ENVELOPE_CONSUMER_STREAM = "EnvelopeConsumerStream";
   private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopeStreamsBuilder.class);
   private final AletheiaConfig config;
@@ -61,8 +62,8 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
     final ConsumptionEndPoint consumptionEndPoint = config.getConsumptionEndPoint(endpointId);
     logger.info("Creating an envelope stream for end point: {} with consumerConfig: {}",
-        consumptionEndPoint,
-        consumerConfig);
+            consumptionEndPoint,
+            consumerConfig);
 
     final BreadcrumbDispatcher<DatumEnvelope> datumAuditor =
             createAuditor(consumerConfig, consumptionEndPoint, getMetricsFactoryProvider());
@@ -98,8 +99,8 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
    * @return A {@link DatumEnvelopeStreamsBuilder} instance with the custom production endpoint registered.
    */
   public <TProductionEndPoint extends ProductionEndPoint, UProductionEndPoint extends TProductionEndPoint> DatumEnvelopeStreamsBuilder registerBreadcrumbsEndpointType(
-      final Class<TProductionEndPoint> endPointType,
-      final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
+          final Class<TProductionEndPoint> endPointType,
+          final DatumEnvelopeSenderFactory<? super UProductionEndPoint> datumEnvelopeSenderFactory) {
 
     this.<TProductionEndPoint, UProductionEndPoint>registerEnvelopeSenderType(endPointType, datumEnvelopeSenderFactory);
 
@@ -117,8 +118,8 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
    * endpoint type.
    */
   public <TConsumptionEndPoint extends ConsumptionEndPoint, UConsumptionEndPoint extends TConsumptionEndPoint> DatumEnvelopeStreamsBuilder registerConsumptionEndPointType(
-      final Class<TConsumptionEndPoint> consumptionEndPointType,
-      final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
+          final Class<TConsumptionEndPoint> consumptionEndPointType,
+          final DatumEnvelopeFetcherFactory<? super UConsumptionEndPoint> datumEnvelopeFetcherFactory) {
 
     this.<TConsumptionEndPoint, UConsumptionEndPoint>registerEnvelopeFetcherType(consumptionEndPointType, datumEnvelopeFetcherFactory);
 
@@ -153,6 +154,7 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
    * @param metricFactoryProvider A metricFactoryProvider instance to report metrics to.
    * @return A {@link DatumEnvelopeStreamsBuilder} instance with an envelope filter defined.
    */
+  @SuppressWarnings({"unused"})
   public DatumEnvelopeStreamsBuilder reportMetricsTo(final MetricFactoryProvider metricFactoryProvider) {
     setMetricsFactoryProvider(metricFactoryProvider);
 
@@ -172,19 +174,19 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
   private List<DatumEnvelopeFetcher> getFetchers(ConsumptionEndPoint consumptionEndPoint, MetricFactoryProvider metricFactoryProvider) {
     final DatumEnvelopeFetcherFactory<ConsumptionEndPoint> datumEnvelopeFetcherFactory =
-        getEnvelopeFetcherFactory(consumptionEndPoint.getClass());
+            getEnvelopeFetcherFactory(consumptionEndPoint.getClass());
 
     return datumEnvelopeFetcherFactory.buildDatumEnvelopeFetcher(
-        consumptionEndPoint,
-        metricFactoryProvider.forDatumEnvelopeFetcher(consumptionEndPoint));
+            consumptionEndPoint,
+            metricFactoryProvider.forDatumEnvelopeFetcher(consumptionEndPoint));
   }
 
   private List<DatumConsumerStream<DatumEnvelope>> toEnvelopeStream(ConsumptionEndPoint consumptionEndPoint, MetricFactoryProvider metricFactoryProvider, IdentityEnvelopeOpener datumEnvelopeOpener, List<DatumEnvelopeFetcher> datumEnvelopeFetchers) {
     return datumEnvelopeFetchers.stream().map((datumEnvelopeFetcher) -> new AuditingDatumConsumerStream<>(
-        datumEnvelopeFetcher,
-        datumEnvelopeOpener,
-        envelopeFilter::test,
-        metricFactoryProvider.forAuditingDatumStreamConsumer(consumptionEndPoint))).collect(Collectors.toList());
+            datumEnvelopeFetcher,
+            datumEnvelopeOpener,
+            envelopeFilter::test,
+            metricFactoryProvider.forAuditingDatumStreamConsumer(consumptionEndPoint))).collect(Collectors.toList());
   }
 
 
@@ -198,14 +200,14 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
       datumAuditor = BreadcrumbDispatcher.NULL;
     } else {
       final ProductionEndPoint breadcrumbsProductionEndPoint =
-          new AletheiaConfig(getBreadcrumbEnvironment(config.getProperties())).getProductionEndPoint(endpointIdToProduceBreadcrumbs);
+              new AletheiaConfig(getBreadcrumbEnvironment(config.getProperties())).getProductionEndPoint(endpointIdToProduceBreadcrumbs);
 
       this.setBreadcrumbsEndpoint(breadcrumbsProductionEndPoint, new BreadcrumbsConfig(config.getProperties()));
 
       datumAuditor = getEnvelopeBreadcrumbsDispatcher(new DatumProducerConfig(consumerConfig.getIncarnation(),
-              consumerConfig.getHostname()),
-          consumptionEndPoint,
-          metricFactoryProvider);
+                      consumerConfig.getHostname()),
+              consumptionEndPoint,
+              metricFactoryProvider);
     }
     return datumAuditor;
   }
@@ -219,12 +221,12 @@ public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
             breadcrumbsConfig.getApplication());
 
     final BreadcrumbDispatcher<DatumEnvelope> breadcrumbDispatcher = new KeyedBreadcrumbDispatcher<>(
-        breadcrumbsConfig.getBreadcrumbBucketDuration(),
-        new EnvelopeTimestampSelector(),
-        new KeyedBreadcrumbBaker(breadcrumbsConfig.getTier(), breadcrumbsConfig.getDatacenter()),
-            new BreadcrumbProducingHandler(datumProducerConfig, metricFactoryProvider /*metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)*/),
-        breadcrumbKeyMapper,
-        Duration.standardDays(1)
+            breadcrumbsConfig.getBreadcrumbBucketDuration(),
+            new EnvelopeTimestampSelector(),
+            new KeyedBreadcrumbBaker(breadcrumbsConfig.getTier(), breadcrumbsConfig.getDatacenter()),
+            new BreadcrumbProducingHandler(datumProducerConfig, metricFactoryProvider),
+            breadcrumbKeyMapper,
+            Duration.standardDays(1)
     );
 
     return new PeriodicBreadcrumbDispatcher<>(breadcrumbDispatcher, breadcrumbsConfig.getBreadcrumbBucketFlushInterval());

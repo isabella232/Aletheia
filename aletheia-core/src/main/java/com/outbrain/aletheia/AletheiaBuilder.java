@@ -50,7 +50,7 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
             breadcrumbsConfig.getApplication(),
             DatumUtils.getDatumTypeId(domainClass)),
         new BreadcrumbProducingHandler(datumProducerConfig,
-                metricFactoryProvider /*metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)*/),
+                metricFactoryProvider),
         Duration.standardDays(1));
 
     return new PeriodicBreadcrumbDispatcher<>(breadcrumbDispatcher, breadcrumbsConfig.getBreadcrumbBucketFlushInterval());

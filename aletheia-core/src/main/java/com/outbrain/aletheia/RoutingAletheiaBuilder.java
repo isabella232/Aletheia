@@ -60,11 +60,11 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
   /**
    * Configures metrics reporting.
    *
-   * @param metricFactory A MetricsFactory instance to report metrics to.
+   * @param metricFactoryProvider A MetricsFactoryProvider instance to report metrics to.
    * @return A {@link TBuilder} instance with metrics reporting configured.
    */
-  public TBuilder reportMetricsTo(final MetricFactoryProvider metricFactory) {
-    builder.reportMetricsTo(metricFactory);
+  public TBuilder reportMetricsTo(final MetricFactoryProvider metricFactoryProvider) {
+    builder.reportMetricsTo(metricFactoryProvider);
     return This();
   }
 

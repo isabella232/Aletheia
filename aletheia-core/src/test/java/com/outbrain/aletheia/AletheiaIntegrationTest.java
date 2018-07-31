@@ -69,32 +69,32 @@ public abstract class AletheiaIntegrationTest<TDomainClass> {
   protected final RecordingMetricFactory metricsFactory = new RecordingMetricFactory(MetricsFactory.NULL);
   protected final MetricFactoryProvider recordingMetricFactoryProvider = new MetricFactoryProvider() {
     @Override
-    public MetricsFactory forAuditingDatumProducer(EndPoint endPoint, boolean isBreadcrambs) {
+    public MetricsFactory forAuditingDatumProducer(final EndPoint endPoint, final boolean isBreadcrambs) {
       return metricsFactory;
     }
 
     @Override
-    public MetricsFactory forInternalBreadcrumbProducer(EndPoint endPoint) {
+    public MetricsFactory forInternalBreadcrumbProducer(final EndPoint endPoint) {
       return metricsFactory;
     }
 
     @Override
-    public MetricsFactory forDatumEnvelopeSender(EndPoint endPoint, boolean isBreadcrambs) {
+    public MetricsFactory forDatumEnvelopeSender(final EndPoint endPoint, final boolean isBreadcrambs) {
       return metricsFactory;
     }
 
     @Override
-    public MetricsFactory forDatumEnvelopeFetcher(EndPoint endPoint) {
+    public MetricsFactory forDatumEnvelopeFetcher(final EndPoint endPoint) {
       return metricsFactory;
     }
 
     @Override
-    public MetricsFactory forAuditingDatumStreamConsumer(EndPoint endPoint) {
+    public MetricsFactory forAuditingDatumStreamConsumer(final EndPoint endPoint) {
       return metricsFactory;
     }
 
     @Override
-    public MetricsFactory forDatumEnvelopeMeta(EndPoint endPoint) {
+    public MetricsFactory forDatumEnvelopeMeta(final EndPoint endPoint) {
       return metricsFactory;
     }
   };

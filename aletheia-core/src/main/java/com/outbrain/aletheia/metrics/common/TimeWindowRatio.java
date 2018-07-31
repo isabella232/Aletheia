@@ -5,7 +5,6 @@ import org.joda.time.DateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-//TODO: [av] adapt to prometheus
 public class TimeWindowRatio implements Gauge<Double> {
 
   private final RatioHolder averager;
@@ -58,7 +57,7 @@ public class TimeWindowRatio implements Gauge<Double> {
 
 
   @Override
-  public void set(Double value, String... labelValues) {
+  public void set(final Double value, final String... labelValues) {
 
   }
 }

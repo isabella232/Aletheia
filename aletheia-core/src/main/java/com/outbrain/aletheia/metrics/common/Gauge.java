@@ -10,5 +10,11 @@ public interface Gauge<T> {
 
   T getValue(final String... labelValues);
 
+  /**
+   * Change value of the Gauge
+   *
+   * @param value       the new value
+   * @param labelValues values for labels
+   */
   void set(final T value, final String... labelValues);
 }
