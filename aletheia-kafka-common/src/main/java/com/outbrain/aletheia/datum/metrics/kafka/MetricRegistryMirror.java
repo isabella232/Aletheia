@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.datum.metrics.kafka;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.apache.kafka.common.MetricName;
@@ -50,7 +51,7 @@ class MetricRegistryMirror {
         final String realMetricName = metricNameAdjuster.apply(metricName);
         metricsFactory.createSettableGauge(
                 (metricName.group() + "_" + realMetricName).replaceAll("(-|\\.)", "_"),
-                metricName.description());
+                Strings.isNullOrEmpty(metricName.description()) ? "No description found" : metricName.description());
       } catch (final Exception e) {
         log.error("Could not process metrics", e);
       }
