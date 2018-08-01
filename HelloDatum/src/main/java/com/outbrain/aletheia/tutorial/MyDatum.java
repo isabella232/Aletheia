@@ -41,4 +41,12 @@ public class MyDatum {
   public String getInfo() {
     return info;
   }
+
+  @Override
+  public String toString() {
+    return "MyDatum{" +
+            "timestamp=" + timestamp +
+            ", info='" + info + '\'' +
+            '}';
+  }
 }

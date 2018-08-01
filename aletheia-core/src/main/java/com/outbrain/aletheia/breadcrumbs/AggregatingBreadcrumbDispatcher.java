@@ -41,6 +41,7 @@ public class AggregatingBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDis
 
     HitsPerInterval currentValue;
     HitsPerInterval nextValue = null;
+    boolean shouldReplaceValue = false;
 
     final long bucketId = bucketId(item);
     final Instant bucketStart = bucketStart(item);
@@ -48,20 +49,19 @@ public class AggregatingBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDis
 
     do {
       currentValue = bucketId2hitsPerInterval.get(bucketId);
-      if (currentValue.isEmpty()) {
-        nextValue = new HitsPerInterval(bucketStart, 1);
-      } else {
-        if (isBucketCollision(currentValue.bucketStart, bucketStart)) {
-          return;
-        }
-        currentHitCount = currentValue.hitCount.get();
+      NextValueDecider nextValueDecider = new NextValueDecider(currentValue, bucketStart).invoke();
+      if (nextValueDecider.shouldIgnoreHit()) {
+        return;
       }
-    } while ((currentValue.isEmpty() &&
-        !bucketId2hitsPerInterval.replace(bucketId, HitsPerInterval.EMPTY, nextValue))
-        ||
-        (currentValue.nonEmpty() &&
-            !bucketId2hitsPerInterval.get(bucketId).hitCount.compareAndSet(currentHitCount,
-                currentHitCount + 1)));
+      nextValue = nextValueDecider.getNextValue();
+      shouldReplaceValue = nextValueDecider.shouldReplaceValue();
+      currentHitCount = nextValueDecider.getCurrentHitCount();
+    } while ((shouldReplaceValue &&
+            !bucketId2hitsPerInterval.replace(bucketId, currentValue, nextValue))
+            ||
+            (!shouldReplaceValue &&
+                    !bucketId2hitsPerInterval.get(bucketId).hitCount.compareAndSet(currentHitCount,
+                            currentHitCount + 1)));
   }
 
   @Override
@@ -73,20 +73,21 @@ public class AggregatingBreadcrumbDispatcher<T> extends BucketBasedBreadcrumbDis
 
       if (hitsPerInterval.isEmpty()) continue;
 
-      final Breadcrumb breadcrumb = breadcrumbBaker.bakeBreadcrumb(new BucketStartWithDuration(bucketDuration,
-              hitsPerInterval.bucketStart),
-          Instant.now(),
-          hitsPerInterval.hitCount.get());
+      final Breadcrumb breadcrumb = breadcrumbBaker.bakeBreadcrumb(
+              new BucketStartWithDuration(bucketDuration,
+                      hitsPerInterval.bucketStart),
+              Instant.now(),
+              hitsPerInterval.hitCount.get());
       totalHitCount += breadcrumb.getCount();
       try {
         breadcrumbHandler.handle(breadcrumb);
       } catch (final Exception e) {
         logger.error(String.format(
-            "Failed to dispatch a breadcrumb for processingTimestamp: [%d], bucketId: [%s], aggregated hit count: [%d]",
-            Instant.now().getMillis(),
-            bucketId,
-            hitsPerInterval.hitCount.get()),
-            e);
+                "Failed to dispatch a breadcrumb for processingTimestamp: [%d], bucketId: [%s], aggregated hit count: [%d]",
+                Instant.now().getMillis(),
+                bucketId,
+                hitsPerInterval.hitCount.get()),
+                e);
       }
     }
     return totalHitCount;

@@ -73,14 +73,14 @@ public abstract class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDi
     final long bucketCount = millisInInterval / bucketDuration.getMillis();
 
     Preconditions.checkState(bucketCount * bucketDuration.getMillis() == millisInInterval,
-        "bucket duration must divide the interval without a remainder");
+            "bucket duration must divide the interval without a remainder");
     return bucketCount;
   }
 
   Instant bucketStart(final T item) {
     return new Instant(
-        (timestampSelector.extractDatumDateTime(item).getMillis() /
-            bucketDuration.getMillis()) * bucketDuration.getMillis());
+            (timestampSelector.extractDatumDateTime(item).getMillis() /
+                    bucketDuration.getMillis()) * bucketDuration.getMillis());
   }
 
   long bucketId(final T item) {
@@ -88,13 +88,60 @@ public abstract class BucketBasedBreadcrumbDispatcher<T> implements BreadcrumbDi
     return millis / bucketDuration.getMillis();
   }
 
-  boolean isBucketCollision(final Instant existingBucketStart, final Instant incomingBucketStart) {
-    if (!existingBucketStart.equals(incomingBucketStart)) {
-      logger.error("Possible bucket collision between existing bucket start: {} and incoming bucket start: {}, ignoring current item.",
-          incomingBucketStart.getMillis(),
-          existingBucketStart.getMillis());
-      return true;
+  protected class NextValueDecider {
+    private final HitsPerInterval currentValue;
+    private final Instant bucketStart;
+
+    private boolean ignoreHit = false;
+    private HitsPerInterval nextValue = null;
+    private boolean shouldReplaceValue = false;
+    private long currentHitCount = 0;
+
+    public NextValueDecider(final HitsPerInterval currentValue, final Instant bucketStart) {
+      this.currentValue = currentValue;
+      this.bucketStart = bucketStart;
     }
-    return false;
+
+    boolean shouldIgnoreHit() {
+      return ignoreHit;
+    }
+
+    public HitsPerInterval getNextValue() {
+      return nextValue;
+    }
+
+    public boolean shouldReplaceValue() {
+      return shouldReplaceValue;
+    }
+
+    public long getCurrentHitCount() {
+      return currentHitCount;
+    }
+
+    public NextValueDecider invoke() {
+      if (currentValue.isEmpty()) {
+        shouldReplaceValue = true;
+      } else {
+        final int comparison = currentValue.bucketStart.compareTo(bucketStart);
+        if (comparison < 0) {
+          logger.warn("Possible bucket collision, Preferring newer incoming bucket start: {} (Replacing existing bucket which has older start time: {})",
+                  bucketStart.getMillis(),
+                  currentValue.bucketStart.getMillis());
+          shouldReplaceValue = true;
+        } else if (comparison > 0) {
+          logger.error("Possible bucket collision between existing bucket start: {} and incoming bucket start: {}, ignoring incoming item.",
+                  currentValue.bucketStart.getMillis(),
+                  bucketStart.getMillis());
+          ignoreHit = true;
+          return this;
+        } else {
+          currentHitCount = currentValue.hitCount.get();
+        }
+      }
+      if (shouldReplaceValue) {
+        nextValue = new HitsPerInterval(bucketStart, 1);
+      }
+      return this;
+    }
   }
 }

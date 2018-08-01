@@ -163,7 +163,7 @@ public class AletheiaConfig {
     return readConfigFiles(configPaths);
   }
 
-  private static Set<String> getResourceFilesFromFolder(URL folderUrl, String homePath) {
+  private static Set<String> getResourceFilesFromFolder(final URL folderUrl, final String homePath) {
     final String folderPath = folderUrl.getPath();
     final Set<String> result = new HashSet<>();
     try {
