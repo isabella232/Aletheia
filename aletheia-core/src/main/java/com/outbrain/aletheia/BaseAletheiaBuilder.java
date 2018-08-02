@@ -166,7 +166,7 @@ abstract class BaseAletheiaBuilder {
   /**
    * Configures metrics reporting.
    *
-   * @param metricFactoryProvider A MetricsFactory instance to report metrics to.
+   * @param metricFactoryProvider A MetricsFactoryProvider instance to report metrics to.
    */
   public void setMetricsFactoryProvider(final MetricFactoryProvider metricFactoryProvider) {
     this.metricFactoryProvider = metricFactoryProvider;

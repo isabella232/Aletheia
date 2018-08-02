@@ -182,7 +182,8 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     } catch (final BufferExhaustedException e) {
       throw new SilentSenderException(e);
     } catch (final Exception e) {
-      metricFactory.createCounter("Send_Attempts_Failures", "Attempts to send message that failed", "exception").inc(MoreExceptionUtils.getType(e));
+      metricFactory.createCounter("Send_Attempts_Failures",
+              "Attempts to send message that failed", "exception").inc(MoreExceptionUtils.getType(e));
       logger.error("Error while sending message to kafka.", e);
     } finally {
       timer.stop();

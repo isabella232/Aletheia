@@ -61,13 +61,11 @@ public class StringLogFileSender implements NamedSender<String> {
     com.outbrain.swinfra.metrics.timing.Timer timer = sendDuration.startTimer();
 
     try {
-      final long startTime = System.currentTimeMillis();
       final String chompedString = StringUtils.chomp(line);
 
       dataLogFileWriter.info(chompedString);
       logWriteSuccessCount.inc();
 
-      final long duration = System.currentTimeMillis() - startTime;
     } catch (final Exception ex) {
       logger.error("failed to write data to file.", ex);
       logWriteFailureCount.inc();

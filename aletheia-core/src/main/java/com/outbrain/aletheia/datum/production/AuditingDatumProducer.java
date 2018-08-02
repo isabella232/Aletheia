@@ -1,6 +1,5 @@
 package com.outbrain.aletheia.datum.production;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
@@ -22,7 +21,6 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);
 
-  private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver_Requests_Attempts_Failures";
   private static final long LOG_SUPPRESS_INTERVAL_MS = 60 * 1000;
 
   private final Summary deliverDurationSummary;
@@ -34,7 +32,6 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
   private final Sender<DatumEnvelope> envelopeSender;
   private final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder;
   private final Predicate<TDomainClass> filter;
-  private final MetricsFactory metricFactory;
 
   private long lastExceptionLoggedTime = 0;
 
@@ -48,7 +45,6 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     this.envelopeSender = envelopeSender;
     this.datumEnvelopeBuilder = datumEnvelopeBuilder;
     this.filter = filter;
-    this.metricFactory = metricFactory;
 
     deliverDurationSummary = metricFactory.createSummary("Deliver_Requests_Duration", "Duration of the requests");
     filteredCounter = metricFactory.createCounter("Deliver_Requests_Filtered", "Number of the filtered requests");
@@ -56,7 +52,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
     // Create counter for QueueFullExceptions
     deliverRequestFailureCounter = metricFactory.createCounter(
-            DELIVER_REQUESTS_ATTEMPTS_FAILURES,
+            "Deliver_Requests_Attempts_Failures",
             "Number of failed deliver requests attempts", "root_exception", "non_root_exception"
     );
   }
@@ -85,9 +81,6 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter(Joiner.on("_").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
-              SilentSenderException.class.getSimpleName()),
-              MoreExceptionUtils.getType(e)).inc();
 
       deliverRequestFailureCounter.inc(SilentSenderException.class.getSimpleName(), MoreExceptionUtils.getType(e));
 

@@ -1,5 +1,6 @@
 package com.outbrain.aletheia.metrics.common;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.joda.time.DateTime;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,9 +56,8 @@ public class TimeWindowRatio implements Gauge<Double> {
     }
   }
 
-
   @Override
   public void set(final Double value, final String... labelValues) {
-
+    throw new NotImplementedException("Not Implemented");
   }
 }

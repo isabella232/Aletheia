@@ -98,7 +98,7 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
   /**
    * Configures metrics reporting.
    *
-   * @param metricFactoryProvider A MetricsFactory instance to report metrics to.
+   * @param metricFactoryProvider A MetricsFactoryProvider instance to report metrics to.
    * @return A {@link TBuilder} instance with metrics reporting configured.
    */
   public TBuilder reportMetricsTo(final MetricFactoryProvider metricFactoryProvider) {
