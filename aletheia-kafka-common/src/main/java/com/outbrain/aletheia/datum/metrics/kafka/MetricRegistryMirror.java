@@ -49,9 +49,12 @@ class MetricRegistryMirror {
       try {
         final MetricName metricName = entry.getKey();
         final String realMetricName = metricNameAdjuster.apply(metricName);
-        metricsFactory.createSettableGauge(
+        metricsFactory.createGauge(
                 (metricName.group() + "_" + realMetricName).replaceAll("(-|\\.)", "_"),
-                Strings.isNullOrEmpty(metricName.description()) ? "No description" : metricName.description());
+                Strings.isNullOrEmpty(metricName.description()) ? "No description" : metricName.description(),
+                () -> entry.getValue().value()
+
+        );
       } catch (final Exception e) {
         log.error("Could not process metrics", e);
       }
