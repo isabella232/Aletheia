@@ -46,13 +46,13 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     this.datumEnvelopeBuilder = datumEnvelopeBuilder;
     this.filter = filter;
 
-    deliverDurationSummary = metricFactory.createSummary("Deliver_Requests_Duration", "Duration of the requests");
-    filteredCounter = metricFactory.createCounter("Deliver_Requests_Filtered", "Number of the filtered requests");
-    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver_Requests_Attempts_Success", "Number of the successful requests");
+    deliverDurationSummary = metricFactory.createSummary("deliverRequestsDuration", "Duration of the requests");
+    filteredCounter = metricFactory.createCounter("deliverRequestsFiltered", "Number of the filtered requests");
+    deliverRequestSuccessCounter = metricFactory.createCounter("deliverRequestsAttemptsSuccess", "Number of the successful requests");
 
     // Create counter for QueueFullExceptions
     deliverRequestFailureCounter = metricFactory.createCounter(
-            "Deliver_Requests_Attempts_Failures",
+            "deliverRequestsAttemptsFailures",
             "Number of failed deliver requests attempts", "root_exception", "non_root_exception"
     );
   }

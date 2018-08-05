@@ -87,21 +87,16 @@ public class AuditingDatumConsumerStream<TDomainClass> implements DatumConsumerS
                                      final Predicate<TDomainClass> datumFilter,
                                      final MetricsFactory metricsFactory) {
 
-    consumedDatumCount = metricsFactory.createCounter("Consume_Requests_Attempts_Success", "Consumer requests successful attempts");
-    consumeFailureCount = metricsFactory.createCounter("Consume_Requests_Attempts_Failures", "Consumer requests failed attempts");
-    filteredCounter = metricsFactory.createCounter("Consume_Requests_Filtered", "Consumer requests filtered attempts");
+    consumedDatumCount = metricsFactory.createCounter("consumeRequestsAttemptsSuccess", "Consumer requests successful attempts");
+    consumeFailureCount = metricsFactory.createCounter("consumeRequestsAttemptsFailures", "Consumer requests failed attempts");
+    filteredCounter = metricsFactory.createCounter("consumeRequestsFiltered", "Consumer requests filtered attempts");
 
     this.datumEnvelopeOpener = datumEnvelopeOpener;
     this.datumFilter = datumFilter;
     this.datumEnvelopeFetcher = datumEnvelopeFetcher;
 
     final DatumIterator datumIterator = new DatumIterator(datumEnvelopeFetcher);
-    datumIterable = new Iterable<TDomainClass>() {
-      @Override
-      public Iterator<TDomainClass> iterator() {
-        return datumIterator;
-      }
-    };
+    datumIterable = () -> datumIterator;
   }
 
   @Override

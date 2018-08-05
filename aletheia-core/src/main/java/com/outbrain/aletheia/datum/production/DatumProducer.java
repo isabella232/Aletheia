@@ -7,8 +7,6 @@ package com.outbrain.aletheia.datum.production;
  */
 public interface DatumProducer<TDomainClass> extends AutoCloseable {
 
-  static final String COMPONENT = "DatumProducer";
-
   /**
    * Delivers a datum to a destination.
    *

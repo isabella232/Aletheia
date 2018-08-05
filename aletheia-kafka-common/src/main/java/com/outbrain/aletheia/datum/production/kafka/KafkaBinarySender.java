@@ -36,10 +36,9 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private static final Logger logger = LoggerFactory.getLogger(KafkaBinarySender.class);
   private static final int TEN_SECONDS = 10000;
   private static final long SEND_RESULT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(300);
-  public static final String SYNC_TYPE = "sync";
+  private static final String SYNC_TYPE = "sync";
 
   private final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint;
-  private final MetricsFactory metricFactory;
   private final Timer connectionTimer = new Timer(KafkaBinarySender.class.getSimpleName() + "-reconnectTimer");
   private final Properties customConfiguration;
   private final KafkaCallbackTransformer kafkaCallbackTransformer;
@@ -60,7 +59,6 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
     this.kafkaTopicDeliveryEndPoint = kafkaTopicDeliveryEndPoint;
     this.kafkaCallbackTransformer = kafkaCallbackTransformer;
-    this.metricFactory = metricFactory;
 
     logger.info("Creating kafka sender for endpoint:" + kafkaTopicDeliveryEndPoint.toString());
 
@@ -72,16 +70,16 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
 
     initMetrics(metricFactory, customConfiguration);
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> close()));
+    Runtime.getRuntime().addShutdownHook(new Thread(this::close));
 
     connect();
   }
 
   private void initMetrics(final MetricsFactory metricFactory, final Properties customConfiguration) {
-    sendCount = metricFactory.createCounter("Send_Attempts_Success", "Counts number of successful attempts");
-    sendDuration = metricFactory.createSummary("Send_Attempts_Duration", "measure duration of the attempts");
-    messageSizeHistogram = metricFactory.createHistogram("Message_Size", "size of the message", new double[]{1000, 2000, 3000, 4000, 5000});
-    failureDueToUnconnected = metricFactory.createCounter("Send_Attempts_Failures", "Counts number of failed connections", "UnableToConnect");
+    sendCount = metricFactory.createCounter("sendAttemptsSuccess", "Counts number of successful attempts");
+    sendDuration = metricFactory.createSummary("sendAttemptsDuration", "measure duration of the attempts");
+    messageSizeHistogram = metricFactory.createHistogram("messageSize", "size of the message", new double[]{1000, 2000, 3000, 4000, 5000});
+    failureDueToUnconnected = metricFactory.createCounter("sendAttemptsFailures", "Counts number of failed connections", "error");
 
     metricsReporterScheduledExecutorService = KafkaMetrics.reportTo(metricFactory,
             customConfiguration.getProperty("client.id"),
@@ -157,7 +155,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   @Override
   public void send(final byte[] data, final String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
     if (!connected) {
-      failureDueToUnconnected.inc();
+      failureDueToUnconnected.inc("failureDueToUnconnected");
       return;
     }
 
@@ -182,8 +180,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     } catch (final BufferExhaustedException e) {
       throw new SilentSenderException(e);
     } catch (final Exception e) {
-      metricFactory.createCounter("Send_Attempts_Failures",
-              "Attempts to send message that failed", "exception").inc(MoreExceptionUtils.getType(e));
+      failureDueToUnconnected.inc(MoreExceptionUtils.getType(e));
       logger.error("Error while sending message to kafka.", e);
     } finally {
       timer.stop();

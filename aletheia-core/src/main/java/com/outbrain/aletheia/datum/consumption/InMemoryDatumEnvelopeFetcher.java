@@ -41,8 +41,8 @@ public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
     this.consumptionEndPoint = consumptionEndPoint;
 
-    receivedDatumEnvelopeCount = metricFactory.createCounter("Receive_Attempts_Success", "Number of successful attempts to fetch data");
-    failureCount = metricFactory.createCounter("Receive_Attempts_Failure", "Number of failed attempts to fetch envelope");
+    receivedDatumEnvelopeCount = metricFactory.createCounter("receiveAttemptsSuccess", "Number of successful attempts to fetch data");
+    failureCount = metricFactory.createCounter("receiveAttemptsFailure", "Number of failed attempts to fetch envelope");
   }
 
   private DatumEnvelope fetchDatumEnvelope() {
