@@ -35,8 +35,6 @@ import java.util.stream.Collectors;
  */
 public class DatumEnvelopeStreamsBuilder extends BaseAletheiaBuilder {
 
-  @SuppressWarnings("unused")
-  public static final String ENVELOPE_CONSUMER_STREAM = "EnvelopeConsumerStream";
   private static final Logger logger = LoggerFactory.getLogger(DatumEnvelopeStreamsBuilder.class);
   private final AletheiaConfig config;
   private final DatumConsumerStreamConfig consumerConfig;

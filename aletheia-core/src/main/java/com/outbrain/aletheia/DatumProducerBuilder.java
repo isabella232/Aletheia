@@ -52,7 +52,7 @@ public class DatumProducerBuilder<TDomainClass>
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
     final boolean isBreadcrumbs = domainClass.equals(Breadcrumb.class);
 
-    if (!domainClass.equals(Breadcrumb.class)) {
+    if (!isBreadcrumbs) {
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
                 productionEndPointInfo.getProductionEndPoint(),

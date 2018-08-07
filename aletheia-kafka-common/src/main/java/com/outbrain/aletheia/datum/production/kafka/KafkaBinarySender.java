@@ -49,7 +49,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private ScheduledExecutorService metricsReporterScheduledExecutorService;
 
   private Counter sendCount;
-  private Counter failureDueToUnconnected;
+  private Counter sendAttemptsFailures;
   private Summary sendDuration;
   private Histogram messageSizeHistogram;
 
@@ -79,7 +79,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     sendCount = metricFactory.createCounter("sendAttemptsSuccess", "Counts number of successful attempts");
     sendDuration = metricFactory.createSummary("sendAttemptsDuration", "measure duration of the attempts");
     messageSizeHistogram = metricFactory.createHistogram("messageSize", "size of the message", new double[]{1000, 2000, 3000, 4000, 5000});
-    failureDueToUnconnected = metricFactory.createCounter("sendAttemptsFailures", "Counts number of failed connections", "error");
+    sendAttemptsFailures = metricFactory.createCounter("sendAttemptsFailures", "Counts number of failed send attempts", "error");
 
     metricsReporterScheduledExecutorService = KafkaMetrics.reportTo(metricFactory,
             customConfiguration.getProperty("client.id"),
@@ -155,7 +155,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   @Override
   public void send(final byte[] data, final String key, final DeliveryCallback deliveryCallback) throws SilentSenderException {
     if (!connected) {
-      failureDueToUnconnected.inc("failureDueToUnconnected");
+      sendAttemptsFailures.inc("failureDueToUnconnected");
       return;
     }
 
@@ -180,7 +180,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     } catch (final BufferExhaustedException e) {
       throw new SilentSenderException(e);
     } catch (final Exception e) {
-      failureDueToUnconnected.inc(MoreExceptionUtils.getType(e));
+      sendAttemptsFailures.inc(MoreExceptionUtils.getType(e));
       logger.error("Error while sending message to kafka.", e);
     } finally {
       timer.stop();
