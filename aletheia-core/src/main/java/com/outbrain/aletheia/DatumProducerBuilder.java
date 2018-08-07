@@ -1,6 +1,5 @@
 package com.outbrain.aletheia;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -8,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.outbrain.aletheia.breadcrumbs.Breadcrumb;
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.DatumKeySelector;
-import com.outbrain.aletheia.datum.DatumUtils;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.production.AuditingDatumProducer;
@@ -19,13 +17,12 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.Sender;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
-import com.outbrain.aletheia.metrics.DefaultMetricFactoryProvider;
-import com.outbrain.aletheia.metrics.MetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Provides a fluent API for building a {@link DatumProducer}.
@@ -37,7 +34,6 @@ public class DatumProducerBuilder<TDomainClass>
 
   private static final Logger logger = LoggerFactory.getLogger(DatumProducerBuilder.class);
 
-  private static final String DATUM_PRODUCER = "DatumProducer";
 
   private final List<ProductionEndPointInfo<TDomainClass>> productionEndPointInfos = Lists.newArrayList();
   private DatumKeySelector<TDomainClass> datumKeySelector;
@@ -50,50 +46,47 @@ public class DatumProducerBuilder<TDomainClass>
                                                           final ProductionEndPointInfo<TDomainClass> productionEndPointInfo) {
 
     logger.info("Creating a datum producer for production end point: {} with config: {}",
-                productionEndPointInfo.getProductionEndPoint(),
-                datumProducerConfig);
+            productionEndPointInfo.getProductionEndPoint(),
+            datumProducerConfig);
 
     final BreadcrumbDispatcher<TDomainClass> datumAuditor;
-    final MetricFactoryProvider metricFactoryProvider;
+    final boolean isBreadcrumbs = domainClass.equals(Breadcrumb.class);
 
-    if (!domainClass.equals(Breadcrumb.class)) {
-      metricFactoryProvider = new DefaultMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass), DATUM_PRODUCER, getMetricsFactory());
-
+    if (!isBreadcrumbs) {
       if (isBreadcrumbProductionDefined()) {
         datumAuditor = getTypedBreadcrumbsDispatcher(datumProducerConfig,
-                                       productionEndPointInfo.getProductionEndPoint(),
-                                       metricFactoryProvider);
+                productionEndPointInfo.getProductionEndPoint(),
+                getMetricsFactoryProvider());
       } else {
         datumAuditor = BreadcrumbDispatcher.NULL;
       }
     } else {
-      metricFactoryProvider = new InternalBreadcrumbProducerMetricFactoryProvider(DatumUtils.getDatumTypeId(domainClass),
-                                                                                  DATUM_PRODUCER,
-                                                                                  getMetricsFactory());
       datumAuditor = BreadcrumbDispatcher.NULL;
     }
 
     final Sender<DatumEnvelope> sender =
             getSender(productionEndPointInfo.getProductionEndPoint(),
-                      metricFactoryProvider
-                              .forDatumEnvelopeSender(productionEndPointInfo.getProductionEndPoint()));
+                    getMetricsFactoryProvider()
+                            .forDatumEnvelopeSender(
+                                    productionEndPointInfo.getProductionEndPoint(), isBreadcrumbs));
 
     final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder =
             new DatumEnvelopeBuilder<>(domainClass,
-                                       productionEndPointInfo.getDatumSerDe(),
-                                       datumKeySelector != null ? datumKeySelector : DatumKeySelector.NULL,
-                                       datumProducerConfig.getIncarnation(),
-                                       datumProducerConfig.getSource()
+                    productionEndPointInfo.getDatumSerDe(),
+                    datumKeySelector != null ? datumKeySelector : DatumKeySelector.NULL,
+                    datumProducerConfig.getIncarnation(),
+                    datumProducerConfig.getSource()
             );
 
 
     return new AuditingDatumProducer<>(datumEnvelopeBuilder,
-                                       sender,
-                                       productionEndPointInfo.getFilter(),
-                                       datumAuditor,
-                                       metricFactoryProvider
-                                               .forAuditingDatumProducer(
-                                                       productionEndPointInfo.getProductionEndPoint()));
+            sender,
+            productionEndPointInfo.getFilter(),
+            datumAuditor,
+            getMetricsFactoryProvider()
+                    .forAuditingDatumProducer(
+                            productionEndPointInfo.getProductionEndPoint(),
+                            isBreadcrumbs));
   }
 
   private NamedSender<DatumEnvelope> getSender(final ProductionEndPoint productionEndPoint,
@@ -102,8 +95,8 @@ public class DatumProducerBuilder<TDomainClass>
     final DatumEnvelopeSenderFactory datumEnvelopeSenderFactory = getEnvelopeSenderFactory(productionEndPoint.getClass());
 
     Preconditions.checkState(datumEnvelopeSenderFactory != null,
-                             String.format("No datum sender factory for production end point of type [%s] was provided.",
-                                           productionEndPoint.getClass().getSimpleName()));
+            String.format("No datum sender factory for production end point of type [%s] was provided.",
+                    productionEndPoint.getClass().getSimpleName()));
 
     return datumEnvelopeSenderFactory.buildDatumEnvelopeSender(productionEndPoint, aMetricFactory);
   }
@@ -140,8 +133,8 @@ public class DatumProducerBuilder<TDomainClass>
                                                           final Predicate<TDomainClass> datumFilter) {
 
     productionEndPointInfos.add(new ProductionEndPointInfo<>(dataProductionEndPoint,
-                                                             datumSerDe,
-                                                             datumFilter));
+            datumSerDe,
+            datumFilter));
     return this;
   }
 
@@ -167,17 +160,12 @@ public class DatumProducerBuilder<TDomainClass>
    */
   public DatumProducer<TDomainClass> build(final DatumProducerConfig datumProducerConfig) {
 
-    final Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>> toDatumProducer =
-            new Function<ProductionEndPointInfo<TDomainClass>, DatumProducer<TDomainClass>>() {
-              @Override
-              public DatumProducer<TDomainClass> apply(final ProductionEndPointInfo<TDomainClass> configuredProductionEndPoint) {
-                return createDatumProducer(datumProducerConfig, configuredProductionEndPoint);
-              }
-            };
+    final List<DatumProducer<TDomainClass>> datumProducers = productionEndPointInfos
+            .stream()
+            .map(configuredProductionEndPoint -> createDatumProducer(datumProducerConfig, configuredProductionEndPoint))
+            .collect(Collectors.toList());
 
-    final List<DatumProducer<TDomainClass>> datumProducers = Lists.transform(productionEndPointInfos, toDatumProducer);
-
-    return new CompositeDatumProducer<>(Lists.newArrayList(datumProducers));
+    return new CompositeDatumProducer<>(datumProducers);
   }
 
   /**

@@ -1,30 +1,30 @@
 package com.outbrain.aletheia.metrics;
 
-import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 /**
  * An abstract class for Aletheia specific metrics with pre-defined component names.
  */
 public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProvider {
 
-  protected static final String ALETHEIA = "Aletheia";
-  protected static final String DATUM_TYPES = "DatumTypes";
-  protected static final String DATA = "Data";
+  //label names
+  protected static final String COMPONENT = "component";
+  protected static final String DATUM_TYPE_ID = "datum_type_id";
+  protected static final String DIRECTION = "direction";
+  protected static final String ENDPOINT_CLASS = "endpoint_class";
+  protected static final String ENDPOINT_NAME = "endpoint_name";
+
+  //Direction label values
   protected static final String PRODUCTION = "Production";
   protected static final String CONSUMPTION = "Consumption";
-  protected static final String Tx = "Tx";
-  protected static final String Rx = "Rx";
 
   protected final String datumTypeId;
   protected final String componentName;
-  protected final MetricsFactory metricsFactory;
+
 
   public AletheiaMetricFactoryProvider(final String datumTypeId,
-                                       final String componentName,
-                                       final MetricsFactory metricsFactory) {
+                                       final String componentName
+  ) {
     this.datumTypeId = datumTypeId;
     this.componentName = componentName;
-    this.metricsFactory = metricsFactory;
   }
 
   public String datumTypeId() {

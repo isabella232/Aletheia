@@ -5,17 +5,9 @@ import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.serialization.DatumSerDe;
 import com.outbrain.aletheia.datum.serialization.DatumTypeVersion;
 import com.outbrain.aletheia.datum.serialization.SerializedDatum;
-import com.outbrain.aletheia.metrics.common.Counter;
-import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-import com.outbrain.aletheia.metrics.common.TimeWindowAverager;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class DatumEnvelopeOpener<TDomainClass> extends BaseEnvelopeOpener{
 

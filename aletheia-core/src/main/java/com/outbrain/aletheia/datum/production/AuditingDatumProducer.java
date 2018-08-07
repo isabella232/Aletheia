@@ -1,16 +1,14 @@
 package com.outbrain.aletheia.datum.production;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-
 import com.outbrain.aletheia.breadcrumbs.BreadcrumbDispatcher;
 import com.outbrain.aletheia.datum.envelope.DatumEnvelopeBuilder;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-import com.outbrain.aletheia.metrics.common.Timer;
-
+import com.outbrain.aletheia.metrics.common.Summary;
+import com.outbrain.swinfra.metrics.timing.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,18 +21,17 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
   private static final Logger logger = LoggerFactory.getLogger(AuditingDatumProducer.class);
 
-  private static final String DELIVER_REQUESTS_ATTEMPTS_FAILURES = "Deliver.Requests.Attempts.Failures";
   private static final long LOG_SUPPRESS_INTERVAL_MS = 60 * 1000;
 
-  private final Timer deliverDurationTimer;
+  private final Summary deliverDurationSummary;
   private final Counter deliverRequestSuccessCounter;
   private final Counter filteredCounter;
+  private final Counter deliverRequestFailureCounter;
 
   private final BreadcrumbDispatcher<TDomainClass> datumAuditor;
   private final Sender<DatumEnvelope> envelopeSender;
   private final DatumEnvelopeBuilder<TDomainClass> datumEnvelopeBuilder;
   private final Predicate<TDomainClass> filter;
-  private final MetricsFactory metricFactory;
 
   private long lastExceptionLoggedTime = 0;
 
@@ -48,15 +45,16 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
     this.envelopeSender = envelopeSender;
     this.datumEnvelopeBuilder = datumEnvelopeBuilder;
     this.filter = filter;
-    this.metricFactory = metricFactory;
 
-    deliverDurationTimer = metricFactory.createTimer("Deliver.Requests", "Duration");
-    filteredCounter = metricFactory.createCounter("Deliver.Requests", "Filtered");
-    deliverRequestSuccessCounter = metricFactory.createCounter("Deliver.Requests.Attempts", "Success");
+    deliverDurationSummary = metricFactory.createSummary("deliverRequestsDuration", "Duration of the requests");
+    filteredCounter = metricFactory.createCounter("deliverRequestsFiltered", "Number of the filtered requests");
+    deliverRequestSuccessCounter = metricFactory.createCounter("deliverRequestsAttemptsSuccess", "Number of the successful requests");
 
     // Create counter for QueueFullExceptions
-    metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
-            SilentSenderException.class.getSimpleName()), "QueueFullException");
+    deliverRequestFailureCounter = metricFactory.createCounter(
+            "deliverRequestsAttemptsFailures",
+            "Number of failed deliver requests attempts", "root_exception", "non_root_exception"
+    );
   }
 
   public void deliver(final TDomainClass datum) {
@@ -65,7 +63,7 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
 
   @Override
   public void deliver(final TDomainClass datum, final DeliveryCallback deliveryCallback) {
-    final Timer.Context timerContext = deliverDurationTimer.time();
+    final Timer timer = deliverDurationSummary.startTimer();
 
     try {
 
@@ -83,9 +81,8 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
       deliverRequestSuccessCounter.inc();
 
     } catch (final SilentSenderException e) {
-      metricFactory.createCounter(Joiner.on(".").join(DELIVER_REQUESTS_ATTEMPTS_FAILURES,
-              SilentSenderException.class.getSimpleName()),
-              MoreExceptionUtils.getType(e)).inc();
+
+      deliverRequestFailureCounter.inc(SilentSenderException.class.getSimpleName(), MoreExceptionUtils.getType(e));
 
       // Log with suppression
       final long nowTime = System.currentTimeMillis();
@@ -94,10 +91,10 @@ public class AuditingDatumProducer<TDomainClass> implements DatumProducer<TDomai
         logger.error("Datum send failed with exception:", e);
       }
     } catch (final Exception e) {
-      metricFactory.createCounter(DELIVER_REQUESTS_ATTEMPTS_FAILURES, MoreExceptionUtils.getType(e)).inc();
+      deliverRequestFailureCounter.inc(e.getClass().getSimpleName(), MoreExceptionUtils.getType(e));
       logger.error("Could not deliver datum." + datum, e);
     } finally {
-      timerContext.stop();
+      timer.stop();
     }
   }
 

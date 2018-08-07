@@ -6,6 +6,7 @@ package com.outbrain.aletheia.datum.production;
  * @param <TDomainClass> The type of the datum to be consumed by this {@link com.outbrain.aletheia.datum.consumption.DatumConsumerStream}.
  */
 public interface DatumProducer<TDomainClass> extends AutoCloseable {
+
   /**
    * Delivers a datum to a destination.
    *

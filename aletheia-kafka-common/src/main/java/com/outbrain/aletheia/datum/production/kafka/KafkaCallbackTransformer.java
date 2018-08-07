@@ -5,9 +5,7 @@ import com.outbrain.aletheia.datum.production.DeliveryCallback;
 import com.outbrain.aletheia.datum.production.EndpointDeliveryMetadata;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 /**
  * A transformer object used to convert Aletheia callbacks to Kafka 0.9 callbacks.
@@ -17,7 +15,7 @@ public class KafkaCallbackTransformer<TDomainClass> {
   private Counter kafkaDeliveryFailure;
 
   KafkaCallbackTransformer(final MetricsFactory metricFactory) {
-    kafkaDeliveryFailure = metricFactory.createCounter("Send.Callback", "Failure");
+    kafkaDeliveryFailure = metricFactory.createCounter("Send_Callback_Failure", "counts number of failure callbacks");
   }
 
   /**
@@ -28,19 +26,16 @@ public class KafkaCallbackTransformer<TDomainClass> {
    */
   public Callback transform(final DeliveryCallback deliveryCallback,
                             final EndPoint endpoint) {
-    return new Callback() {
-      @Override
-      public void onCompletion(final RecordMetadata metadata, final Exception exception) {
-        // It's guaranteed in Kafka API that exactly one of the arguments will be null
-        if (metadata != null) {
-          deliveryCallback.onSuccess(
-              new EndpointDeliveryMetadata(endpoint));
-        } else {
-          kafkaDeliveryFailure.inc();
-          deliveryCallback.onError(
-              new EndpointDeliveryMetadata(endpoint),
-              exception);
-        }
+    return (metadata, exception) -> {
+      // It's guaranteed in Kafka API that exactly one of the arguments will be null
+      if (metadata != null) {
+        deliveryCallback.onSuccess(
+                new EndpointDeliveryMetadata(endpoint));
+      } else {
+        kafkaDeliveryFailure.inc();
+        deliveryCallback.onError(
+                new EndpointDeliveryMetadata(endpoint),
+                exception);
       }
     };
   }

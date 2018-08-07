@@ -1,7 +1,9 @@
 package com.outbrain.aletheia.metrics.common;
 
 
-public class TimeWindowAverager implements Gauge<Double> {
+import java.util.function.DoubleSupplier;
+
+public class TimeWindowAverager implements DoubleSupplier {
 
   private final TimeWindowRatio ratio;
 
@@ -12,7 +14,7 @@ public class TimeWindowAverager implements Gauge<Double> {
   }
 
   @Override
-  public Double getValue() {
+  public double getAsDouble() {
     return ratio.getValue();
   }
 

@@ -4,14 +4,14 @@ public interface Counter {
   /**
    * Increment the counter by one.
    */
-  void inc();
+  void inc(final String... labelValues);
 
   /**
    * Increment the counter by n.
    *
    * @param n the amount by which the counter will be increased
    */
-  void inc(long n);
+  void inc(long n, String... labelValues);
 
   /**
    * Decrement the counter by one.

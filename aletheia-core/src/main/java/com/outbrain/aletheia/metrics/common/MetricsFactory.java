@@ -1,46 +1,20 @@
 package com.outbrain.aletheia.metrics.common;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import com.outbrain.swinfra.metrics.timing.Clock;
+import com.outbrain.swinfra.metrics.timing.Timer;
+
+import java.util.function.DoubleSupplier;
 
 public interface MetricsFactory {
 
   MetricsFactory NULL = new MetricsFactory() {
-    @Override
-    public Timer createTimer(final String component, final String methodName) {
-      return new Timer() {
-        @Override
-        public void update(final long duration, final TimeUnit unit) {
-
-        }
-
-        @Override
-        public <T> T time(final Callable<T> event) throws Exception {
-          return null;
-        }
-
-        @Override
-        public Context time() {
-          return new Context() {
-            @Override
-            public void stop() {
-
-            }
-          };
-        }
-      };
-    }
 
     @Override
-    public Counter createCounter(final String component, final String methodName) {
+    public Counter createCounter(final String component, final String methodName, final String... labelNames) {
       return new Counter() {
-        @Override
-        public void inc() {
-
-        }
 
         @Override
-        public void inc(final long n) {
+        public void inc(final long n, final String... labelValues) {
 
         }
 
@@ -58,59 +32,70 @@ public interface MetricsFactory {
         public long getCount() {
           return 0;
         }
+
+        @Override
+        public void inc(final String... labelValues) {
+
+        }
       };
     }
 
     @Override
-    public <T> Gauge<T> createGauge(final String component, final String methodName, final Gauge<T> metric) {
-      return metric != null ? metric : new Gauge<T>() {
+    public Gauge createGauge(final String component, final String methodName, final DoubleSupplier doubleSupplier, final String... labelNames) {
+      return new Gauge() {
+
+
         @Override
-        public T getValue() {
+        public Object getValue(String... labelValues) {
           return null;
         }
-      };
-    }
-
-    @Override
-    public Meter createMeter(final String component, final String methodName, final String eventType) {
-      return new Meter() {
-        @Override
-        public void mark() {
-
-        }
 
         @Override
-        public void mark(final long n) {
+        public void set(Object value, String... labelValues) {
 
         }
       };
     }
 
     @Override
-    public Histogram createHistogram(final String component, final String methodName, final boolean biased) {
+    public Gauge createSettableGauge(final String name, final String help, final String... labelNames) {
+      return null;
+    }
+
+    @Override
+    public Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames) {
       return new Histogram() {
+
         @Override
-        public void update(final int value) {
+        public void update(final int value, final String... labelValues) {
 
         }
 
         @Override
-        public void update(final long value) {
+        public void update(final long value, final String... labelValues) {
 
         }
       };
+    }
+
+    @Override
+    public Summary createSummary(final String name, final String help, final String... labelNames) {
+      return labelValues -> new Timer(Clock.DEFAULT_CLOCK, value -> {
+
+      });
     }
 
   };
 
-  Timer createTimer(final String component, final String methodName);
+  Counter createCounter(final String name, final String help, final String... labelNames);
 
-  Counter createCounter(final String component, final String methodName);
+  Gauge createGauge(final String name, final String help, final DoubleSupplier metric, final String... labelNames);
 
-  <T> Gauge<T> createGauge(String component, String methodName, Gauge<T> metric);
+  Gauge createSettableGauge(final String name, final String help, final String... labelNames);
 
-  Meter createMeter(String component, String methodName, String eventType);
+  Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames);
 
-  Histogram createHistogram(String component, String methodName, boolean biased);
+  Summary createSummary(final String name, final String help, final String... labelNames);
+
 
 }

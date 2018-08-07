@@ -15,7 +15,6 @@ import com.outbrain.aletheia.datum.production.NamedSender;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.MetricFactoryProvider;
-import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import org.joda.time.Duration;
 
 /**
@@ -51,7 +50,7 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
             breadcrumbsConfig.getApplication(),
             DatumUtils.getDatumTypeId(domainClass)),
         new BreadcrumbProducingHandler(datumProducerConfig,
-            metricFactoryProvider.forInternalBreadcrumbProducer(endPoint)),
+                metricFactoryProvider),
         Duration.standardDays(1));
 
     return new PeriodicBreadcrumbDispatcher<>(breadcrumbDispatcher, breadcrumbsConfig.getBreadcrumbBucketFlushInterval());
@@ -99,11 +98,11 @@ abstract class AletheiaBuilder<TDomainClass, TBuilder extends AletheiaBuilder<TD
   /**
    * Configures metrics reporting.
    *
-   * @param metricFactory A MetricsFactory instance to report metrics to.
+   * @param metricFactoryProvider A MetricsFactoryProvider instance to report metrics to.
    * @return A {@link TBuilder} instance with metrics reporting configured.
    */
-  public TBuilder reportMetricsTo(final MetricsFactory metricFactory) {
-    setMetricsFactory(metricFactory);
+  public TBuilder reportMetricsTo(final MetricFactoryProvider metricFactoryProvider) {
+    setMetricsFactoryProvider(metricFactoryProvider);
 
     return This();
   }

@@ -16,24 +16,19 @@ public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
 
   private final Iterable<DatumEnvelope> datumEnvelopeIterable =
-          new Iterable<DatumEnvelope>() {
+          () -> new Iterator<DatumEnvelope>() {
             @Override
-            public Iterator<DatumEnvelope> iterator() {
-              return new Iterator<DatumEnvelope>() {
-                @Override
-                public boolean hasNext() {
-                  return true;
-                }
+            public boolean hasNext() {
+              return true;
+            }
 
-                @Override
-                public DatumEnvelope next() {
-                  return fetchDatumEnvelope();
-                }
+            @Override
+            public DatumEnvelope next() {
+              return fetchDatumEnvelope();
+            }
 
-                @Override
-                public void remove() {
-                }
-              };
+            @Override
+            public void remove() {
             }
           };
 
@@ -46,8 +41,8 @@ public class InMemoryDatumEnvelopeFetcher implements DatumEnvelopeFetcher {
 
     this.consumptionEndPoint = consumptionEndPoint;
 
-    receivedDatumEnvelopeCount = metricFactory.createCounter("Receive.Attempts", "Success");
-    failureCount = metricFactory.createCounter("Receive.Attempts", "Failure");
+    receivedDatumEnvelopeCount = metricFactory.createCounter("receiveAttemptsSuccess", "Number of successful attempts to fetch data");
+    failureCount = metricFactory.createCounter("receiveAttemptsFailure", "Number of failed attempts to fetch envelope");
   }
 
   private DatumEnvelope fetchDatumEnvelope() {
