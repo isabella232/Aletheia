@@ -20,4 +20,10 @@
     </plugins>
   </build>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+    </dependency>
+  </dependencies>
 </project>
