@@ -70,6 +70,8 @@
     <module>aletheia-log4j</module>
     <module>HelloDatum</module>
     <module>HelloStreams</module>
+    <module>aletheia-envelope</module>
+    <module>aletheia-kafka-serde</module>
   </modules>
 
   <properties>
