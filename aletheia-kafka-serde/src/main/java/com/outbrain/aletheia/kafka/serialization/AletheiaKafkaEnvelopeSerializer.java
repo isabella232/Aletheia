@@ -21,8 +21,7 @@ public class AletheiaKafkaEnvelopeSerializer implements Serializer {
   @Override
   public byte[] serialize(final String topic, final Object datumEnvelope) {
     final ByteBuffer serializedDatumEnvelope = avroDatumEnvelopeSerDe.serializeDatumEnvelope((DatumEnvelope) datumEnvelope);
-    final byte[] array = serializedDatumEnvelope.array();
-    return array;
+    return serializedDatumEnvelope.array();
   }
 
   @Override

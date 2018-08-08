@@ -29,6 +29,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>aletheia-envelope</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>

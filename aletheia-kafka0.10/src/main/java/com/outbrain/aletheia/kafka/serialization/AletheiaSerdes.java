@@ -22,11 +22,11 @@ public class AletheiaSerdes {
   public static final String ALETHEIA_PRODUCER_INCARNATION = "aletheia.producer.incarnation";
   public static final String ALETHEIA_PRODUCER_SOURCE = "aletheia.producer.source";
 
-  static public <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass, final String serDeId, final AletheiaConfig config) {
+  public static <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass, final String serDeId, final AletheiaConfig config) {
     return serdeFrom(domainClass, serDeId, config, null);
   }
 
-  static public <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass,
+  public static <TDomainClass> Serde<TDomainClass> serdeFrom(final Class<TDomainClass> domainClass,
                                                              final String serDeId,
                                                              final AletheiaConfig config,
                                                              final SerDeListener<TDomainClass> listener) {
