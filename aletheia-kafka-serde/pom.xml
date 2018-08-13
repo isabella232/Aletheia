@@ -11,13 +11,11 @@
 
   <artifactId>aletheia-kafka-serde</artifactId>
 
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>aletheia-envelope</artifactId>
     </dependency>
-
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
@@ -25,4 +23,5 @@
       <version>${min.kafka.version}</version>
     </dependency>
   </dependencies>
+
 </project>
