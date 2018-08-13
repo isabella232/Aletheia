@@ -1,0 +1,7 @@
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope$Builder.class
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope_old$1.class
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope.class
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope_old$Builder.class
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope_old.class
+com/outbrain/aletheia/datum/envelope/AvroDatumEnvelopeSerDe.class
+com/outbrain/aletheia/datum/envelope/avro/DatumEnvelope$1.class

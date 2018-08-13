@@ -24,6 +24,5 @@ com.outbrain.aletheia.datum.serialization.avro.schema
 com.outbrain.aletheia.kafka.serialization
 com.outbrain.aletheia.kafka.streams
 com.outbrain.aletheia.metrics
-com.outbrain.aletheia.metrics.codahale3
 com.outbrain.aletheia.metrics.common
 com.outbrain.aletheia.tutorial
