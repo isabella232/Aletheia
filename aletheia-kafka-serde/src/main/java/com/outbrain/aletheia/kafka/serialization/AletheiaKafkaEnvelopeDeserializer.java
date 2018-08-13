@@ -13,13 +13,11 @@ import java.util.Map;
  */
 public class AletheiaKafkaEnvelopeDeserializer implements Deserializer {
 
-  public static String ENVELOPE_WRITER_SCHEMA = "envelope.kafka.writer.schema";
+  public static final String ENVELOPE_WRITER_SCHEMA = "envelope.kafka.writer.schema";
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
   private final Schema.Parser parser = new Schema.Parser();
   private Schema writerSchema;
 
-  public AletheiaKafkaEnvelopeDeserializer(){
-  }
 
   //@Override
   public void configure(final Map configs, final boolean isKey) {
