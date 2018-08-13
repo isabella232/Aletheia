@@ -2,6 +2,7 @@ package com.outbrain.aletheia.datum.envelope;
 
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope_old;
+import org.apache.avro.Schema;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumReader;
@@ -38,15 +39,25 @@ public class AvroDatumEnvelopeSerDe {
     }
   }
 
-  public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
+  /**
+   *
+   * @param buffer data
+   * @param writer writer schema for the SpecificDatumReader, useful when producers may use different schema versions
+   * @return deserialized object
+   */
+  public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer, Schema writer) {
     try (final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer))) {
       // hack alert: using old envelope to reconcile version diffs
-      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(DatumEnvelope_old.getClassSchema(),
+      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(writer,
               DatumEnvelope.getClassSchema());
       final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
       return datumReader.read(null, decoder);
     } catch (final Exception e) {
       throw new RuntimeException("Could not deserialize datum envelope", e);
     }
+  }
+
+  public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer) {
+    return deserializeDatumEnvelope(buffer, DatumEnvelope_old.getClassSchema());
   }
 }
