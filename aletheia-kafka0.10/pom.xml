@@ -21,7 +21,11 @@
       <artifactId>aletheia-core</artifactId>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>aletheia-kafka-serde</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.outbrain.aletheia</groupId>
       <artifactId>aletheia-core</artifactId>

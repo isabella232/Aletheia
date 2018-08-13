@@ -5,6 +5,8 @@ import com.outbrain.aletheia.AletheiaConfig;
 import com.outbrain.aletheia.configuration.kafka.KafkaTopicEndPointTemplate;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoint;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.kafka.serialization.AletheiaKafkaEnvelopeDeserializer;
+import com.outbrain.aletheia.kafka.serialization.AletheiaKafkaEnvelopeSerializer;
 import com.outbrain.aletheia.kafka.serialization.AletheiaSerdes;
 import com.outbrain.aletheia.kafka.serialization.SerDeListener;
 import org.apache.kafka.common.serialization.Serde;
@@ -14,13 +16,13 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.kafka.common.serialization.Serdes.serdeFrom;
 
 /**
  * An helper class for consuming Aletheia datums as Kafka Streams
@@ -61,8 +63,7 @@ public class AletheiaStreams {
                                                        final String consumeFromEndPointId) {
 
     final KafkaTopicConsumptionEndPoint endPoint = getKafkaTopicConsumptionEndPoint(config, consumeFromEndPointId);
-
-    final Serde<DatumEnvelope> envelopeSerde = AletheiaSerdes.envelopeSerde();
+    final Serde<DatumEnvelope> envelopeSerde = serdeFrom(new AletheiaKafkaEnvelopeSerializer(), new AletheiaKafkaEnvelopeDeserializer());
     return kstreamBuilder.stream(Serdes.String(), envelopeSerde, endPoint.getTopicName());
   }
 
