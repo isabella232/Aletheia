@@ -10,9 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>aletheia-kafka-serde</artifactId>
-  <properties>
-    <kafka.minimum.version>0.10.2.1</kafka.minimum.version>
-  </properties>
+
 
   <dependencies>
     <dependency>
@@ -24,7 +22,7 @@
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <scope>provided</scope>
-      <version>${kafka.minimum.version}</version>
+      <version>${min.kafka.version}</version>
     </dependency>
   </dependencies>
 </project>

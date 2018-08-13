@@ -78,8 +78,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j-api.version>1.7.5</slf4j-api.version>
     <log4j2.version>2.6.2</log4j2.version>
+    <min.kafka.version>0.9.0.1</min.kafka.version>
   </properties>
-
 
   <repositories>
     <repository>

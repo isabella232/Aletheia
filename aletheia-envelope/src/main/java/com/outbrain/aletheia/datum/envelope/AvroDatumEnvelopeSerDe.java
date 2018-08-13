@@ -40,16 +40,14 @@ public class AvroDatumEnvelopeSerDe {
   }
 
   /**
-   *
    * @param buffer data
    * @param writer writer schema for the SpecificDatumReader, useful when producers may use different schema versions
    * @return deserialized object
    */
-  public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer, Schema writer) {
+  public DatumEnvelope deserializeDatumEnvelope(final ByteBuffer buffer, final Schema writer) {
     try (final InputStream byteBufferInputStream = new ByteBufferInputStream(Collections.singletonList(buffer))) {
       // hack alert: using old envelope to reconcile version diffs
-      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(writer,
-              DatumEnvelope.getClassSchema());
+      final DatumReader<DatumEnvelope> datumReader = new SpecificDatumReader<>(writer, DatumEnvelope.getClassSchema());
       final BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(byteBufferInputStream, null);
       return datumReader.read(null, decoder);
     } catch (final Exception e) {
