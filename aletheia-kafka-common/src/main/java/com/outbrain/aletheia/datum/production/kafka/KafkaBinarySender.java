@@ -7,7 +7,6 @@ import com.outbrain.aletheia.datum.production.EmptyCallback;
 import com.outbrain.aletheia.datum.production.SilentSenderException;
 import com.outbrain.aletheia.metrics.MoreExceptionUtils;
 import com.outbrain.aletheia.metrics.common.Counter;
-import com.outbrain.aletheia.metrics.common.Histogram;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 import com.outbrain.aletheia.metrics.common.Summary;
 import org.apache.kafka.clients.producer.BufferExhaustedException;
@@ -51,7 +50,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private Counter sendCount;
   private Counter sendAttemptsFailures;
   private Summary sendDuration;
-  private Histogram messageSizeHistogram;
+  private Summary messageSizeSummary;
 
   public KafkaBinarySender(final KafkaTopicProductionEndPoint kafkaTopicDeliveryEndPoint,
                            final KafkaCallbackTransformer kafkaCallbackTransformer,
@@ -78,7 +77,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
   private void initMetrics(final MetricsFactory metricFactory, final Properties customConfiguration) {
     sendCount = metricFactory.createCounter("sendAttemptsSuccess", "Counts number of successful attempts");
     sendDuration = metricFactory.createSummary("sendAttemptsDuration", "measure duration of the attempts");
-    messageSizeHistogram = metricFactory.createHistogram("messageSize", "size of the message", new double[]{1000, 2000, 3000, 4000, 5000});
+    messageSizeSummary = metricFactory.createSummary("messageSize", "size of the message");
     sendAttemptsFailures = metricFactory.createCounter("sendAttemptsFailures", "Counts number of failed send attempts", "error");
 
     metricsReporterScheduledExecutorService = KafkaMetrics.reportTo(metricFactory,
@@ -176,7 +175,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
       }
 
       sendCount.inc();
-      messageSizeHistogram.update(data.length);
+      messageSizeSummary.observe(data.length);
     } catch (final BufferExhaustedException e) {
       throw new SilentSenderException(e);
     } catch (final Exception e) {

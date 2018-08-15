@@ -79,11 +79,22 @@ public interface MetricsFactory {
     }
 
     @Override
-    public Summary createSummary(final String name, final String help, final String... labelNames) {
-      return labelValues -> new Timer(Clock.DEFAULT_CLOCK, value -> {
+    public Summary createSummary(String name, String help, String... labelNames) {
+      return new Summary() {
 
-      });
+        @Override
+        public Timer startTimer(String... labelValues) {
+          return new Timer(Clock.DEFAULT_CLOCK, value -> {
+
+          });
+        }
+
+        public void observe(long value, String... labelValues) {
+
+        }
+      };
     }
+
 
   };
 
