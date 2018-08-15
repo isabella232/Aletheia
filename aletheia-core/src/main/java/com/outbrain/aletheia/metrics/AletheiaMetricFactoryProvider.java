@@ -11,7 +11,7 @@ public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProv
   protected static final String DIRECTION = "direction";
   protected static final String ENDPOINT_CLASS = "endpoint_class";
   protected static final String ENDPOINT_NAME = "endpoint_name";
-  private static final String IS_BREADCRUMB = "is_breadcrumb";
+  protected static final String IS_BREADCRUMB = "is_breadcrumb";
 
   //Direction label values
   protected static final String PRODUCTION = "Production";
