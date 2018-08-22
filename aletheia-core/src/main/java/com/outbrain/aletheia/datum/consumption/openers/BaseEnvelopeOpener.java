@@ -34,7 +34,7 @@ abstract public class BaseEnvelopeOpener<TDomainClass> implements AutoCloseable 
     logicalDelayAverager = new TimeWindowAverager(60.0, 15, -1.0);
     logicalDelayInMillisAverager = new TimeWindowAverager(60.0, 15, -1.0);
 
-    futureLogicalMessagesCount = metricFactory.createCounter("timestampLogicalFromTheFuture", "future logical message count");
+    futureLogicalMessagesCount = metricFactory.createCounter("logicalTimestampFromTheFuture", "Number of messages with a future logical timestamp");
     logicalTimestampDelayHistogram = metricFactory.createHistogram(
             "Timestamp_Logical_DelayHistogramInSeconds",
             "delay in seconds",

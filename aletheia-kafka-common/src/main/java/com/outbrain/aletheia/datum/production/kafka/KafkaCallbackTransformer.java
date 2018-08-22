@@ -12,10 +12,10 @@ import org.apache.kafka.clients.producer.Callback;
  */
 public class KafkaCallbackTransformer<TDomainClass> {
 
-  private Counter kafkaDeliveryFailure;
+  private final Counter kafkaDeliveryFailure;
 
   KafkaCallbackTransformer(final MetricsFactory metricFactory) {
-    kafkaDeliveryFailure = metricFactory.createCounter("Send_Callback_Failure", "counts number of failure callbacks");
+    kafkaDeliveryFailure = metricFactory.createCounter("kafkaSendFailures", "Number of failures during Kafka delivery");
   }
 
   /**

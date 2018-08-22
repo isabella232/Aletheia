@@ -107,6 +107,4 @@ public interface MetricsFactory {
   Histogram createHistogram(final String name, final String help, final double[] buckets, final String... labelNames);
 
   Summary createSummary(final String name, final String help, final String... labelNames);
-
-
 }

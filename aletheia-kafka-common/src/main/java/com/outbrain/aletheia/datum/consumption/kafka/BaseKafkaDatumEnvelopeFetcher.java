@@ -4,6 +4,7 @@ import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
 import com.outbrain.aletheia.datum.consumption.OffsetCommitMode;
 import com.outbrain.aletheia.datum.envelope.AvroDatumEnvelopeSerDe;
 import com.outbrain.aletheia.datum.envelope.avro.DatumEnvelope;
+import com.outbrain.aletheia.metrics.AletheiaMetricFactoryProvider;
 import com.outbrain.aletheia.metrics.common.Counter;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
 
@@ -44,8 +45,6 @@ import java.util.regex.PatternSyntaxException;
 abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, ConsumerRebalanceListener {
   final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private static final String AUTO_COMMIT = "AutoCommit";
-
   final KafkaConsumer<String, byte[]> kafkaConsumer;
   private Iterator<ConsumerRecord<String, byte[]>> consumerRecordIterator = Collections.emptyIterator();
   private final AvroDatumEnvelopeSerDe avroDatumEnvelopeSerDe = new AvroDatumEnvelopeSerDe();
@@ -54,9 +53,8 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
 
   private ScheduledExecutorService autoOffsetCommitExecutor;
   private final ConcurrentMap<TopicPartition, OffsetAndMetadata> consumedOffsets = new ConcurrentHashMap<>();
-  private final Counter autoCommitAttempt;
-  private final Counter autoCommitSuccess;
-  private final Counter autoCommitFail;
+  private final Counter autoCommitAttemptsCounter;
+  private final Counter autoCommitResultsCounter;
   private final OffsetCommitMode offsetCommitMode;
   private final String offsetResetStrategy;
   private final boolean isAtMostOnceOffsetCommitMode;
@@ -69,9 +67,8 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
                                 final MetricsFactory metricFactory) {
     this.kafkaConsumer = consumer;
 
-    this.autoCommitAttempt = metricFactory.createCounter(AUTO_COMMIT, "Attempts");
-    this.autoCommitSuccess = metricFactory.createCounter(AUTO_COMMIT, "Success");
-    this.autoCommitFail = metricFactory.createCounter(AUTO_COMMIT, "Failure");
+    this.autoCommitAttemptsCounter = metricFactory.createCounter("autoCommitAttempts", "Number of auto commit attempts");
+    this.autoCommitResultsCounter = metricFactory.createCounter("autoCommitResults", "Number of auto commit results", "result");
     this.offsetResetStrategy = consumptionEndPoint.getProperties().getProperty("auto.offset.reset");
 
     try {
@@ -161,7 +158,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
       if (!consumerRecordIterator.hasNext()) {
         consumerRecordIterator = pollKafkaConsumer();
       }
-    } catch (WakeupException e) {
+    } catch (final WakeupException e) {
       shutdown();
     }
     return consumerRecordIterator;
@@ -227,14 +224,14 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
       //  (Keep similar behavior to Kafka 0.8 High Level Consumer)
       autoOffsetCommitExecutor = Executors.newScheduledThreadPool(1);
       autoOffsetCommitExecutor.scheduleWithFixedDelay(() -> {
+        autoCommitAttemptsCounter.inc();
         try {
           commitOffsetsInternal();
-          autoCommitSuccess.inc();
-        } catch (Exception e) {
+          autoCommitResultsCounter.inc(AletheiaMetricFactoryProvider.SUCCESS);
+        } catch (final Exception e) {
           logger.error("commitSync failed with exception: ", e);
-          autoCommitFail.inc();
+          autoCommitResultsCounter.inc(AletheiaMetricFactoryProvider.FAIL);
         }
-        autoCommitAttempt.inc();
       }, autoCommitInterval, autoCommitInterval, TimeUnit.MILLISECONDS);
     } else {
       autoOffsetCommitExecutor = null;

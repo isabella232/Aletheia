@@ -17,6 +17,10 @@ public abstract class AletheiaMetricFactoryProvider implements MetricFactoryProv
   protected static final String PRODUCTION = "Production";
   protected static final String CONSUMPTION = "Consumption";
 
+  //Result label values
+  public static final String FAIL = "Failure";
+  public static final String SUCCESS = "Success";
+
   protected final String datumTypeId;
   protected final String componentName;
 
