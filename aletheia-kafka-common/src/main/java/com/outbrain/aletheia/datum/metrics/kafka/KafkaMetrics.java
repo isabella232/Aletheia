@@ -50,7 +50,7 @@ public class KafkaMetrics implements MetricsReporter {
                     .mirrorFrom(kafkaMetrics,
                         ((Predicate<String>) Predicates.containsPattern(kafkaClientId)::apply).and(metricFilter),
                         metric -> {
-                          final StringBuilder sb = new StringBuilder();
+                          final StringBuilder sb = new StringBuilder("Kafka.");
                           for (final Map.Entry<String, String> tag : new TreeMap<>(metric.tags()).entrySet()) {
                             if (!tag.getKey().isEmpty() && !tag.getValue().isEmpty()) {
                               sb.append(tag.getValue()).append('.');
