@@ -1,11 +1,9 @@
 package com.outbrain.aletheia.datum.consumption.kafka;
 
 import com.google.common.collect.Lists;
-
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcher;
 import com.outbrain.aletheia.datum.consumption.DatumEnvelopeFetcherFactory;
 import com.outbrain.aletheia.metrics.common.MetricsFactory;
-
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -46,7 +44,7 @@ abstract class KafkaDatumEnvelopeFetcherFactoryBase implements DatumEnvelopeFetc
     consumerConfig.put("bootstrap.servers", brokers);
     consumerConfig.put("group.id", groupId);
 
-    logger.warn("Using consumer config: {}", consumerConfig);
+    logger.info("Using consumer config: {}", consumerConfig);
 
     return consumerConfig;
   }

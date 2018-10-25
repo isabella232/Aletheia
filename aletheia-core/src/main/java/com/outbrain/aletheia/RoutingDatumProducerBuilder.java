@@ -60,7 +60,7 @@ public class RoutingDatumProducerBuilder<TDomainClass>
       saveBuilder(getBuilder().deliverDataTo(productionEndPointInfo.getProductionEndPoint(),
                                              productionEndPointInfo.getDatumSerDe()));
 
-      logger.warn("Production endpoint {} with serDe {} has been added to pipeline.",
+      logger.info("Production endpoint {} with serDe {} has been added to pipeline.",
                   productionEndPointInfo.getProductionEndPoint(),
                   productionEndPointInfo.getDatumSerDe().getClass().getSimpleName());
     }

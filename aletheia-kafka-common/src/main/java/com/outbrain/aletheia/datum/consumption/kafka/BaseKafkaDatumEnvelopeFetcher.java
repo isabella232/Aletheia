@@ -72,8 +72,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
     this.offsetResetStrategy = consumptionEndPoint.getProperties().getProperty("auto.offset.reset");
 
     try {
-      offsetCommitMode = OffsetCommitMode.valueOf(consumptionEndPoint.getProperties()
-                                                                     .getProperty("offset.commit.mode", OffsetCommitMode.AT_LEAST_ONCE.name()));
+      offsetCommitMode = OffsetCommitMode.valueOf(consumptionEndPoint.getOffsetCommitMode());
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException("Illegal offset commit mode value. See com.outbrain.aletheia.datum.consumption.OffsetCommitMode for supported modes.", e);
     }

@@ -66,6 +66,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     // Keep similar behavior to Kafka 0.8 API
     final String producerType = customConfiguration.getProperty("producer.type", SYNC_TYPE);
     isSync = SYNC_TYPE.equals(producerType);
+    customConfiguration.remove("producer.type");
 
     initMetrics(metricFactory, customConfiguration);
 
@@ -141,7 +142,7 @@ public class KafkaBinarySender implements DatumKeyAwareNamedSender<byte[]> {
     producerProperties.setProperty("bootstrap.servers", kafkaTopicDeliveryEndPoint.getBrokerList());
     producerProperties.setProperty("metric.reporters", "com.outbrain.aletheia.datum.metrics.kafka.KafkaMetrics");
 
-    logger.warn("Using producer config: {}", producerProperties);
+    logger.info("Using producer config: {}", producerProperties);
 
     return producerProperties;
   }

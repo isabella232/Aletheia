@@ -1,11 +1,11 @@
 package com.outbrain.aletheia.configuration.kafka;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.outbrain.aletheia.configuration.endpoint.EndPointTemplate;
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
+import com.outbrain.aletheia.datum.consumption.OffsetCommitMode;
 import com.outbrain.aletheia.datum.consumption.kafka.KafkaTopicConsumptionEndPoint;
 import com.outbrain.aletheia.datum.production.ProductionEndPoint;
 import com.outbrain.aletheia.datum.production.kafka.KafkaTopicProductionEndPoint;
@@ -75,12 +75,15 @@ public class KafkaTopicEndPointTemplate implements EndPointTemplate {
     final String groupId = validateConsumer("group.id", consumerProps, endPointName);
     final String concurrencyLevel = validateConsumer("concurrency.level", consumerProps, endPointName);
     final String brokerList = validateConsumer("bootstrap.servers", consumerProps, endPointName);
-
+    final String offsetCommitMode = consumerProps.getProperty("offset.commit.mode", OffsetCommitMode.AT_LEAST_ONCE.name());
+    consumerProps.remove("concurrency.level");
+    consumerProps.remove("offset.commit.mode");
     return new KafkaTopicConsumptionEndPoint(brokerList,
-                                             getTopicName(),
-                                             groupId,
-                                             endPointName,
-                                             Integer.parseInt(concurrencyLevel),
-                                             consumerProps);
+            getTopicName(),
+            groupId,
+            endPointName,
+            Integer.parseInt(concurrencyLevel),
+            offsetCommitMode,
+            consumerProps);
   }
 }

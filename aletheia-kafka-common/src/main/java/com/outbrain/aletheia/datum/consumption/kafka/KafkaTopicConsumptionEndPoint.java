@@ -1,7 +1,6 @@
 package com.outbrain.aletheia.datum.consumption.kafka;
 
 import com.outbrain.aletheia.datum.consumption.ConsumptionEndPoint;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -18,6 +17,7 @@ public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
   private final String topicName;
   private final String groupId;
   private final int concurrencyLevel;
+  private final String offsetCommitMode;
   private final Properties properties;
   private final String endPointName;
 
@@ -26,11 +26,13 @@ public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
                                        final String groupId,
                                        final String endPointName,
                                        final int concurrencyLevel,
+                                       final String offsetCommitMode,
                                        final Properties properties) {
     this.brokers = brokers;
     this.topicName = topicName;
     this.groupId = groupId;
     this.concurrencyLevel = concurrencyLevel;
+    this.offsetCommitMode = offsetCommitMode;
     this.properties = properties;
     this.endPointName = endPointName;
   }
@@ -79,5 +81,9 @@ public class KafkaTopicConsumptionEndPoint implements ConsumptionEndPoint {
   @Override
   public String getName() {
     return endPointName;
+  }
+
+  public String getOffsetCommitMode() {
+    return offsetCommitMode;
   }
 }
