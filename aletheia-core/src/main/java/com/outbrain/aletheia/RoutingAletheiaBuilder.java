@@ -49,7 +49,7 @@ abstract class RoutingAletheiaBuilder<TDomainClass, TBuilder extends RoutingAlet
     // If breadcrumbs endpoint is not disabled - enable breadcrumbs production
     if (breadcrumbsProductionEndPoint != null && breadcrumbsProductionEndPoint != ProductionEndPoint.NULL) {
       builder.setBreadcrumbsEndpoint(breadcrumbsProductionEndPoint, new BreadcrumbsConfig(properties));
-      logger.warn("Breadcrumbs endpoint {} has been added to pipeline.", breadcrumbsProductionEndPoint);
+      logger.info("Breadcrumbs endpoint {} has been added to pipeline.", breadcrumbsProductionEndPoint);
     } else {
       logger.warn("Breadcrumbs endpoint was null or illegal. Breadcrumbs will NOT be produced for \"{}\".", datumTypeId);
     }
