@@ -24,6 +24,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
   private final DatumSerDe<TDomainClass> datumSerDe;
   private final DatumType.TimestampSelector<TDomainClass> datumTimestampSelector;
   private final DatumKeySelector<TDomainClass> datumKeySelector;
+  private final String datumSerDeClassName;
 
   public DatumEnvelopeBuilder(final Class<TDomainClass> domainClass,
                               final DatumSerDe<TDomainClass> datumSerDe,
@@ -38,6 +39,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
     this.datumKeySelector = datumKeySelector;
     datumTimestampSelector = DatumUtils.getDatumTimestampExtractor(domainClass);
     datumTypeId = DatumUtils.getDatumTypeId(domainClass);
+    datumSerDeClassName = datumSerDe.getClass().getSimpleName();
   }
 
   public DatumEnvelope buildEnvelope(final TDomainClass domainObject) {
@@ -53,7 +55,7 @@ public class DatumEnvelopeBuilder<TDomainClass> {
             source,
             Instant.now().getMillis(),
             serializedDatum.getPayload(),
-            datumSerDe.getClass().getSimpleName(),
+            datumSerDeClassName,
             datumKey,
             UUID.randomUUID().toString());
   }
