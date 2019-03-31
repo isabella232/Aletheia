@@ -61,6 +61,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
   private boolean closed = false;
   private final Set<String> currentSubscription = new HashSet<>();
   private final long autoCommitInterval;
+  private final KafkaTopicConsumptionEndPoint consumptionEndPoint;
 
   BaseKafkaDatumEnvelopeFetcher(final KafkaConsumer<String, byte[]> consumer,
                                 final KafkaTopicConsumptionEndPoint consumptionEndPoint,
@@ -70,6 +71,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
     this.autoCommitAttemptsCounter = metricFactory.createCounter("autoCommitAttempts", "Number of auto commit attempts");
     this.autoCommitResultsCounter = metricFactory.createCounter("autoCommitResults", "Number of auto commit results", "result");
     this.offsetResetStrategy = consumptionEndPoint.getProperties().getProperty("auto.offset.reset");
+    this.consumptionEndPoint = consumptionEndPoint;
 
     try {
       offsetCommitMode = OffsetCommitMode.valueOf(consumptionEndPoint.getOffsetCommitMode());
@@ -228,7 +230,7 @@ abstract class BaseKafkaDatumEnvelopeFetcher implements DatumEnvelopeFetcher, Co
           commitOffsetsInternal();
           autoCommitResultsCounter.inc(AletheiaMetricFactoryProvider.SUCCESS);
         } catch (final Exception e) {
-          logger.error("commitSync failed with exception: ", e);
+          logger.error("commitSync for endpoint {} topic {} failed with exception: ", consumptionEndPoint.getName(), consumptionEndPoint.getTopicName(), e);
           autoCommitResultsCounter.inc(AletheiaMetricFactoryProvider.FAIL);
         }
       }, autoCommitInterval, autoCommitInterval, TimeUnit.MILLISECONDS);
